@@ -1,0 +1,34 @@
+#N canvas 348 427 620 454 12;
+#N canvas 0 25 450 278 (subpatch) 0;
+#X array waveform 19 float 3;
+#A 0 0.314291 -0.785714 0.714294 0.557143 0.82858 -0.58572 0.3 0.642865
+0.442863 0.11429 0.128576 0.200005 -0.714286 0.357149 0.442863 0.571436
+-0.5 0.657151 0.414292;
+#X coords 0 1 19 -1 200 140 1 0 0;
+#X restore 21 70 graph;
+#X obj 305 184 tabosc4~ waveform;
+#X obj 307 372 dac~;
+#X obj 305 313 *~;
+#X obj 409 211 vsl 15 80 0 1 0 0 empty empty empty 0 -9 0 10 #fcfcfc
+#000000 #000000 0 1;
+#X floatatom 350 290 5 0 0 0 - - - 0;
+#X text 311 163 wavetable osc reads from waveform table;
+#X text 429 241 volume slider;
+#X floatatom 305 144 5 0 0 0 - - - 0;
+#X obj 304 94 loadbang;
+#X msg 305 119 440;
+#X text 27 13 draw in this table to edit the waveform. make sure you
+'re not in [edit] mode.;
+#X text 304 70 osc pitch.;
+#X text 100 395 this would be cool to see how it sounds. if you were
+to automate the waveform with a datastream.;
+#X text 13 299 click the DSP toggle to turn on sound;
+#X text 6 217 you can draw in this box to mod timbre;
+#X connect 1 0 3 0;
+#X connect 3 0 2 0;
+#X connect 3 0 2 1;
+#X connect 4 0 5 0;
+#X connect 5 0 3 1;
+#X connect 8 0 1 0;
+#X connect 9 0 10 0;
+#X connect 10 0 8 0;
