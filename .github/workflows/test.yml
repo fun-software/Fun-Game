@@ -4,12 +4,14 @@ on:
   push:
     branches:
       - main
+      - ci
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Building
+    - name: Test server
       run: |
-        echo Building
+        cd server
+        cargo test
