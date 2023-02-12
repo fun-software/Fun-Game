@@ -12,6 +12,7 @@
   "dependencies": {
     "@react-three/drei": "^9.56.5",
     "@react-three/fiber": "^8.10.1",
+    "cz-conventional-changelog": "^3.3.0",
     "glsl-random": "^0.0.5",
     "next": "^13.1.6",
     "next-pwa": "^5.6.0",
@@ -39,6 +40,7 @@
     "url-loader": "^4.1.1"
   },
   "scripts": {
+    "commit": "cz",
     "lint": "yarn prettier && yarn eslint",
     "eslint": "next lint --fix --dir src",
     "format": "prettier -w \"./**/*.{ts,tsx,md,js,css,html,json}\"",
@@ -49,5 +51,61 @@
     "analyze": "ANALYZE=true next build",
     "start": "next start",
     "test": "echo 'no tests yet :^)'"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./client/node_modules/cz-conventional-changelog",
+      "disableScopeLowerCase": false,
+      "disableSubjectLowerCase": false,
+      "maxHeaderWidth": 100,
+      "maxLineWidth": 100,
+      "defaultType": "",
+      "defaultScope": "",
+      "defaultSubject": "",
+      "defaultBody": "",
+      "defaultIssues": "",
+      "types": {
+        "build": {
+          "description": "A new feature is being introduced",
+          "title": "Build"
+        },
+        "chore": {
+          "description": "Changes to build process or auxiliary tools",
+          "title": "Chores"
+        },
+        "ci": {
+          "description": "Changes being introduced to ci pipeline",
+          "title": "CI"
+        },
+        "docs": {
+          "description": "Documentation is being updated or added",
+          "title": "Docs"
+        },
+        "feat": {
+          "description": "A new feature is being introduced",
+          "title": "Features"
+        },
+        "fix": {
+          "description": "Used to indicate a bug- or error-fix that does not introduce any new features",
+          "title": "Fixes"
+        },
+        "perf": {
+          "description": "A perfomance improvement is beng introduced",
+          "title": "Performance"
+        },
+        "refactor": {
+          "description": "Indication of a code refactor",
+          "title": "Refactors"
+        },
+        "style": {
+          "description": "Indicating a style change",
+          "title": "Styles"
+        },
+        "test": {
+          "description": "Adding testing fixtures",
+          "title": "Tests"
+        }
+      }
+    }
   }
 }
