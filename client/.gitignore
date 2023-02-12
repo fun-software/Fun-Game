@@ -1,15 +1,15 @@
 # dependencies
-/node_modules
+node_modules
 
 # testing
-/coverage
+coverage
 
 # next.js
-/.next/
-/out/
+.next/
+out/
 
 # production
-/build
+build
 
 # misc
 .DS_Store
@@ -30,8 +30,8 @@ yarn-error.log*
 .vercel
 
 # next-pwa
-/public/workbox-*.js
-/public/sw.js
+public/workbox-*.js
+public/sw.js
 
 # prefer yarn than npm
 package-lock.json

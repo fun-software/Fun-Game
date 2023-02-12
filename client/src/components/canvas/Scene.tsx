@@ -1,15 +1,19 @@
-import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Preload } from '@react-three/drei'
+import React from "react";
+import { Canvas } from "@react-three/fiber";
 
-export default function Scene({ children, ...props }) {
-  // Everything defined in here will persist between route changes, only children are swapped
+type Props = {
+  eventSource: React.MutableRefObject<HTMLElement>;
+  children: React.ReactElement[];
+};
+
+export default function Scene(props: Props) {
+  const { children, eventSource } = props;
+
   return (
-    <Canvas {...props}>
-      <directionalLight intensity={0.75} />
-      <ambientLight intensity={0.75} />
-      {children}
-      <Preload all />
-      <OrbitControls />
-    </Canvas>
-  )
+    <div id="canvasElem">
+      <Canvas eventPrefix="client" dpr={[1, 2]} eventSource={eventSource}>
+        {children}
+      </Canvas>
+    </div>
+  );
 }
