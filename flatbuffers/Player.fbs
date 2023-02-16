@@ -1,0 +1,13 @@
+include "Math.fbs";
+
+namespace Player;
+
+table Player {
+  pos:Math.Vec3;
+  hp:byte = 100;
+  speed:byte = 100;
+  sprinting:bool = false;
+  sneaking:bool = false;
+}
+
+root_type Player;
