@@ -1,4 +1,4 @@
-import Example from "@/components/dom/Example";
+import MainMenu from "@/components/dom/MainMenu";
 import dynamic from "next/dynamic";
 
 // Dynamic import is used to prevent a payload when the website starts, that includes threejs, r3f etc..
@@ -9,7 +9,7 @@ const Temp = dynamic(() => import("@/components/canvas/Temp"), { ssr: false });
 
 // Dom components go here
 export default function Page() {
-  return <Example />;
+  return <MainMenu />;
 }
 
 // Canvas components go here
