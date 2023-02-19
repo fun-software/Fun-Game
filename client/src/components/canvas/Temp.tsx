@@ -12,6 +12,7 @@ export default function Temp() {
   return (
     <>
       <OrbitControls enableZoom={false} />
+
       <mesh ref={ref}>
         <boxBufferGeometry args={[1, 1, 1]} />
         <meshNormalMaterial />
