@@ -2,7 +2,7 @@
 class addNoiseProcessor extends AudioWorkletProcessor {
   static get parameterDescriptors() {
     return [
-      {name: 'noiseAmount', defaultValue: 1, minValue: 0, maxValue: 1}
+      {name: 'noiseAmount', defaultValue: 0, minValue: 0, maxValue: 1}
     ];
   }
 
