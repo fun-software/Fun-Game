@@ -27,50 +27,64 @@ fn main() {
 
     // start the runtime
     rt.block_on(async {
-        // Create a new socket connection
-        let sock = UdpSocket::bind("0.0.0.0:8080".parse::<SocketAddr>().unwrap())
+        let socket = UdpSocket::bind("0.0.0.0:8080".parse::<SocketAddr>().unwrap())
             .await
             .unwrap();
 
-        let r = Arc::new(sock);
-        let s = r.clone();
+        let receiver_socket = Arc::new(socket);
+        let sender_socket = receiver_socket.clone();
 
         let entities = Arc::new(RwLock::new(types::Entities::new()));
+        let mut client_sockets = Arc::new(RwLock::new(Vec::new()));
 
-        // multiple producers, single consumer channel
-        // tx -> sender, rx -> receiver
-        let (tx, mut rx) = mpsc::channel::<(Vec<u8>, SocketAddr)>(1024);
+        let (sender_channel, mut receiver_channel) = mpsc::channel::<(Vec<u8>, SocketAddr)>(1024);
 
-        // spawn a new task to notify on msgs sent to the channel rx
+        // spawn a new task to notify on msgs sent to the channel receiver
         tokio::spawn(async move {
             println!("Waiting for messages... ");
-            while let Some((msg, addr)) = rx.recv().await {
-                let len = s.send_to(&msg, addr).await.unwrap();
-                println!("Sent {} bytes to {}", len, addr);
+            while let Some((msg, player_addr)) = receiver_channel.recv().await {
+                let len = sender_socket.send_to(&msg, player_addr).await.unwrap();
+                //let len = sender_socket.send(&msg).await.unwrap();
+                println!("Sent {} bytes to {}", len, player_addr);
             }
         });
 
         let mut buf = [0u8; 1024];
-        // handle incoming messages
         loop {
-            let (len, addr) = r.recv_from(&mut buf).await.unwrap();
+            let (len, addr) = receiver_socket.recv_from(&mut buf).await.unwrap();
             println!("Received {} bytes from {}", len, addr);
             let msg = &buf[..len];
-            let res = match msg {
-                b"play\n" => process_play(addr, &entities).await,
+            let game_state = match msg {
+                b"play\n" => process_play(addr, &client_sockets, &entities).await,
                 b"quit\n" => process_quit(addr, &entities).await,
                 b"w\n" | b"s\n" | b"a\n" | b"d\n" => {
                     process_move(msg[0] as char, addr, &entities).await
                 }
-                _ => b"magoo\n".to_vec(),
+                _ => b"Not implemented\n".to_vec(),
             };
 
-            tx.send((res, addr)).await.unwrap();
+            // NOTE: probably don't need this. Imo, functionality should be:
+            // user makes a change, and we end up in the above loop. We
+            // process the change, and then all players receive an update
+            // on the next ticket. This isn't like a normal server that's based
+            // on send/response schema. It's send, make a change to global state,
+            // update on subsquent tick. Not sure the proper housing for that
+            // functionality, however. I'm guesing you're in agreement and that
+            // this is just a relic of the boilerplate you found
+            //
+            // We need to figure out a way to broadcast state updates to all clients,
+            // but I can't really figure out the best method for that. I see a broadcast
+            // method on the UdpSocket docs, but I'm not really understanding what in the world
+            // it's talking about. My current idea is to just store the player socket addrs in a
+            // connections vector, which we iterate over periodically with another tokio
+            // thread.
+            sender_channel.send((game_state, addr)).await.unwrap();
         }
     });
 }
 
-async fn process_play(addr: SocketAddr, entities: &Arc<RwLock<Entities>>) -> Vec<u8> {
+async fn process_play(addr: SocketAddr, client_sockets: &Arc<RwLock<Vec<SocketAddr>>>, entities: &Arc<RwLock<Entities>>) -> Vec<u8> {
+    client_sockets.write().await.push(addr);
     let mut hasher = std::collections::hash_map::DefaultHasher::new();
     addr.hash(&mut hasher);
     let id = hasher.finish();
