@@ -4,114 +4,133 @@ extern crate websocket;
 
 pub mod types;
 
-use tokio::runtime;
+use tokio::{
+    net::UdpSocket,
+    runtime,
+    sync::{
+        broadcast::{self, Receiver},
+        RwLock,
+    },
+    time::{self, Duration},
+};
+use types::Entities;
 
-use std::collections::HashMap;
-use std::time::{Duration, Instant};
-use std::sync::{Arc, RwLock};
+use std::{
+    collections::HashMap,
+    hash::{Hash, Hasher},
+    net::SocketAddr,
+    sync::Arc,
+};
 
-use websocket::message::OwnedMessage;
-use websocket::server::InvalidConnection;
-use websocket::server::r#async::Server;
-
-use futures::{Future, Stream, Sink};
-use futures::future::{self, Loop};
+// Maps player_id -> receiver for broadcasts
+type PlayerReceiverMap = HashMap<u64, Receiver<(Vec<u8>, Option<SocketAddr>)>>;
 
 fn main() {
-    let runtime  = runtime::Builder::new().build().unwrap();
-    let executor = runtime.executor();
-    let server   = Server::bind("localhost:8080", &runtime.reactor()).expect("Failed to create server");
+    let entities = Arc::new(RwLock::new(types::Entities::new()));
+    let client_receivers = Arc::new(RwLock::new(PlayerReceiverMap::new()));
 
-    let connections = Arc::new(RwLock::new(HashMap::new()));
-    let entities    = Arc::new(RwLock::new(HashMap::new()));
-    let counter     = Arc::new(RwLock::new(0));
+    let (sender_channel, mut receiver_channel) =
+        broadcast::channel::<(Vec<u8>, Option<SocketAddr>)>(16);
 
-    let connections_inner = connections.clone();
-    let entities_inner    = entities.clone();
-    let executor_inner    = executor.clone();
-
-    let connection_handler = server.incoming()
-        .map_err(|InvalidConnection { error, .. }| error)
-        .for_each(move |(upgrade, _)| {
-            let connections_inner = connections_inner.clone();
-            let entities          = entities_inner.clone();
-            let counter_inner     = counter.clone();
-            let executor_2inner   = executor_inner.clone();
-
-            let accept = upgrade.accept().and_then(move |(framed,_)| {
-                let (sink, stream) = framed.split();
-
-                {
-                    let mut c = counter_inner.write().unwrap();
-                    *c += 1;
+    // spawn a new task to notify on msgs sent to the channel receiver
+    tokio::spawn(async move {
+        loop {
+            match receiver_channel.recv().await {
+                Ok((msg, player_addr)) => match player_addr {
+                    Some(addr) => match sender_socket.send_to(&msg, addr).await {
+                        Ok(len) => {
+                            println!("Sent {} bytes to {}", len, addr);
+                        }
+                        Err(e) => {
+                            println!("Error sending to socket: {}", e);
+                        }
+                    },
+                    None => (),
+                },
+                Err(e) => {
+                    println!("Error receiving from channel: {}", e);
                 }
-
-                let id = *counter_inner.read().unwrap();
-                connections_inner.write().unwrap().insert(id,sink);
-                entities.write().unwrap().insert(id, types::Entity{id, pos:(0,0)} );
-                let c = *counter_inner.read().unwrap();
-
-                let f = stream.for_each(move |msg| {
-                    process_message(c, &msg, entities.clone());
-                    Ok(())
-                }).map_err(|_| ());
-
-                executor_2inner.spawn(f);
-
-                Ok(())
-            }).map_err(|_| ());
-
-            executor_inner.spawn(accept);
-            Ok(())
-        })
-        .map_err(|_| ());
-
-    let send_handler = future::loop_fn((), move |_| {
-        let connections_inner = connections.clone();
-        let executor          = executor.clone();
-        let entities_inner    = entities.clone();
-
-        tokio::timer::Delay::new(Instant::now() + Duration::from_millis(100))
-            .map_err(|_| ())
-            .and_then(move |_| {
-                let mut conn = connections_inner.write().unwrap();
-                let ids = conn.iter().map(|(k, _)| { k.clone() }).collect::<Vec<_>>();
-
-                for id in ids.iter() {
-                    // Nit: need to remove (k, v) from hashmap or else we can't
-                    // take ownership of it. If anyone knows a cleaner way, please edit
-                    let sink = conn.remove(id).unwrap();
-
-                    // For now, serializing this into json.
-                    // Will need to move this into a flatbuffer
-                    let entities = entities_inner.read().unwrap();
-                    let first = match entities.iter().take(1).next() {
-                        Some((_,e)) => e,
-                        None => return Ok(Loop::Continue(())),
-                    };
-                    let serial_entities = format!("[{}]", entities.iter().skip(1)
-                                                  .map(|(_,e)| e.to_json())
-                                                  .fold(first.to_json(), |acc,s| format!("{},{}",s,acc)));
-                    let connections = connections_inner.clone();
-                    let id = id.clone();
-
-                    let f = sink
-                        .send(OwnedMessage::Text(serial_entities))
-                        .and_then(move |sink| {
-                            connections.write().unwrap().insert( id.clone(), sink );
-                            Ok(())
-                        })
-                        .map_err(|_| ());
-
-                    executor.spawn(f);
-                }
-
-                match true {
-                    true => Ok(Loop::Continue(())),
-                    false => Ok(Loop::Break(())),
-                }
-            })
+            }
+        }
     });
+
+    let broadcast_entities = entities.read().await.clone();
+    let broadcast_sender = sender_channel.clone();
+    tokio::spawn(async move {
+        let mut interval = time::interval(Duration::from_millis(1000));
+
+        loop {
+            interval.tick().await;
+
+            let msg = broadcast_entities
+                .iter()
+                .fold(String::new(), |acc, (_, v)| {
+                    return acc + &format!("{}: {}", v.id, v.pos.to_json());
+                });
+
+            match broadcast_sender.send((msg.as_bytes().to_vec(), None)) {
+                Ok(_) => println!("Sent broadcast: {}", msg),
+                Err(e) => {
+                    println!("Error sending to channel: {}", e);
+                }
+            }
+        }
+    });
+
+    let mut buf = [0u8; 1024];
+    loop {
+        let (len, addr) = match receiver_socket.recv_from(&mut buf).await {
+            Ok((len, addr)) => (len, addr),
+            Err(e) => {
+                println!("Error receiving from socket: {}", e);
+                continue;
+            }
+        };
+
+        // identify sender
+        let mut hasher = std::collections::hash_map::DefaultHasher::new();
+        addr.hash(&mut hasher);
+        let id = hasher.finish();
+        let is_playing = entities.read().await.contains_key(&id);
+
+        let msg = &buf[..len];
+
+        match msg {
+            b"play\n" => match is_playing {
+                true => {
+                    println!("Player {} is already playing", id);
+                    continue;
+                }
+                false => {
+                    register_player(
+                        id,
+                        sender_channel.subscribe(),
+                        &client_receivers,
+                        &entities,
+                    )
+                    .await;
+                    println!("Registered player {} with address {}\n", id, addr)
+                }
+            },
+            b"quit\n" => match is_playing {
+                true => {
+                    unregister_player(id, &client_receivers, &entities).await;
+                    println!("Unregistered player {} with address {}\n", id, addr)
+                }
+                false => {
+                    println!("Player {} is not playing", id);
+                    continue;
+                }
+            },
+            b"w\n" | b"s\n" | b"a\n" | b"d\n" => match is_playing {
+                false => {
+                    continue;
+                }
+                true => process_move(msg[0] as char, id, &entities).await,
+            },
+            _ => println!("Unknown command: {}", String::from_utf8_lossy(msg)),
+        };
+    }
 
     runtime
         .block_on_all(connection_handler.select(send_handler))
@@ -119,25 +138,50 @@ fn main() {
         .unwrap();
 }
 
-fn process_message(
-    id: i32,
-    msg: &OwnedMessage,
-    entities: Arc<RwLock<HashMap<i32,types::Entity>>>
+async fn register_player(
+    id: u64,
+    receiver: Receiver<(Vec<u8>, Option<SocketAddr>)>,
+    client_receivers: &Arc<RwLock<PlayerReceiverMap>>,
+    entities: &Arc<RwLock<Entities>>,
 ) {
-    if let OwnedMessage::Text(ref action) = *msg {
-        println!("Received msg '{}' from id {}", action, id);
+    entities.write().await.insert(
+        id,
+        types::Entity {
+            id,
+            pos: types::Position {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+            },
+        },
+    );
 
-        if action == "right" {
-            entities.write().unwrap().entry(id).and_modify(|e| { e.pos.0 += 10 });
-        }
-        else if action == "left" {
-            entities.write().unwrap().entry(id).and_modify(|e| { e.pos.0 -= 10 });
-        }
-        else if action == "down" {
-            entities.write().unwrap().entry(id).and_modify(|e| { e.pos.1 += 10 });
-        }
-        else if action == "up" {
-            entities.write().unwrap().entry(id).and_modify(|e| { e.pos.1 -= 10 });
-        }
-    }
+    client_receivers.write().await.insert(id, receiver);
 }
+
+async fn unregister_player(
+    id: u64,
+    client_receivers: &Arc<RwLock<PlayerReceiverMap>>,
+    entities: &Arc<RwLock<Entities>>,
+) {
+    entities.write().await.remove(&id);
+
+    client_receivers.write().await.remove(&id);
+}
+
+async fn process_move(dir: char, id: u64, entities: &Arc<RwLock<Entities>>) {
+    entities
+        .write()
+        .await
+        .entry(id)
+        .and_modify(|player| match dir {
+            'w' => player.pos.z += 1.0,
+            's' => player.pos.z -= 1.0,
+            'a' => player.pos.x -= 1.0,
+            'd' => player.pos.x += 1.0,
+            _ => (),
+        });
+
+    println!("Player {} moved {}", id, dir);
+}
+>>>>>>> e0fa536 (why server broadcasts wont work)
