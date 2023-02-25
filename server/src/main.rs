@@ -1,9 +1,10 @@
-extern crate futures;
-extern crate tokio;
-extern crate websocket;
-
-pub mod types;
-
+use clap::{Arg, Command};
+use hyper::{
+    header::{self, HeaderValue},
+    server::{conn::AddrStream, Server},
+    service::{make_service_fn, service_fn},
+    Body, Error, Method, Response, StatusCode,
+};
 use tokio::{
     net::UdpSocket,
     runtime,
@@ -12,176 +13,143 @@ use tokio::{
         RwLock,
     },
     time::{self, Duration},
-};
-use types::Entities;
-
-use std::{
-    collections::HashMap,
-    hash::{Hash, Hasher},
-    net::SocketAddr,
-    sync::Arc,
-};
-
-// Maps player_id -> receiver for broadcasts
-type PlayerReceiverMap = HashMap<u64, Receiver<(Vec<u8>, Option<SocketAddr>)>>;
+}
 
 fn main() {
-    let entities = Arc::new(RwLock::new(types::Entities::new()));
-    let client_receivers = Arc::new(RwLock::new(PlayerReceiverMap::new()));
-
-    let (sender_channel, mut receiver_channel) =
-        broadcast::channel::<(Vec<u8>, Option<SocketAddr>)>(16);
-
-    // spawn a new task to notify on msgs sent to the channel receiver
-    tokio::spawn(async move {
-        loop {
-            match receiver_channel.recv().await {
-                Ok((msg, player_addr)) => match player_addr {
-                    Some(addr) => match sender_socket.send_to(&msg, addr).await {
-                        Ok(len) => {
-                            println!("Sent {} bytes to {}", len, addr);
-                        }
-                        Err(e) => {
-                            println!("Error sending to socket: {}", e);
-                        }
-                    },
-                    None => (),
-                },
-                Err(e) => {
-                    println!("Error receiving from channel: {}", e);
-                }
-            }
-        }
-    });
-
-    let broadcast_entities = entities.read().await.clone();
-    let broadcast_sender = sender_channel.clone();
-    tokio::spawn(async move {
-        let mut interval = time::interval(Duration::from_millis(1000));
-
-        loop {
-            interval.tick().await;
-
-            let msg = broadcast_entities
-                .iter()
-                .fold(String::new(), |acc, (_, v)| {
-                    return acc + &format!("{}: {}", v.id, v.pos.to_json());
-                });
-
-            match broadcast_sender.send((msg.as_bytes().to_vec(), None)) {
-                Ok(_) => println!("Sent broadcast: {}", msg),
-                Err(e) => {
-                    println!("Error sending to channel: {}", e);
-                }
-            }
-        }
-    });
-
-    let mut buf = [0u8; 1024];
-    loop {
-        let (len, addr) = match receiver_socket.recv_from(&mut buf).await {
-            Ok((len, addr)) => (len, addr),
-            Err(e) => {
-                println!("Error receiving from socket: {}", e);
-                continue;
-            }
-        };
-
-        // identify sender
-        let mut hasher = std::collections::hash_map::DefaultHasher::new();
-        addr.hash(&mut hasher);
-        let id = hasher.finish();
-        let is_playing = entities.read().await.contains_key(&id);
-
-        let msg = &buf[..len];
-
-        match msg {
-            b"play\n" => match is_playing {
-                true => {
-                    println!("Player {} is already playing", id);
-                    continue;
-                }
-                false => {
-                    register_player(
-                        id,
-                        sender_channel.subscribe(),
-                        &client_receivers,
-                        &entities,
-                    )
-                    .await;
-                    println!("Registered player {} with address {}\n", id, addr)
-                }
-            },
-            b"quit\n" => match is_playing {
-                true => {
-                    unregister_player(id, &client_receivers, &entities).await;
-                    println!("Unregistered player {} with address {}\n", id, addr)
-                }
-                false => {
-                    println!("Player {} is not playing", id);
-                    continue;
-                }
-            },
-            b"w\n" | b"s\n" | b"a\n" | b"d\n" => match is_playing {
-                false => {
-                    continue;
-                }
-                true => process_move(msg[0] as char, id, &entities).await,
-            },
-            _ => println!("Unknown command: {}", String::from_utf8_lossy(msg)),
-        };
-    }
-
-    runtime
-        .block_on_all(connection_handler.select(send_handler))
-        .map_err(|_| println!("Error conn-send loop"))
+    let rt = runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
         .unwrap();
-}
 
-async fn register_player(
-    id: u64,
-    receiver: Receiver<(Vec<u8>, Option<SocketAddr>)>,
-    client_receivers: &Arc<RwLock<PlayerReceiverMap>>,
-    entities: &Arc<RwLock<Entities>>,
-) {
-    entities.write().await.insert(
-        id,
-        types::Entity {
-            id,
-            pos: types::Position {
-                x: 0.0,
-                y: 0.0,
-                z: 0.0,
-            },
-        },
-    );
+    rt.block_on(asnyc {
+        env_logger::init_from_env(env_logger::Env::new().default_filter_or("debug"));
+        let matches = Command::new("echo-server")
+            .arg(
+                Arg::new("data")
+                    .short('d')
+                    .long("data")
+                    .takes_value(true)
+                    .required(true)
+                    .help("listen on the specified address/port for UDP WebRTC data channels"),
+            )
+            .arg(
+                Arg::new("public")
+                    .short('p')
+                    .long("public")
+                    .takes_value(true)
+                    .required(true)
+                    .help("advertise the given address/port as the public WebRTC address/port"),
+            )
+            .arg(
+                Arg::new("http")
+                    .short('h')
+                    .long("http")
+                    .takes_value(true)
+                    .required(true)
+                    .help("listen on the specified address/port for incoming HTTP (session reqeusts and test page"),
+            )
+            .get_matches();
 
-    client_receivers.write().await.insert(id, receiver);
-}
-
-async fn unregister_player(
-    id: u64,
-    client_receivers: &Arc<RwLock<PlayerReceiverMap>>,
-    entities: &Arc<RwLock<Entities>>,
-) {
-    entities.write().await.remove(&id);
-
-    client_receivers.write().await.remove(&id);
-}
-
-async fn process_move(dir: char, id: u64, entities: &Arc<RwLock<Entities>>) {
-    entities
-        .write()
-        .await
-        .entry(id)
-        .and_modify(|player| match dir {
-            'w' => player.pos.z += 1.0,
-            's' => player.pos.z -= 1.0,
-            'a' => player.pos.x -= 1.0,
-            'd' => player.pos.x += 1.0,
-            _ => (),
+        tokio::spawn(async move {
+            // receieve messages on channel, handle it
         });
 
-    println!("Player {} moved {}", id, dir);
+        tokio::spawn(async move {
+            // wait for tick, update state from state_queue (flush)
+        });
+
+        loop {
+            // waitt for messages, handle it
+        }
+
+        let webrtc_listen_addr = matches
+            .value_of("data")
+            .unwrap()
+            .parse()
+            .expect("could not parse WebRTC data address/port");
+
+        let public_webrtc_addr = matches
+            .value_of("public")
+            .unwrap()
+            .parse()
+            .expect("could not parse advertised public WebRTC data address/port");
+
+        let session_listen_addr = matches
+            .value_of("http")
+            .unwrap()
+            .parse()
+            .expect("could not parse HTTP address/port");
+
+        let mut rtc_server =
+            webrtc_unreliable::Server::new(webrtc_listen_addr, public_webrtc_addr)
+                .await
+                .expect("could not start RTC server");
+
+        let session_endpoint = rtc_server.session_endpoint();
+        let make_svc = make_service_fn(move |addr_stream: &AddrStream| {
+            let session_endpoint = session_endpoint.clone();
+            let remote_addr = addr_stream.remote_addr();
+            async move {
+                Ok::<_, Error>(service_fn(move |req| {
+                    let mut session_endpoint = session_endpoint.clone();
+                    async move {
+                        if req.uri().path() == "/offer" && req.method() == Method::POST
+                        {
+                            log::info!("WebRTC session request from {}", remote_addr);
+                            match session_endpoint.http_session_request(req.into_body()).await {
+                                Ok(mut resp) => {
+                                    resp.headers_mut().insert(
+                                        header::ACCESS_CONTROL_ALLOW_ORIGIN,
+                                        HeaderValue::from_static("*"),
+                                    );
+                                    Ok(resp.map(Body::from))
+                                }
+                                Err(err) => {
+                                    log::warn!("bad rtc session request: {:?}", err);
+                                    Response::builder()
+                                        .status(StatusCode::BAD_REQUEST)
+                                        .body(Body::from(format!("error: {:?}", err)))
+                                }
+                            }
+                        } else {
+                            Response::builder()
+                                .status(StatusCode::NOT_FOUND)
+                                .body(Body::from("not found"))
+                        }
+                    }
+                }))
+            }
+        });
+
+        tokio::spawn(async move {
+            Server::bind(&session_listen_addr)
+                .serve(make_svc)
+                .await
+                .expect("HTTP session server has died");
+        });
+
+        let mut message_buf = Vec::new();
+        loop {
+            let received = match rtc_server.recv().await {
+                Ok(received) => {
+                    message_buf.clear();
+                    message_buf.extend(received.message.as_ref());
+                    Some((received.message_type, received.remote_addr))
+                }
+                Err(err) => {
+                    log::warn!("could not receive RTC message: {:?}", err);
+                    None
+                }
+            };
+
+            if let Some((message_type, remote_addr)) = received {
+                if let Err(err) = rtc_server
+                    .send(&message_buf, message_type, &remote_addr)
+                    .await
+                {
+                    log::warn!("could not send message to {}: {:?}", remote_addr, err);
+                }
+            }
+        }
+    });
 }
->>>>>>> e0fa536 (why server broadcasts wont work)

@@ -2,7 +2,7 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { Vec3 } from '../math/vec3.js';
+import { Vec3 } from '../math/vec3';
 
 
 export class Player {
