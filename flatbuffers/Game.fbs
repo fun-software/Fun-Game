@@ -1,0 +1,28 @@
+include "Player.fbs";
+include "User.fbs";
+
+namespace Game;
+
+enum GamePhase: byte {
+  Lobby,
+  InGame,
+  Post,
+  Ended,
+}
+
+table PlayerRoles {
+  red: User.User;
+  blue: User.User;
+  green: User.User;
+  yellow: User.User;
+}
+
+table Game {
+  id: uint64;
+  phase: GamePhase;
+  players: PlayerRoles;
+  starttime: uint64;
+  endtime: uint64;
+}
+
+root_type Game;
