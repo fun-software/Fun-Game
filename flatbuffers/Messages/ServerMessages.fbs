@@ -1,0 +1,31 @@
+namespace ServerMessages;
+
+table JoinPayload {
+  name: string;
+}
+
+table LeavePayload {
+  name: string;
+}
+
+table ChatPayload {
+  name: string;
+  message: string;
+}
+
+table StatePayload {
+  // TODO: make this a nested flatbuffer of 'game_state'
+  players: [string];
+}
+
+union ServerMessagePayload {
+  JoinPayload,
+  LeavePayload,
+  ChatPayload,
+  StatePayload,
+}
+
+table ServerMessage {
+  timestamp: long;
+  payload: ServerMessagePayload;
+}

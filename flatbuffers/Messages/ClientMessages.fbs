@@ -1,0 +1,34 @@
+namespace ClientMessages;
+
+table JoinPayload {
+  name: string;
+}
+
+table LeavePayload {
+  name: string;
+}
+
+table ChatPayload {
+  name: string;
+  message: string;
+}
+
+table MovePayload {
+  x: float;
+  y: float;
+  z: float;
+}
+
+union ClientMessagePayload {
+  JoinPayload,
+  LeavePayload,
+  ChatPayload,
+  MovePayload,
+}
+
+table ClientMessage {
+  timestamp: long;
+  payload: ClientMessagePayload;
+}
+
+root_type ClientMessage;
