@@ -10,3 +10,4 @@ authors = ["Donovan Henry <donovanphenry@gmail.com>"]
 tokio = "0.1"
 futures = "0.1"
 websocket = "0.22.0"
+flatbuffers = "23.1.21"
