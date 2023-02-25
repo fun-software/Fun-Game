@@ -10,7 +10,7 @@ fi
 
 cd "${0%/*}"
 
-rm -rf ./flatbuffers
-flatc --rust -o ./flatbuffers/ $(find ../flatbuffers -name "*.fbs")
+rm -rf ./src/flatbuffers
+flatc --rust --gen-all --filename-suffix '' -o ./src/fbs/ $(find ../flatbuffers -name "*.fbs")
 
 echo -e "\nDone!\n"
