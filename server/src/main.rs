@@ -7,15 +7,23 @@ pub mod types;
 use tokio::{
     net::UdpSocket,
     runtime,
-    sync::{mpsc, RwLock},
+    sync::{
+        broadcast::{self, Receiver},
+        RwLock,
+    },
+    time::{self, Duration},
 };
 use types::Entities;
 
 use std::{
+    collections::HashMap,
     hash::{Hash, Hasher},
     net::SocketAddr,
     sync::Arc,
 };
+
+// Maps player_id -> receiver for broadcasts
+type PlayerReceiverMap = HashMap<u64, Receiver<(Vec<u8>, Option<SocketAddr>)>>;
 
 fn main() {
     // Create a new tokio runtime with io and time drivers enabled
@@ -35,114 +43,156 @@ fn main() {
         let sender_socket = receiver_socket.clone();
 
         let entities = Arc::new(RwLock::new(types::Entities::new()));
-        let mut client_sockets = Arc::new(RwLock::new(Vec::new()));
+        let client_receivers = Arc::new(RwLock::new(PlayerReceiverMap::new()));
 
-        let (sender_channel, mut receiver_channel) = mpsc::channel::<(Vec<u8>, SocketAddr)>(1024);
+        let (sender_channel, mut receiver_channel) =
+            broadcast::channel::<(Vec<u8>, Option<SocketAddr>)>(16);
 
         // spawn a new task to notify on msgs sent to the channel receiver
         tokio::spawn(async move {
-            println!("Waiting for messages... ");
-            while let Some((msg, player_addr)) = receiver_channel.recv().await {
-                let len = sender_socket.send_to(&msg, player_addr).await.unwrap();
-                //let len = sender_socket.send(&msg).await.unwrap();
-                println!("Sent {} bytes to {}", len, player_addr);
+            loop {
+                match receiver_channel.recv().await {
+                    Ok((msg, player_addr)) => match player_addr {
+                        Some(addr) => match sender_socket.send_to(&msg, addr).await {
+                            Ok(len) => {
+                                println!("Sent {} bytes to {}", len, addr);
+                            }
+                            Err(e) => {
+                                println!("Error sending to socket: {}", e);
+                            }
+                        },
+                        None => (),
+                    },
+                    Err(e) => {
+                        println!("Error receiving from channel: {}", e);
+                    }
+                }
+            }
+        });
+
+        let broadcast_entities = entities.read().await.clone();
+        let broadcast_sender = sender_channel.clone();
+        tokio::spawn(async move {
+            let mut interval = time::interval(Duration::from_millis(1000));
+
+            loop {
+                interval.tick().await;
+
+                let msg = broadcast_entities
+                    .iter()
+                    .fold(String::new(), |acc, (_, v)| {
+                        return acc + &format!("{}: {}", v.id, v.pos.to_json());
+                    });
+
+                match broadcast_sender.send((msg.as_bytes().to_vec(), None)) {
+                    Ok(_) => println!("Sent broadcast: {}", msg),
+                    Err(e) => {
+                        println!("Error sending to channel: {}", e);
+                    }
+                }
             }
         });
 
         let mut buf = [0u8; 1024];
         loop {
-            let (len, addr) = receiver_socket.recv_from(&mut buf).await.unwrap();
-            println!("Received {} bytes from {}", len, addr);
-            let msg = &buf[..len];
-            let game_state = match msg {
-                b"play\n" => process_play(addr, &client_sockets, &entities).await,
-                b"quit\n" => process_quit(addr, &entities).await,
-                b"w\n" | b"s\n" | b"a\n" | b"d\n" => {
-                    process_move(msg[0] as char, addr, &entities).await
+            let (len, addr) = match receiver_socket.recv_from(&mut buf).await {
+                Ok((len, addr)) => (len, addr),
+                Err(e) => {
+                    println!("Error receiving from socket: {}", e);
+                    continue;
                 }
-                _ => b"Not implemented\n".to_vec(),
             };
 
-            // NOTE: probably don't need this. Imo, functionality should be:
-            // user makes a change, and we end up in the above loop. We
-            // process the change, and then all players receive an update
-            // on the next ticket. This isn't like a normal server that's based
-            // on send/response schema. It's send, make a change to global state,
-            // update on subsquent tick. Not sure the proper housing for that
-            // functionality, however. I'm guesing you're in agreement and that
-            // this is just a relic of the boilerplate you found
-            //
-            // We need to figure out a way to broadcast state updates to all clients,
-            // but I can't really figure out the best method for that. I see a broadcast
-            // method on the UdpSocket docs, but I'm not really understanding what in the world
-            // it's talking about. My current idea is to just store the player socket addrs in a
-            // connections vector, which we iterate over periodically with another tokio
-            // thread.
-            sender_channel.send((game_state, addr)).await.unwrap();
+            // identify sender
+            let mut hasher = std::collections::hash_map::DefaultHasher::new();
+            addr.hash(&mut hasher);
+            let id = hasher.finish();
+            let is_playing = entities.read().await.contains_key(&id);
+
+            let msg = &buf[..len];
+
+            match msg {
+                b"play\n" => match is_playing {
+                    true => {
+                        println!("Player {} is already playing", id);
+                        continue;
+                    }
+                    false => {
+                        register_player(
+                            id,
+                            sender_channel.subscribe(),
+                            &client_receivers,
+                            &entities,
+                        )
+                        .await;
+                        println!("Registered player {} with address {}\n", id, addr)
+                    }
+                },
+                b"quit\n" => match is_playing {
+                    true => {
+                        unregister_player(id, &client_receivers, &entities).await;
+                        println!("Unregistered player {} with address {}\n", id, addr)
+                    }
+                    false => {
+                        println!("Player {} is not playing", id);
+                        continue;
+                    }
+                },
+                b"w\n" | b"s\n" | b"a\n" | b"d\n" => match is_playing {
+                    false => {
+                        continue;
+                    }
+                    true => process_move(msg[0] as char, id, &entities).await,
+                },
+                _ => println!("Unknown command: {}", String::from_utf8_lossy(msg)),
+            };
         }
     });
 }
 
-async fn process_play(addr: SocketAddr, client_sockets: &Arc<RwLock<Vec<SocketAddr>>>, entities: &Arc<RwLock<Entities>>) -> Vec<u8> {
-    client_sockets.write().await.push(addr);
-    let mut hasher = std::collections::hash_map::DefaultHasher::new();
-    addr.hash(&mut hasher);
-    let id = hasher.finish();
-    if entities.read().await.contains_key(&id) {
-        return b"Already playing\n".to_vec();
-    } else {
-        entities.write().await.insert(
+async fn register_player(
+    id: u64,
+    receiver: Receiver<(Vec<u8>, Option<SocketAddr>)>,
+    client_receivers: &Arc<RwLock<PlayerReceiverMap>>,
+    entities: &Arc<RwLock<Entities>>,
+) {
+    entities.write().await.insert(
+        id,
+        types::Entity {
             id,
-            types::Entity {
-                id,
-                pos: types::Position {
-                    x: 0.0,
-                    y: 0.0,
-                    z: 0.0,
-                },
+            pos: types::Position {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
             },
-        );
+        },
+    );
 
-        return format!("You are player {} with address {}\n", id, addr)
-            .as_bytes()
-            .to_vec();
-    }
+    client_receivers.write().await.insert(id, receiver);
 }
 
-async fn process_quit(addr: SocketAddr, entities: &Arc<RwLock<Entities>>) -> Vec<u8> {
-    let mut hasher = std::collections::hash_map::DefaultHasher::new();
-    addr.hash(&mut hasher);
-    let id = hasher.finish();
-    if entities.read().await.contains_key(&id) {
-        entities.write().await.remove(&id);
-        return format!("Player {} quit.\n", id).as_bytes().to_vec();
-    }
+async fn unregister_player(
+    id: u64,
+    client_receivers: &Arc<RwLock<PlayerReceiverMap>>,
+    entities: &Arc<RwLock<Entities>>,
+) {
+    entities.write().await.remove(&id);
 
-    return b"Not playing\n".to_vec();
+    client_receivers.write().await.remove(&id);
 }
 
-async fn process_move(dir: char, addr: SocketAddr, entities: &Arc<RwLock<Entities>>) -> Vec<u8> {
-    let mut hasher = std::collections::hash_map::DefaultHasher::new();
-    addr.hash(&mut hasher);
-    let id = hasher.finish();
-    if !entities.read().await.contains_key(&id) {
-        return b"Try typing 'play' first\n".to_vec();
-    }
+async fn process_move(dir: char, id: u64, entities: &Arc<RwLock<Entities>>) {
+    entities
+        .write()
+        .await
+        .entry(id)
+        .and_modify(|player| match dir {
+            'w' => player.pos.z += 1.0,
+            's' => player.pos.z -= 1.0,
+            'a' => player.pos.x -= 1.0,
+            'd' => player.pos.x += 1.0,
+            _ => (),
+        });
 
-    let r_entities = entities.read().await.clone();
-    let player = r_entities.get(&id).unwrap();
-
-    let mut pos = player.pos.clone();
-    match dir {
-        'w' => pos.z += 1.0,
-        's' => pos.z -= 1.0,
-        'a' => pos.x -= 1.0,
-        'd' => pos.x += 1.0,
-        _ => (),
-    }
-
-    entities.write().await.insert(id, types::Entity { id, pos });
-    let ret = pos.to_json() + "\n";
-
-    return ret.as_bytes().to_vec();
+    println!("Player {} moved {}", id, dir);
 }
