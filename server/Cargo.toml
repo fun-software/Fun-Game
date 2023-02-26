@@ -14,19 +14,20 @@ futures-channel = { version = "0.3", features = ["sink"] }
 futures-core = { version = "0.3" }
 futures-util = { version = "0.3", features = ["sink"] }
 http = "0.2"
-hyper = { version = "0.14.12", features = ["server"] }
 log = "0.4"
 openssl = "0.10"
 pin-project = "1.0"
 rand = "0.8"
 tokio = {version = "1.25", features = ["full"]}
+hyper = { version = "0.14", features = ["http1", "runtime", "server", "stream"] }
 webrtc-unreliable = "0.5.3"
+env_logger = "0.9"
+flatbuffers = "23.1.21"
 
 [dev-dependencies]
 clap = "3.0"
 env_logger = "0.9"
 futures = { version = "0.3" }
-hyper = { version = "0.14", features = ["http1", "runtime", "server", "stream"] }
 tokio = { version = "1.0", features = ["macros", "net", "rt-multi-thread"] }
 
 [[src]]

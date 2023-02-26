@@ -14,11 +14,6 @@ class RTCClient {
       console.warn("data channel error:", e);
     };
 
-    channel.onmessage = e => {
-      let bytes = new Uint8Array(e.data);
-      console.log("data channel message: ", bytes.toString());
-    };
-
     peer.onicecandidate = e => {
       if (e.candidate) {
         console.log("ice candidate:", e.candidate);
