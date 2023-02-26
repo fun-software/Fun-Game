@@ -7,13 +7,7 @@ use hyper::{
     Body, Error, Method, Response, StatusCode,
 };
 use tokio::{
-    net::UdpSocket,
     runtime,
-    sync::{
-        broadcast::{self, Receiver},
-        RwLock,
-    },
-    time::{self, Duration},
 };
 
 fn main() {
@@ -23,7 +17,6 @@ fn main() {
         .unwrap();
 
     rt.block_on(async {
-        env_logger::init_from_env(env_logger::Env::new().default_filter_or("debug"));
         let matches = Command::new("echo-server")
             .arg(
                 Arg::new("data")
