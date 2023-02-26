@@ -7,16 +7,19 @@ authors = ["Donovan Henry <donovanphenry@gmail.com>"]
 
 [dependencies]
 byteorder = "1.3"
+clap = "3.0"
 crc = "3.0"
+futures = "0.1"
 futures-channel = { version = "0.3", features = ["sink"] }
 futures-core = { version = "0.3" }
 futures-util = { version = "0.3", features = ["sink"] }
 http = "0.2"
+hyper = { version = "0.14.12", features = ["server"] }
 log = "0.4"
 openssl = "0.10"
 pin-project = "1.0"
 rand = "0.8"
-tokio = { version = "1.0", features = ["net"], optional = true }
+tokio = {version = "1.25", features = ["full"]}
 webrtc-unreliable = "0.5.3"
 
 [dev-dependencies]

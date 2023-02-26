@@ -1,3 +1,4 @@
+extern crate tokio;
 use clap::{Arg, Command};
 use hyper::{
     header::{self, HeaderValue},
@@ -13,7 +14,7 @@ use tokio::{
         RwLock,
     },
     time::{self, Duration},
-}
+};
 
 fn main() {
     let rt = runtime::Builder::new_multi_thread()
@@ -21,7 +22,7 @@ fn main() {
         .build()
         .unwrap();
 
-    rt.block_on(asnyc {
+    rt.block_on(async {
         env_logger::init_from_env(env_logger::Env::new().default_filter_or("debug"));
         let matches = Command::new("echo-server")
             .arg(
@@ -57,10 +58,6 @@ fn main() {
         tokio::spawn(async move {
             // wait for tick, update state from state_queue (flush)
         });
-
-        loop {
-            // waitt for messages, handle it
-        }
 
         let webrtc_listen_addr = matches
             .value_of("data")
