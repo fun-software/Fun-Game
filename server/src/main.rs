@@ -17,8 +17,9 @@ use dotenv::dotenv;
 
 type PlayerMap = HashMap<SocketAddr, String>;
 
+#[path = "utils/handler.rs"]
 mod handler;
-use handler::handler::{handle_msg};
+use handler::{handle_msg};
 
 #[allow(non_snake_case)]
 fn main() {
