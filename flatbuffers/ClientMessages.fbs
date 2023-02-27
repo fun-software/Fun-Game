@@ -10,6 +10,7 @@ table NewGamePayload {
 
 table JoinGamePayload {
   user: User.User;
+  game_id: uint64;
 }
 
 table LeaveGamePayload {
