@@ -32,10 +32,11 @@ table QueryStatePayload {
 }
 
 union ClientMessagePayload {
-  NewGamePayload,
+  ChatPayload,
+  InputPayload,
   JoinGamePayload,
   LeaveGamePayload,
-  ChatPayload,
+  NewGamePayload,
   QueryStatePayload,
 }
 

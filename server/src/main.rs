@@ -193,6 +193,9 @@ async fn handle_msg(
                             _ => vec![0u8; 0],
                         }
                     }
+                    ClientMessagePayload::QueryStatePayload => {
+                        println!("User queried for state!");
+                    }
                     _ => vec![0u8; 0],
                 };
             } else {
