@@ -47,7 +47,7 @@
     "format": "prettier -w \"./**/*.{ts,tsx,md,js,css,html,json}\"",
     "format:check": "prettier --list-different \"./**/*.{ts,tsx,md,js,css,html,json}\"",
     "dev": "next dev",
-    "flatbuffers": "rm -rf ./flatbuffers && flatc --ts --ts-no-import-ext -o ./flatbuffers/ $(find ../flatbuffers -name '*.fbs')",
+    "flatbuffers": "rm -rf ./flatbuffers && flatc --ts --ts-no-import-ext --filename-suffix '' -o ./flatbuffers/ $(find ../flatbuffers -name '*.fbs')",
     "build": "npm run flatbuffers && next build",
     "export": "EXPORT=true next build && EXPORT=true next export",
     "analyze": "ANALYZE=true next build",

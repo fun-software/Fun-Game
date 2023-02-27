@@ -2,7 +2,7 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { ClientMessagePayload, unionToClientMessagePayload, unionListToClientMessagePayload } from '../client-messages/client-message-payload';
+import { ClientMessagePayload, unionToClientMessagePayload, unionListToClientMessagePayload } from '../clientmessages/client-message-payload';
 
 
 export class ClientMessage {
@@ -25,7 +25,7 @@ static getSizePrefixedRootAsClientMessage(bb:flatbuffers.ByteBuffer, obj?:Client
 
 timestamp():bigint {
   const offset = this.bb!.__offset(this.bb_pos, 4);
-  return offset ? this.bb!.readInt64(this.bb_pos + offset) : BigInt('0');
+  return offset ? this.bb!.readUint64(this.bb_pos + offset) : BigInt('0');
 }
 
 payloadType():ClientMessagePayload {

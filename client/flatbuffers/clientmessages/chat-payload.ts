@@ -2,6 +2,10 @@
 
 import * as flatbuffers from 'flatbuffers';
 
+import { ChatMessage } from '../chat/chat-message';
+import { User } from '../user/user';
+
+
 export class ChatPayload {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
@@ -20,26 +24,22 @@ static getSizePrefixedRootAsChatPayload(bb:flatbuffers.ByteBuffer, obj?:ChatPayl
   return (obj || new ChatPayload()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 }
 
-name():string|null
-name(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
-name(optionalEncoding?:any):string|Uint8Array|null {
+user(obj?:User):User|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
-  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+  return offset ? (obj || new User()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
 }
 
-message():string|null
-message(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
-message(optionalEncoding?:any):string|Uint8Array|null {
+message(obj?:ChatMessage):ChatMessage|null {
   const offset = this.bb!.__offset(this.bb_pos, 6);
-  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+  return offset ? (obj || new ChatMessage()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
 }
 
 static startChatPayload(builder:flatbuffers.Builder) {
   builder.startObject(2);
 }
 
-static addName(builder:flatbuffers.Builder, nameOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(0, nameOffset, 0);
+static addUser(builder:flatbuffers.Builder, userOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(0, userOffset, 0);
 }
 
 static addMessage(builder:flatbuffers.Builder, messageOffset:flatbuffers.Offset) {
@@ -51,10 +51,4 @@ static endChatPayload(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 }
 
-static createChatPayload(builder:flatbuffers.Builder, nameOffset:flatbuffers.Offset, messageOffset:flatbuffers.Offset):flatbuffers.Offset {
-  ChatPayload.startChatPayload(builder);
-  ChatPayload.addName(builder, nameOffset);
-  ChatPayload.addMessage(builder, messageOffset);
-  return ChatPayload.endChatPayload(builder);
-}
 }

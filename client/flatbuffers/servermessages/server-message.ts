@@ -2,7 +2,7 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { ServerMessagePayload, unionToServerMessagePayload, unionListToServerMessagePayload } from '../server-messages/server-message-payload';
+import { ServerMessagePayload, unionToServerMessagePayload, unionListToServerMessagePayload } from '../servermessages/server-message-payload';
 
 
 export class ServerMessage {
@@ -25,7 +25,7 @@ static getSizePrefixedRootAsServerMessage(bb:flatbuffers.ByteBuffer, obj?:Server
 
 timestamp():bigint {
   const offset = this.bb!.__offset(this.bb_pos, 4);
-  return offset ? this.bb!.readInt64(this.bb_pos + offset) : BigInt('0');
+  return offset ? this.bb!.readUint64(this.bb_pos + offset) : BigInt('0');
 }
 
 payloadType():ServerMessagePayload {
@@ -57,6 +57,14 @@ static addPayload(builder:flatbuffers.Builder, payloadOffset:flatbuffers.Offset)
 static endServerMessage(builder:flatbuffers.Builder):flatbuffers.Offset {
   const offset = builder.endObject();
   return offset;
+}
+
+static finishServerMessageBuffer(builder:flatbuffers.Builder, offset:flatbuffers.Offset) {
+  builder.finish(offset);
+}
+
+static finishSizePrefixedServerMessageBuffer(builder:flatbuffers.Builder, offset:flatbuffers.Offset) {
+  builder.finish(offset, undefined, true);
 }
 
 static createServerMessage(builder:flatbuffers.Builder, timestamp:bigint, payloadType:ServerMessagePayload, payloadOffset:flatbuffers.Offset):flatbuffers.Offset {
