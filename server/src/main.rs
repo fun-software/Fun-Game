@@ -20,12 +20,35 @@ use hyper::{
     service::{make_service_fn, service_fn},
     Body, Error, Method, Response, StatusCode,
 };
-use tokio::{runtime, sync::RwLock};
+use tokio::{
+    runtime,
+    sync::RwLock,
+    time::{self, Duration}
+};
 use webrtc_unreliable::{MessageType, Server};
+
+use dotenv::dotenv;
 
 type PlayerMap = HashMap<SocketAddr, String>;
 
 fn main() {
+    dotenv().ok();
+
+    let PUBLIC_PORT: String = std::env::var("PUBLIC_PORT")
+        .expect("PUBLIC_PORT must be set.");
+    let WEBRTC_PORT: String = std::env::var("WEBRTC_PORT")
+        .expect("WEBRTC_PORT must be set.");
+    let LISTEN_PORT: String = std::env::var("LISTEN_PORT")
+        .expect("LISTEN_PORT must be set.");
+
+    let SERVER_URL: String = std::env::var("SERVER_URL")
+        .expect("SERVER_URL must be set.");
+
+    let TICK_RATE: u64 = std::env::var("TICK_RATE")
+        .unwrap()
+        .parse::<u64>()
+        .unwrap();
+
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("debug"));
 
     let rt = runtime::Builder::new_multi_thread()
@@ -33,17 +56,20 @@ fn main() {
         .build()
         .expect("could not create tokio runtime");
 
-    let webrtc_listen_addr: SocketAddr = "127.0.0.1:42424".parse().unwrap();
-    let public_webrtc_addr: SocketAddr = "127.0.0.1:42424".parse().unwrap();
-    let session_listen_addr: SocketAddr = "127.0.0.1:8080".parse().unwrap();
+    let public_webrtc_addr: SocketAddr  = format!("{SERVER_URL}:{PUBLIC_PORT}").parse().unwrap();
+    let webrtc_listen_addr: SocketAddr  = format!("{SERVER_URL}:{WEBRTC_PORT}").parse().unwrap();
+    let session_listen_addr: SocketAddr = format!("{SERVER_URL}:{LISTEN_PORT}").parse().unwrap();
 
     rt.block_on(async {
         tokio::spawn(async move {
-            // receive messages on channel, handle it
-        });
+            let mut interval = time::interval(Duration::from_millis(TICK_RATE));
 
-        tokio::spawn(async move {
-            // wait for tick, update state from state_queue (flush)
+            loop {
+                interval.tick().await;
+
+                // flush the queue, make state updates
+                println!("Tick")
+            }
         });
 
         let players = Arc::new(RwLock::new(PlayerMap::new()));

@@ -23,6 +23,7 @@ hyper = { version = "0.14", features = ["http1", "runtime", "server", "stream"] 
 webrtc-unreliable = "0.5.3"
 env_logger = "0.9"
 flatbuffers = "23.1.21"
+dotenv = "0.15.0"
 
 [dev-dependencies]
 clap = "3.0"
