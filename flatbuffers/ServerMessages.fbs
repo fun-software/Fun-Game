@@ -2,7 +2,7 @@ include "Game.fbs";
 include "GameState.fbs";
 include "Chat.fbs";
 
-namespace ServerMessages;
+namespace Servermessages;
 
 enum ResponseCode: byte {
   OK,
@@ -26,7 +26,7 @@ table LeaveGameResponsePayload {
 
 table StatePayload {
   code: ResponseCode;
-  game_state: GameState.GameState;
+  game_state: Gamestate.GameState;
   chat: [Chat.ChatMessage];
 }
 

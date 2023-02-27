@@ -2,7 +2,7 @@ include "User.fbs";
 include "Player.fbs";
 include "Chat.fbs";
 
-namespace ClientMessages;
+namespace Clientmessages;
 
 table NewGamePayload {
   user: User.User;

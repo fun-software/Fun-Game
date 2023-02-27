@@ -1,6 +1,6 @@
 include "Game.fbs";
 
-namespace GameState;
+namespace Gamestate;
 
 table GameState {
   game: Game.Game;
