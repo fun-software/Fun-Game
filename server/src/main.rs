@@ -1,14 +1,17 @@
 #[allow(non_snake_case, unused_imports)]
-#[path = "../flatbuffers/ClientMessages_generated.rs"]
-mod ClientMessages_generated;
-use ClientMessages_generated::client_messages::{self, ClientMessagePayload};
+#[path = "../flatbuffers/Chat.rs"]
+mod Chat;
+
+#[path = "../flatbuffers/ClientMessages.rs"]
+mod ClientMessages;
+use ClientMessages::client_messages::{self, ClientMessagePayload};
 
 #[allow(non_snake_case, unused_imports)]
-#[path = "../flatbuffers/ServerMessages_generated.rs"]
-mod ServerMessages_generated;
-use ServerMessages_generated::server_messages::{
-    ChatPayload, ChatPayloadArgs, JoinPayload, JoinPayloadArgs, LeavePayload, LeavePayloadArgs,
-    ServerMessage, ServerMessageArgs, ServerMessagePayload,
+#[path = "../flatbuffers/ServerMessages.rs"]
+mod ServerMessages;
+use ServerMessages::server_messages::{
+    JoinGameResponsePayload, JoinGameResponsePayloadArgs, LeaveGameResponsePayload, LeaveGameResponsePayloadArgs,
+    ServerMessage, ServerMessageArgs, ServerMessagePayload, ResponseCode,
 };
 
 use std::{collections::HashMap, net::SocketAddr, sync::Arc};
@@ -159,25 +162,25 @@ async fn handle_msg(
         MessageType::Binary => {
             if let Ok(msg) = client_messages::root_as_client_message(&message_buf) {
                 return match msg.payload_type() {
-                    ClientMessagePayload::JoinPayload => {
-                        let join_payload = msg
-                            .payload_as_join_payload()
+                    ClientMessagePayload::JoinGamePayload => {
+                        let join_game_payload = msg
+                            .payload_as_join_game_payload()
                             .expect("could not parse join payload");
-                        let name = join_payload.name();
+                        let user = join_game_payload.user();
 
-                        match name {
-                            Some(name) => handle_join(name, remote_addr, players).await,
+                        match user {
+                            Some(user) => handle_join(user.username().unwrap(), remote_addr, players).await,
                             None => vec![0u8; 0],
                         }
                     }
-                    ClientMessagePayload::LeavePayload => {
-                        let leave_payload = msg
-                            .payload_as_leave_payload()
+                    ClientMessagePayload::LeaveGamePayload => {
+                        let leave_game_payload = msg
+                            .payload_as_leave_game_payload()
                             .expect("could not parse leave payload");
-                        let name = leave_payload.name();
+                        let user = leave_game_payload.user();
 
-                        match name {
-                            Some(name) => handle_leave(name, remote_addr, players).await,
+                        match user {
+                            Some(user) => handle_leave(user.username().unwrap(), remote_addr, players).await,
                             None => vec![0u8; 0],
                         }
                     }
@@ -185,16 +188,17 @@ async fn handle_msg(
                         let chat_payload = msg
                             .payload_as_chat_payload()
                             .expect("could not parse chat payload");
-                        let name = chat_payload.name();
+                        let user = chat_payload.user();
                         let message = chat_payload.message();
 
-                        match (name, message) {
-                            (Some(name), Some(message)) => handle_chat(name, message).await,
+                        match (user, message) {
+                            (Some(user), Some(message)) => handle_chat(user.username().unwrap(), message.message().unwrap()).await,
                             _ => vec![0u8; 0],
                         }
                     }
                     ClientMessagePayload::QueryStatePayload => {
                         println!("User queried for state!");
+                        vec![0u8; 0]
                     }
                     _ => vec![0u8; 0],
                 };
@@ -225,10 +229,10 @@ async fn handle_join(
 
     let name_buf = builder.create_string(&name);
 
-    let payload = JoinPayload::create(
+    let payload = JoinGameResponsePayload::create(
         &mut builder,
-        &JoinPayloadArgs {
-            name: Some(name_buf),
+        &JoinGameResponsePayloadArgs {
+            game: None, code: ResponseCode::OK,
         },
     );
 
@@ -236,7 +240,7 @@ async fn handle_join(
         &mut builder,
         &ServerMessageArgs {
             timestamp: 0,
-            payload_type: ServerMessagePayload::JoinPayload,
+            payload_type: ServerMessagePayload::JoinGameResponsePayload,
             payload: Some(payload.as_union_value()),
         },
     );
@@ -261,10 +265,10 @@ async fn handle_leave(
 
     let name_buf = builder.create_string(&name);
 
-    let payload = LeavePayload::create(
+    let payload = LeaveGameResponsePayload::create(
         &mut builder,
-        &LeavePayloadArgs {
-            name: Some(name_buf),
+        &LeaveGameResponsePayloadArgs {
+            game: None, code: ResponseCode::OK,
         },
     );
 
@@ -272,7 +276,7 @@ async fn handle_leave(
         &mut builder,
         &ServerMessageArgs {
             timestamp: 0,
-            payload_type: ServerMessagePayload::LeavePayload,
+            payload_type: ServerMessagePayload::LeaveGameResponsePayload,
             payload: Some(payload.as_union_value()),
         },
     );
@@ -288,6 +292,7 @@ async fn handle_chat(name: &str, message: &str) -> Vec<u8> {
     let name_buf = builder.create_string(&name);
     let message_buf = builder.create_string(&message);
 
+    /*
     let payload = ChatPayload::create(
         &mut builder,
         &ChatPayloadArgs {
@@ -308,4 +313,6 @@ async fn handle_chat(name: &str, message: &str) -> Vec<u8> {
     builder.finish(res, None);
 
     return builder.finished_data().to_vec();
+    */
+    vec![0u8; 0]
 }
