@@ -2,6 +2,7 @@
 #[path = "../flatbuffers/Chat.rs"]
 mod Chat;
 
+#[allow(non_snake_case, unused_imports)]
 #[path = "../flatbuffers/ClientMessages.rs"]
 mod ClientMessages;
 use ClientMessages::client_messages::{self, ClientMessagePayload};
@@ -33,6 +34,7 @@ use dotenv::dotenv;
 
 type PlayerMap = HashMap<SocketAddr, String>;
 
+#[allow(non_snake_case)]
 fn main() {
     dotenv().ok();
 
@@ -192,7 +194,6 @@ async fn handle_msg(
                         let message = chat_payload.message();
 
                         match (user, message) {
-                            (Some(user), Some(message)) => handle_chat(user.username().unwrap(), message.message().unwrap()).await,
                             _ => vec![0u8; 0],
                         }
                     }
@@ -226,8 +227,6 @@ async fn handle_join(
     }
     log::info!("{} joined", name);
     players.write().await.insert(remote_addr, name.to_string());
-
-    let name_buf = builder.create_string(&name);
 
     let payload = JoinGameResponsePayload::create(
         &mut builder,
@@ -263,8 +262,6 @@ async fn handle_leave(
     log::info!("{} left", name);
     players.write().await.remove(&remote_addr);
 
-    let name_buf = builder.create_string(&name);
-
     let payload = LeaveGameResponsePayload::create(
         &mut builder,
         &LeaveGameResponsePayloadArgs {
@@ -284,35 +281,4 @@ async fn handle_leave(
     builder.finish(res, None);
 
     return builder.finished_data().to_vec();
-}
-
-async fn handle_chat(name: &str, message: &str) -> Vec<u8> {
-    let mut builder = flatbuffers::FlatBufferBuilder::new();
-
-    let name_buf = builder.create_string(&name);
-    let message_buf = builder.create_string(&message);
-
-    /*
-    let payload = ChatPayload::create(
-        &mut builder,
-        &ChatPayloadArgs {
-            name: Some(name_buf),
-            message: Some(message_buf),
-        },
-    );
-
-    let res = ServerMessage::create(
-        &mut builder,
-        &ServerMessageArgs {
-            timestamp: 0,
-            payload_type: ServerMessagePayload::ChatPayload,
-            payload: Some(payload.as_union_value()),
-        },
-    );
-
-    builder.finish(res, None);
-
-    return builder.finished_data().to_vec();
-    */
-    vec![0u8; 0]
 }
