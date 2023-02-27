@@ -9,12 +9,17 @@ enum ResponseCode: byte {
   ERROR,
 }
 
-table JoinResponsePayload {
+table NewGameResponsePayload {
   code: ResponseCode;
   game: Game.Game;
 }
 
-table LeaveResponsePayload {
+table JoinGameResponsePayload {
+  code: ResponseCode;
+  game: Game.Game;
+}
+
+table LeaveGameResponsePayload {
   code: ResponseCode;
   game: Game.Game;
 }

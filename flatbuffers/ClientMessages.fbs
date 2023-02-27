@@ -4,11 +4,15 @@ include "Chat.fbs";
 
 namespace ClientMessages;
 
-table JoinPayload {
+table NewGamePayload {
   user: User.User;
 }
 
-table LeavePayload {
+table JoinGamePayload {
+  user: User.User;
+}
+
+table LeaveGamePayload {
   user: User.User;
 }
 
@@ -20,6 +24,7 @@ table ChatPayload {
 table InputPayload {
   user: User.User;
   player: Player.Player;
+  // TODO: add input data
 }
 
 table QueryStatePayload {
