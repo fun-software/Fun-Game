@@ -31,8 +31,9 @@ table StatePayload {
 }
 
 union ServerMessagePayload {
-  JoinResponsePayload,
-  LeaveResponsePayload,
+  NewGameResponsePayload,
+  JoinGameResponsePayload,
+  LeaveGameResponsePayload,
   StatePayload,
 }
 
