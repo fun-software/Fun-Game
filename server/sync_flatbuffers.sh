@@ -12,6 +12,5 @@ cd "${0%/*}"
 
 rm -rf ./flatbuffers
 flatc --rust -o ./flatbuffers/ $(find ../flatbuffers -name "*.fbs")
-cargo fmt
 
 echo -e "\nDone!\n"

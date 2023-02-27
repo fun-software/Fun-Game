@@ -36,11 +36,13 @@ impl<'a> flatbuffers::Follow<'a> for Player<'a> {
 }
 
 impl<'a> Player<'a> {
-  pub const VT_POS: flatbuffers::VOffsetT = 4;
-  pub const VT_HP: flatbuffers::VOffsetT = 6;
-  pub const VT_SPEED: flatbuffers::VOffsetT = 8;
-  pub const VT_SPRINTING: flatbuffers::VOffsetT = 10;
-  pub const VT_SNEAKING: flatbuffers::VOffsetT = 12;
+  pub const VT_POSITION: flatbuffers::VOffsetT = 4;
+  pub const VT_VELOCITY: flatbuffers::VOffsetT = 6;
+  pub const VT_LOOK_DIRECTION: flatbuffers::VOffsetT = 8;
+  pub const VT_HP: flatbuffers::VOffsetT = 10;
+  pub const VT_SPEED: flatbuffers::VOffsetT = 12;
+  pub const VT_SPRINTING: flatbuffers::VOffsetT = 14;
+  pub const VT_SNEAKING: flatbuffers::VOffsetT = 16;
 
   #[inline]
   pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
@@ -52,7 +54,9 @@ impl<'a> Player<'a> {
     args: &'args PlayerArgs<'args>
   ) -> flatbuffers::WIPOffset<Player<'bldr>> {
     let mut builder = PlayerBuilder::new(_fbb);
-    if let Some(x) = args.pos { builder.add_pos(x); }
+    if let Some(x) = args.look_direction { builder.add_look_direction(x); }
+    if let Some(x) = args.velocity { builder.add_velocity(x); }
+    if let Some(x) = args.position { builder.add_position(x); }
     builder.add_sneaking(args.sneaking);
     builder.add_sprinting(args.sprinting);
     builder.add_speed(args.speed);
@@ -62,11 +66,25 @@ impl<'a> Player<'a> {
 
 
   #[inline]
-  pub fn pos(&self) -> Option<&'a super::math::Vec3> {
+  pub fn position(&self) -> Option<&'a super::math::Vec3> {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<super::math::Vec3>(Player::VT_POS, None)}
+    unsafe { self._tab.get::<super::math::Vec3>(Player::VT_POSITION, None)}
+  }
+  #[inline]
+  pub fn velocity(&self) -> Option<&'a super::math::Vec3> {
+    // Safety:
+    // Created from valid Table for this object
+    // which contains a valid value in this slot
+    unsafe { self._tab.get::<super::math::Vec3>(Player::VT_VELOCITY, None)}
+  }
+  #[inline]
+  pub fn look_direction(&self) -> Option<&'a super::math::Vec3> {
+    // Safety:
+    // Created from valid Table for this object
+    // which contains a valid value in this slot
+    unsafe { self._tab.get::<super::math::Vec3>(Player::VT_LOOK_DIRECTION, None)}
   }
   #[inline]
   pub fn hp(&self) -> i8 {
@@ -105,7 +123,9 @@ impl flatbuffers::Verifiable for Player<'_> {
   ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
-     .visit_field::<super::math::Vec3>("pos", Self::VT_POS, false)?
+     .visit_field::<super::math::Vec3>("position", Self::VT_POSITION, false)?
+     .visit_field::<super::math::Vec3>("velocity", Self::VT_VELOCITY, false)?
+     .visit_field::<super::math::Vec3>("look_direction", Self::VT_LOOK_DIRECTION, false)?
      .visit_field::<i8>("hp", Self::VT_HP, false)?
      .visit_field::<i8>("speed", Self::VT_SPEED, false)?
      .visit_field::<bool>("sprinting", Self::VT_SPRINTING, false)?
@@ -115,7 +135,9 @@ impl flatbuffers::Verifiable for Player<'_> {
   }
 }
 pub struct PlayerArgs<'a> {
-    pub pos: Option<&'a super::math::Vec3>,
+    pub position: Option<&'a super::math::Vec3>,
+    pub velocity: Option<&'a super::math::Vec3>,
+    pub look_direction: Option<&'a super::math::Vec3>,
     pub hp: i8,
     pub speed: i8,
     pub sprinting: bool,
@@ -125,7 +147,9 @@ impl<'a> Default for PlayerArgs<'a> {
   #[inline]
   fn default() -> Self {
     PlayerArgs {
-      pos: None,
+      position: None,
+      velocity: None,
+      look_direction: None,
       hp: 100,
       speed: 100,
       sprinting: false,
@@ -140,8 +164,16 @@ pub struct PlayerBuilder<'a: 'b, 'b> {
 }
 impl<'a: 'b, 'b> PlayerBuilder<'a, 'b> {
   #[inline]
-  pub fn add_pos(&mut self, pos: &super::math::Vec3) {
-    self.fbb_.push_slot_always::<&super::math::Vec3>(Player::VT_POS, pos);
+  pub fn add_position(&mut self, position: &super::math::Vec3) {
+    self.fbb_.push_slot_always::<&super::math::Vec3>(Player::VT_POSITION, position);
+  }
+  #[inline]
+  pub fn add_velocity(&mut self, velocity: &super::math::Vec3) {
+    self.fbb_.push_slot_always::<&super::math::Vec3>(Player::VT_VELOCITY, velocity);
+  }
+  #[inline]
+  pub fn add_look_direction(&mut self, look_direction: &super::math::Vec3) {
+    self.fbb_.push_slot_always::<&super::math::Vec3>(Player::VT_LOOK_DIRECTION, look_direction);
   }
   #[inline]
   pub fn add_hp(&mut self, hp: i8) {
@@ -177,7 +209,9 @@ impl<'a: 'b, 'b> PlayerBuilder<'a, 'b> {
 impl core::fmt::Debug for Player<'_> {
   fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
     let mut ds = f.debug_struct("Player");
-      ds.field("pos", &self.pos());
+      ds.field("position", &self.position());
+      ds.field("velocity", &self.velocity());
+      ds.field("look_direction", &self.look_direction());
       ds.field("hp", &self.hp());
       ds.field("speed", &self.speed());
       ds.field("sprinting", &self.sprinting());

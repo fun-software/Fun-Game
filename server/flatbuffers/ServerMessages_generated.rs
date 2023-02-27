@@ -2,6 +2,12 @@
 
 // @generated
 
+use crate::Chat_generated::*;
+use crate::GameState_generated::*;
+use crate::Game_generated::*;
+use crate::Math_generated::*;
+use crate::Player_generated::*;
+use crate::User_generated::*;
 use core::cmp::Ordering;
 use core::mem;
 
@@ -11,6 +17,12 @@ use self::flatbuffers::{EndianScalar, Follow};
 #[allow(unused_imports, dead_code)]
 pub mod server_messages {
 
+    use crate::Chat_generated::*;
+    use crate::GameState_generated::*;
+    use crate::Game_generated::*;
+    use crate::Math_generated::*;
+    use crate::Player_generated::*;
+    use crate::User_generated::*;
     use core::cmp::Ordering;
     use core::mem;
 
@@ -21,22 +33,111 @@ pub mod server_messages {
         since = "2.0.0",
         note = "Use associated constants instead. This will no longer be generated in 2021."
     )]
-    pub const ENUM_MIN_SERVER_MESSAGE_PAYLOAD: u8 = 0;
+    pub const ENUM_MIN_RESPONSE_CODE: i8 = 0;
     #[deprecated(
         since = "2.0.0",
         note = "Use associated constants instead. This will no longer be generated in 2021."
     )]
-    pub const ENUM_MAX_SERVER_MESSAGE_PAYLOAD: u8 = 4;
+    pub const ENUM_MAX_RESPONSE_CODE: i8 = 1;
     #[deprecated(
         since = "2.0.0",
         note = "Use associated constants instead. This will no longer be generated in 2021."
     )]
     #[allow(non_camel_case_types)]
-    pub const ENUM_VALUES_SERVER_MESSAGE_PAYLOAD: [ServerMessagePayload; 5] = [
+    pub const ENUM_VALUES_RESPONSE_CODE: [ResponseCode; 2] =
+        [ResponseCode::OK, ResponseCode::ERROR];
+
+    #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+    #[repr(transparent)]
+    pub struct ResponseCode(pub i8);
+    #[allow(non_upper_case_globals)]
+    impl ResponseCode {
+        pub const OK: Self = Self(0);
+        pub const ERROR: Self = Self(1);
+
+        pub const ENUM_MIN: i8 = 0;
+        pub const ENUM_MAX: i8 = 1;
+        pub const ENUM_VALUES: &'static [Self] = &[Self::OK, Self::ERROR];
+        /// Returns the variant's name or "" if unknown.
+        pub fn variant_name(self) -> Option<&'static str> {
+            match self {
+                Self::OK => Some("OK"),
+                Self::ERROR => Some("ERROR"),
+                _ => None,
+            }
+        }
+    }
+    impl core::fmt::Debug for ResponseCode {
+        fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+            if let Some(name) = self.variant_name() {
+                f.write_str(name)
+            } else {
+                f.write_fmt(format_args!("<UNKNOWN {:?}>", self.0))
+            }
+        }
+    }
+    impl<'a> flatbuffers::Follow<'a> for ResponseCode {
+        type Inner = Self;
+        #[inline]
+        unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            let b = flatbuffers::read_scalar_at::<i8>(buf, loc);
+            Self(b)
+        }
+    }
+
+    impl flatbuffers::Push for ResponseCode {
+        type Output = ResponseCode;
+        #[inline]
+        unsafe fn push(&self, dst: &mut [u8], _written_len: usize) {
+            flatbuffers::emplace_scalar::<i8>(dst, self.0);
+        }
+    }
+
+    impl flatbuffers::EndianScalar for ResponseCode {
+        type Scalar = i8;
+        #[inline]
+        fn to_little_endian(self) -> i8 {
+            self.0.to_le()
+        }
+        #[inline]
+        #[allow(clippy::wrong_self_convention)]
+        fn from_little_endian(v: i8) -> Self {
+            let b = i8::from_le(v);
+            Self(b)
+        }
+    }
+
+    impl<'a> flatbuffers::Verifiable for ResponseCode {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            i8::run_verifier(v, pos)
+        }
+    }
+
+    impl flatbuffers::SimpleToVerifyInSlice for ResponseCode {}
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    pub const ENUM_MIN_SERVER_MESSAGE_PAYLOAD: u8 = 0;
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    pub const ENUM_MAX_SERVER_MESSAGE_PAYLOAD: u8 = 3;
+    #[deprecated(
+        since = "2.0.0",
+        note = "Use associated constants instead. This will no longer be generated in 2021."
+    )]
+    #[allow(non_camel_case_types)]
+    pub const ENUM_VALUES_SERVER_MESSAGE_PAYLOAD: [ServerMessagePayload; 4] = [
         ServerMessagePayload::NONE,
-        ServerMessagePayload::JoinPayload,
-        ServerMessagePayload::LeavePayload,
-        ServerMessagePayload::ChatPayload,
+        ServerMessagePayload::JoinResponsePayload,
+        ServerMessagePayload::LeaveResponsePayload,
         ServerMessagePayload::StatePayload,
     ];
 
@@ -46,27 +147,24 @@ pub mod server_messages {
     #[allow(non_upper_case_globals)]
     impl ServerMessagePayload {
         pub const NONE: Self = Self(0);
-        pub const JoinPayload: Self = Self(1);
-        pub const LeavePayload: Self = Self(2);
-        pub const ChatPayload: Self = Self(3);
-        pub const StatePayload: Self = Self(4);
+        pub const JoinResponsePayload: Self = Self(1);
+        pub const LeaveResponsePayload: Self = Self(2);
+        pub const StatePayload: Self = Self(3);
 
         pub const ENUM_MIN: u8 = 0;
-        pub const ENUM_MAX: u8 = 4;
+        pub const ENUM_MAX: u8 = 3;
         pub const ENUM_VALUES: &'static [Self] = &[
             Self::NONE,
-            Self::JoinPayload,
-            Self::LeavePayload,
-            Self::ChatPayload,
+            Self::JoinResponsePayload,
+            Self::LeaveResponsePayload,
             Self::StatePayload,
         ];
         /// Returns the variant's name or "" if unknown.
         pub fn variant_name(self) -> Option<&'static str> {
             match self {
                 Self::NONE => Some("NONE"),
-                Self::JoinPayload => Some("JoinPayload"),
-                Self::LeavePayload => Some("LeavePayload"),
-                Self::ChatPayload => Some("ChatPayload"),
+                Self::JoinResponsePayload => Some("JoinResponsePayload"),
+                Self::LeaveResponsePayload => Some("LeaveResponsePayload"),
                 Self::StatePayload => Some("StatePayload"),
                 _ => None,
             }
@@ -126,15 +224,15 @@ pub mod server_messages {
     impl flatbuffers::SimpleToVerifyInSlice for ServerMessagePayload {}
     pub struct ServerMessagePayloadUnionTableOffset {}
 
-    pub enum JoinPayloadOffset {}
+    pub enum JoinResponsePayloadOffset {}
     #[derive(Copy, Clone, PartialEq)]
 
-    pub struct JoinPayload<'a> {
+    pub struct JoinResponsePayload<'a> {
         pub _tab: flatbuffers::Table<'a>,
     }
 
-    impl<'a> flatbuffers::Follow<'a> for JoinPayload<'a> {
-        type Inner = JoinPayload<'a>;
+    impl<'a> flatbuffers::Follow<'a> for JoinResponsePayload<'a> {
+        type Inner = JoinResponsePayload<'a>;
         #[inline]
         unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
             Self {
@@ -143,38 +241,54 @@ pub mod server_messages {
         }
     }
 
-    impl<'a> JoinPayload<'a> {
-        pub const VT_NAME: flatbuffers::VOffsetT = 4;
+    impl<'a> JoinResponsePayload<'a> {
+        pub const VT_CODE: flatbuffers::VOffsetT = 4;
+        pub const VT_GAME: flatbuffers::VOffsetT = 6;
 
         #[inline]
         pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
-            JoinPayload { _tab: table }
+            JoinResponsePayload { _tab: table }
         }
         #[allow(unused_mut)]
         pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
             _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
-            args: &'args JoinPayloadArgs<'args>,
-        ) -> flatbuffers::WIPOffset<JoinPayload<'bldr>> {
-            let mut builder = JoinPayloadBuilder::new(_fbb);
-            if let Some(x) = args.name {
-                builder.add_name(x);
+            args: &'args JoinResponsePayloadArgs<'args>,
+        ) -> flatbuffers::WIPOffset<JoinResponsePayload<'bldr>> {
+            let mut builder = JoinResponsePayloadBuilder::new(_fbb);
+            if let Some(x) = args.game {
+                builder.add_game(x);
             }
+            builder.add_code(args.code);
             builder.finish()
         }
 
         #[inline]
-        pub fn name(&self) -> Option<&'a str> {
+        pub fn code(&self) -> ResponseCode {
             // Safety:
             // Created from valid Table for this object
             // which contains a valid value in this slot
             unsafe {
                 self._tab
-                    .get::<flatbuffers::ForwardsUOffset<&str>>(JoinPayload::VT_NAME, None)
+                    .get::<ResponseCode>(JoinResponsePayload::VT_CODE, Some(ResponseCode::OK))
+                    .unwrap()
+            }
+        }
+        #[inline]
+        pub fn game(&self) -> Option<super::game::Game<'a>> {
+            // Safety:
+            // Created from valid Table for this object
+            // which contains a valid value in this slot
+            unsafe {
+                self._tab
+                    .get::<flatbuffers::ForwardsUOffset<super::game::Game>>(
+                        JoinResponsePayload::VT_GAME,
+                        None,
+                    )
             }
         }
     }
 
-    impl flatbuffers::Verifiable for JoinPayload<'_> {
+    impl flatbuffers::Verifiable for JoinResponsePayload<'_> {
         #[inline]
         fn run_verifier(
             v: &mut flatbuffers::Verifier,
@@ -182,287 +296,215 @@ pub mod server_messages {
         ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
             use self::flatbuffers::Verifiable;
             v.visit_table(pos)?
-                .visit_field::<flatbuffers::ForwardsUOffset<&str>>("name", Self::VT_NAME, false)?
-                .finish();
-            Ok(())
-        }
-    }
-    pub struct JoinPayloadArgs<'a> {
-        pub name: Option<flatbuffers::WIPOffset<&'a str>>,
-    }
-    impl<'a> Default for JoinPayloadArgs<'a> {
-        #[inline]
-        fn default() -> Self {
-            JoinPayloadArgs { name: None }
-        }
-    }
-
-    pub struct JoinPayloadBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
-    }
-    impl<'a: 'b, 'b> JoinPayloadBuilder<'a, 'b> {
-        #[inline]
-        pub fn add_name(&mut self, name: flatbuffers::WIPOffset<&'b str>) {
-            self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<_>>(JoinPayload::VT_NAME, name);
-        }
-        #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> JoinPayloadBuilder<'a, 'b> {
-            let start = _fbb.start_table();
-            JoinPayloadBuilder {
-                fbb_: _fbb,
-                start_: start,
-            }
-        }
-        #[inline]
-        pub fn finish(self) -> flatbuffers::WIPOffset<JoinPayload<'a>> {
-            let o = self.fbb_.end_table(self.start_);
-            flatbuffers::WIPOffset::new(o.value())
-        }
-    }
-
-    impl core::fmt::Debug for JoinPayload<'_> {
-        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-            let mut ds = f.debug_struct("JoinPayload");
-            ds.field("name", &self.name());
-            ds.finish()
-        }
-    }
-    pub enum LeavePayloadOffset {}
-    #[derive(Copy, Clone, PartialEq)]
-
-    pub struct LeavePayload<'a> {
-        pub _tab: flatbuffers::Table<'a>,
-    }
-
-    impl<'a> flatbuffers::Follow<'a> for LeavePayload<'a> {
-        type Inner = LeavePayload<'a>;
-        #[inline]
-        unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            Self {
-                _tab: flatbuffers::Table::new(buf, loc),
-            }
-        }
-    }
-
-    impl<'a> LeavePayload<'a> {
-        pub const VT_NAME: flatbuffers::VOffsetT = 4;
-
-        #[inline]
-        pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
-            LeavePayload { _tab: table }
-        }
-        #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
-            args: &'args LeavePayloadArgs<'args>,
-        ) -> flatbuffers::WIPOffset<LeavePayload<'bldr>> {
-            let mut builder = LeavePayloadBuilder::new(_fbb);
-            if let Some(x) = args.name {
-                builder.add_name(x);
-            }
-            builder.finish()
-        }
-
-        #[inline]
-        pub fn name(&self) -> Option<&'a str> {
-            // Safety:
-            // Created from valid Table for this object
-            // which contains a valid value in this slot
-            unsafe {
-                self._tab
-                    .get::<flatbuffers::ForwardsUOffset<&str>>(LeavePayload::VT_NAME, None)
-            }
-        }
-    }
-
-    impl flatbuffers::Verifiable for LeavePayload<'_> {
-        #[inline]
-        fn run_verifier(
-            v: &mut flatbuffers::Verifier,
-            pos: usize,
-        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
-            use self::flatbuffers::Verifiable;
-            v.visit_table(pos)?
-                .visit_field::<flatbuffers::ForwardsUOffset<&str>>("name", Self::VT_NAME, false)?
-                .finish();
-            Ok(())
-        }
-    }
-    pub struct LeavePayloadArgs<'a> {
-        pub name: Option<flatbuffers::WIPOffset<&'a str>>,
-    }
-    impl<'a> Default for LeavePayloadArgs<'a> {
-        #[inline]
-        fn default() -> Self {
-            LeavePayloadArgs { name: None }
-        }
-    }
-
-    pub struct LeavePayloadBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
-    }
-    impl<'a: 'b, 'b> LeavePayloadBuilder<'a, 'b> {
-        #[inline]
-        pub fn add_name(&mut self, name: flatbuffers::WIPOffset<&'b str>) {
-            self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<_>>(LeavePayload::VT_NAME, name);
-        }
-        #[inline]
-        pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> LeavePayloadBuilder<'a, 'b> {
-            let start = _fbb.start_table();
-            LeavePayloadBuilder {
-                fbb_: _fbb,
-                start_: start,
-            }
-        }
-        #[inline]
-        pub fn finish(self) -> flatbuffers::WIPOffset<LeavePayload<'a>> {
-            let o = self.fbb_.end_table(self.start_);
-            flatbuffers::WIPOffset::new(o.value())
-        }
-    }
-
-    impl core::fmt::Debug for LeavePayload<'_> {
-        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-            let mut ds = f.debug_struct("LeavePayload");
-            ds.field("name", &self.name());
-            ds.finish()
-        }
-    }
-    pub enum ChatPayloadOffset {}
-    #[derive(Copy, Clone, PartialEq)]
-
-    pub struct ChatPayload<'a> {
-        pub _tab: flatbuffers::Table<'a>,
-    }
-
-    impl<'a> flatbuffers::Follow<'a> for ChatPayload<'a> {
-        type Inner = ChatPayload<'a>;
-        #[inline]
-        unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            Self {
-                _tab: flatbuffers::Table::new(buf, loc),
-            }
-        }
-    }
-
-    impl<'a> ChatPayload<'a> {
-        pub const VT_NAME: flatbuffers::VOffsetT = 4;
-        pub const VT_MESSAGE: flatbuffers::VOffsetT = 6;
-
-        #[inline]
-        pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
-            ChatPayload { _tab: table }
-        }
-        #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
-            args: &'args ChatPayloadArgs<'args>,
-        ) -> flatbuffers::WIPOffset<ChatPayload<'bldr>> {
-            let mut builder = ChatPayloadBuilder::new(_fbb);
-            if let Some(x) = args.message {
-                builder.add_message(x);
-            }
-            if let Some(x) = args.name {
-                builder.add_name(x);
-            }
-            builder.finish()
-        }
-
-        #[inline]
-        pub fn name(&self) -> Option<&'a str> {
-            // Safety:
-            // Created from valid Table for this object
-            // which contains a valid value in this slot
-            unsafe {
-                self._tab
-                    .get::<flatbuffers::ForwardsUOffset<&str>>(ChatPayload::VT_NAME, None)
-            }
-        }
-        #[inline]
-        pub fn message(&self) -> Option<&'a str> {
-            // Safety:
-            // Created from valid Table for this object
-            // which contains a valid value in this slot
-            unsafe {
-                self._tab
-                    .get::<flatbuffers::ForwardsUOffset<&str>>(ChatPayload::VT_MESSAGE, None)
-            }
-        }
-    }
-
-    impl flatbuffers::Verifiable for ChatPayload<'_> {
-        #[inline]
-        fn run_verifier(
-            v: &mut flatbuffers::Verifier,
-            pos: usize,
-        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
-            use self::flatbuffers::Verifiable;
-            v.visit_table(pos)?
-                .visit_field::<flatbuffers::ForwardsUOffset<&str>>("name", Self::VT_NAME, false)?
-                .visit_field::<flatbuffers::ForwardsUOffset<&str>>(
-                    "message",
-                    Self::VT_MESSAGE,
+                .visit_field::<ResponseCode>("code", Self::VT_CODE, false)?
+                .visit_field::<flatbuffers::ForwardsUOffset<super::game::Game>>(
+                    "game",
+                    Self::VT_GAME,
                     false,
                 )?
                 .finish();
             Ok(())
         }
     }
-    pub struct ChatPayloadArgs<'a> {
-        pub name: Option<flatbuffers::WIPOffset<&'a str>>,
-        pub message: Option<flatbuffers::WIPOffset<&'a str>>,
+    pub struct JoinResponsePayloadArgs<'a> {
+        pub code: ResponseCode,
+        pub game: Option<flatbuffers::WIPOffset<super::game::Game<'a>>>,
     }
-    impl<'a> Default for ChatPayloadArgs<'a> {
+    impl<'a> Default for JoinResponsePayloadArgs<'a> {
         #[inline]
         fn default() -> Self {
-            ChatPayloadArgs {
-                name: None,
-                message: None,
+            JoinResponsePayloadArgs {
+                code: ResponseCode::OK,
+                game: None,
             }
         }
     }
 
-    pub struct ChatPayloadBuilder<'a: 'b, 'b> {
+    pub struct JoinResponsePayloadBuilder<'a: 'b, 'b> {
         fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
         start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
     }
-    impl<'a: 'b, 'b> ChatPayloadBuilder<'a, 'b> {
+    impl<'a: 'b, 'b> JoinResponsePayloadBuilder<'a, 'b> {
         #[inline]
-        pub fn add_name(&mut self, name: flatbuffers::WIPOffset<&'b str>) {
-            self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<_>>(ChatPayload::VT_NAME, name);
+        pub fn add_code(&mut self, code: ResponseCode) {
+            self.fbb_.push_slot::<ResponseCode>(
+                JoinResponsePayload::VT_CODE,
+                code,
+                ResponseCode::OK,
+            );
         }
         #[inline]
-        pub fn add_message(&mut self, message: flatbuffers::WIPOffset<&'b str>) {
+        pub fn add_game(&mut self, game: flatbuffers::WIPOffset<super::game::Game<'b>>) {
             self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<_>>(ChatPayload::VT_MESSAGE, message);
+                .push_slot_always::<flatbuffers::WIPOffset<super::game::Game>>(
+                    JoinResponsePayload::VT_GAME,
+                    game,
+                );
         }
         #[inline]
-        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> ChatPayloadBuilder<'a, 'b> {
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        ) -> JoinResponsePayloadBuilder<'a, 'b> {
             let start = _fbb.start_table();
-            ChatPayloadBuilder {
+            JoinResponsePayloadBuilder {
                 fbb_: _fbb,
                 start_: start,
             }
         }
         #[inline]
-        pub fn finish(self) -> flatbuffers::WIPOffset<ChatPayload<'a>> {
+        pub fn finish(self) -> flatbuffers::WIPOffset<JoinResponsePayload<'a>> {
             let o = self.fbb_.end_table(self.start_);
             flatbuffers::WIPOffset::new(o.value())
         }
     }
 
-    impl core::fmt::Debug for ChatPayload<'_> {
+    impl core::fmt::Debug for JoinResponsePayload<'_> {
         fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-            let mut ds = f.debug_struct("ChatPayload");
-            ds.field("name", &self.name());
-            ds.field("message", &self.message());
+            let mut ds = f.debug_struct("JoinResponsePayload");
+            ds.field("code", &self.code());
+            ds.field("game", &self.game());
+            ds.finish()
+        }
+    }
+    pub enum LeaveResponsePayloadOffset {}
+    #[derive(Copy, Clone, PartialEq)]
+
+    pub struct LeaveResponsePayload<'a> {
+        pub _tab: flatbuffers::Table<'a>,
+    }
+
+    impl<'a> flatbuffers::Follow<'a> for LeaveResponsePayload<'a> {
+        type Inner = LeaveResponsePayload<'a>;
+        #[inline]
+        unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            Self {
+                _tab: flatbuffers::Table::new(buf, loc),
+            }
+        }
+    }
+
+    impl<'a> LeaveResponsePayload<'a> {
+        pub const VT_CODE: flatbuffers::VOffsetT = 4;
+        pub const VT_GAME: flatbuffers::VOffsetT = 6;
+
+        #[inline]
+        pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+            LeaveResponsePayload { _tab: table }
+        }
+        #[allow(unused_mut)]
+        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+            args: &'args LeaveResponsePayloadArgs<'args>,
+        ) -> flatbuffers::WIPOffset<LeaveResponsePayload<'bldr>> {
+            let mut builder = LeaveResponsePayloadBuilder::new(_fbb);
+            if let Some(x) = args.game {
+                builder.add_game(x);
+            }
+            builder.add_code(args.code);
+            builder.finish()
+        }
+
+        #[inline]
+        pub fn code(&self) -> ResponseCode {
+            // Safety:
+            // Created from valid Table for this object
+            // which contains a valid value in this slot
+            unsafe {
+                self._tab
+                    .get::<ResponseCode>(LeaveResponsePayload::VT_CODE, Some(ResponseCode::OK))
+                    .unwrap()
+            }
+        }
+        #[inline]
+        pub fn game(&self) -> Option<super::game::Game<'a>> {
+            // Safety:
+            // Created from valid Table for this object
+            // which contains a valid value in this slot
+            unsafe {
+                self._tab
+                    .get::<flatbuffers::ForwardsUOffset<super::game::Game>>(
+                        LeaveResponsePayload::VT_GAME,
+                        None,
+                    )
+            }
+        }
+    }
+
+    impl flatbuffers::Verifiable for LeaveResponsePayload<'_> {
+        #[inline]
+        fn run_verifier(
+            v: &mut flatbuffers::Verifier,
+            pos: usize,
+        ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
+            use self::flatbuffers::Verifiable;
+            v.visit_table(pos)?
+                .visit_field::<ResponseCode>("code", Self::VT_CODE, false)?
+                .visit_field::<flatbuffers::ForwardsUOffset<super::game::Game>>(
+                    "game",
+                    Self::VT_GAME,
+                    false,
+                )?
+                .finish();
+            Ok(())
+        }
+    }
+    pub struct LeaveResponsePayloadArgs<'a> {
+        pub code: ResponseCode,
+        pub game: Option<flatbuffers::WIPOffset<super::game::Game<'a>>>,
+    }
+    impl<'a> Default for LeaveResponsePayloadArgs<'a> {
+        #[inline]
+        fn default() -> Self {
+            LeaveResponsePayloadArgs {
+                code: ResponseCode::OK,
+                game: None,
+            }
+        }
+    }
+
+    pub struct LeaveResponsePayloadBuilder<'a: 'b, 'b> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+    }
+    impl<'a: 'b, 'b> LeaveResponsePayloadBuilder<'a, 'b> {
+        #[inline]
+        pub fn add_code(&mut self, code: ResponseCode) {
+            self.fbb_.push_slot::<ResponseCode>(
+                LeaveResponsePayload::VT_CODE,
+                code,
+                ResponseCode::OK,
+            );
+        }
+        #[inline]
+        pub fn add_game(&mut self, game: flatbuffers::WIPOffset<super::game::Game<'b>>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<super::game::Game>>(
+                    LeaveResponsePayload::VT_GAME,
+                    game,
+                );
+        }
+        #[inline]
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        ) -> LeaveResponsePayloadBuilder<'a, 'b> {
+            let start = _fbb.start_table();
+            LeaveResponsePayloadBuilder {
+                fbb_: _fbb,
+                start_: start,
+            }
+        }
+        #[inline]
+        pub fn finish(self) -> flatbuffers::WIPOffset<LeaveResponsePayload<'a>> {
+            let o = self.fbb_.end_table(self.start_);
+            flatbuffers::WIPOffset::new(o.value())
+        }
+    }
+
+    impl core::fmt::Debug for LeaveResponsePayload<'_> {
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            let mut ds = f.debug_struct("LeaveResponsePayload");
+            ds.field("code", &self.code());
+            ds.field("game", &self.game());
             ds.finish()
         }
     }
@@ -484,7 +526,9 @@ pub mod server_messages {
     }
 
     impl<'a> StatePayload<'a> {
-        pub const VT_PLAYERS: flatbuffers::VOffsetT = 4;
+        pub const VT_CODE: flatbuffers::VOffsetT = 4;
+        pub const VT_GAME_STATE: flatbuffers::VOffsetT = 6;
+        pub const VT_CHAT: flatbuffers::VOffsetT = 8;
 
         #[inline]
         pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
@@ -496,23 +540,53 @@ pub mod server_messages {
             args: &'args StatePayloadArgs<'args>,
         ) -> flatbuffers::WIPOffset<StatePayload<'bldr>> {
             let mut builder = StatePayloadBuilder::new(_fbb);
-            if let Some(x) = args.players {
-                builder.add_players(x);
+            if let Some(x) = args.chat {
+                builder.add_chat(x);
             }
+            if let Some(x) = args.game_state {
+                builder.add_game_state(x);
+            }
+            builder.add_code(args.code);
             builder.finish()
         }
 
         #[inline]
-        pub fn players(
+        pub fn code(&self) -> ResponseCode {
+            // Safety:
+            // Created from valid Table for this object
+            // which contains a valid value in this slot
+            unsafe {
+                self._tab
+                    .get::<ResponseCode>(StatePayload::VT_CODE, Some(ResponseCode::OK))
+                    .unwrap()
+            }
+        }
+        #[inline]
+        pub fn game_state(&self) -> Option<super::game_state::GameState<'a>> {
+            // Safety:
+            // Created from valid Table for this object
+            // which contains a valid value in this slot
+            unsafe {
+                self._tab
+                    .get::<flatbuffers::ForwardsUOffset<super::game_state::GameState>>(
+                        StatePayload::VT_GAME_STATE,
+                        None,
+                    )
+            }
+        }
+        #[inline]
+        pub fn chat(
             &self,
-        ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>> {
+        ) -> Option<
+            flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<super::chat::ChatMessage<'a>>>,
+        > {
             // Safety:
             // Created from valid Table for this object
             // which contains a valid value in this slot
             unsafe {
                 self._tab.get::<flatbuffers::ForwardsUOffset<
-                    flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>,
-                >>(StatePayload::VT_PLAYERS, None)
+                    flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<super::chat::ChatMessage>>,
+                >>(StatePayload::VT_CHAT, None)
             }
         }
     }
@@ -525,22 +599,36 @@ pub mod server_messages {
         ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
             use self::flatbuffers::Verifiable;
             v.visit_table(pos)?
+                .visit_field::<ResponseCode>("code", Self::VT_CODE, false)?
+                .visit_field::<flatbuffers::ForwardsUOffset<super::game_state::GameState>>(
+                    "game_state",
+                    Self::VT_GAME_STATE,
+                    false,
+                )?
                 .visit_field::<flatbuffers::ForwardsUOffset<
-                    flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<&'_ str>>,
-                >>("players", Self::VT_PLAYERS, false)?
+                    flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<super::chat::ChatMessage>>,
+                >>("chat", Self::VT_CHAT, false)?
                 .finish();
             Ok(())
         }
     }
     pub struct StatePayloadArgs<'a> {
-        pub players: Option<
-            flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>>,
+        pub code: ResponseCode,
+        pub game_state: Option<flatbuffers::WIPOffset<super::game_state::GameState<'a>>>,
+        pub chat: Option<
+            flatbuffers::WIPOffset<
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<super::chat::ChatMessage<'a>>>,
+            >,
         >,
     }
     impl<'a> Default for StatePayloadArgs<'a> {
         #[inline]
         fn default() -> Self {
-            StatePayloadArgs { players: None }
+            StatePayloadArgs {
+                code: ResponseCode::OK,
+                game_state: None,
+                chat: None,
+            }
         }
     }
 
@@ -550,14 +638,30 @@ pub mod server_messages {
     }
     impl<'a: 'b, 'b> StatePayloadBuilder<'a, 'b> {
         #[inline]
-        pub fn add_players(
+        pub fn add_code(&mut self, code: ResponseCode) {
+            self.fbb_
+                .push_slot::<ResponseCode>(StatePayload::VT_CODE, code, ResponseCode::OK);
+        }
+        #[inline]
+        pub fn add_game_state(
             &mut self,
-            players: flatbuffers::WIPOffset<
-                flatbuffers::Vector<'b, flatbuffers::ForwardsUOffset<&'b str>>,
+            game_state: flatbuffers::WIPOffset<super::game_state::GameState<'b>>,
+        ) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<super::game_state::GameState>>(
+                    StatePayload::VT_GAME_STATE,
+                    game_state,
+                );
+        }
+        #[inline]
+        pub fn add_chat(
+            &mut self,
+            chat: flatbuffers::WIPOffset<
+                flatbuffers::Vector<'b, flatbuffers::ForwardsUOffset<super::chat::ChatMessage<'b>>>,
             >,
         ) {
             self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<_>>(StatePayload::VT_PLAYERS, players);
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(StatePayload::VT_CHAT, chat);
         }
         #[inline]
         pub fn new(
@@ -579,7 +683,9 @@ pub mod server_messages {
     impl core::fmt::Debug for StatePayload<'_> {
         fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
             let mut ds = f.debug_struct("StatePayload");
-            ds.field("players", &self.players());
+            ds.field("code", &self.code());
+            ds.field("game_state", &self.game_state());
+            ds.field("chat", &self.chat());
             ds.finish()
         }
     }
@@ -624,13 +730,13 @@ pub mod server_messages {
         }
 
         #[inline]
-        pub fn timestamp(&self) -> i64 {
+        pub fn timestamp(&self) -> u64 {
             // Safety:
             // Created from valid Table for this object
             // which contains a valid value in this slot
             unsafe {
                 self._tab
-                    .get::<i64>(ServerMessage::VT_TIMESTAMP, Some(0))
+                    .get::<u64>(ServerMessage::VT_TIMESTAMP, Some(0))
                     .unwrap()
             }
         }
@@ -663,13 +769,13 @@ pub mod server_messages {
         }
         #[inline]
         #[allow(non_snake_case)]
-        pub fn payload_as_join_payload(&self) -> Option<JoinPayload<'a>> {
-            if self.payload_type() == ServerMessagePayload::JoinPayload {
+        pub fn payload_as_join_response_payload(&self) -> Option<JoinResponsePayload<'a>> {
+            if self.payload_type() == ServerMessagePayload::JoinResponsePayload {
                 self.payload().map(|t| {
                     // Safety:
                     // Created from a valid Table for this object
                     // Which contains a valid union in this slot
-                    unsafe { JoinPayload::init_from_table(t) }
+                    unsafe { JoinResponsePayload::init_from_table(t) }
                 })
             } else {
                 None
@@ -678,28 +784,13 @@ pub mod server_messages {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn payload_as_leave_payload(&self) -> Option<LeavePayload<'a>> {
-            if self.payload_type() == ServerMessagePayload::LeavePayload {
+        pub fn payload_as_leave_response_payload(&self) -> Option<LeaveResponsePayload<'a>> {
+            if self.payload_type() == ServerMessagePayload::LeaveResponsePayload {
                 self.payload().map(|t| {
                     // Safety:
                     // Created from a valid Table for this object
                     // Which contains a valid union in this slot
-                    unsafe { LeavePayload::init_from_table(t) }
-                })
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn payload_as_chat_payload(&self) -> Option<ChatPayload<'a>> {
-            if self.payload_type() == ServerMessagePayload::ChatPayload {
-                self.payload().map(|t| {
-                    // Safety:
-                    // Created from a valid Table for this object
-                    // Which contains a valid union in this slot
-                    unsafe { ChatPayload::init_from_table(t) }
+                    unsafe { LeaveResponsePayload::init_from_table(t) }
                 })
             } else {
                 None
@@ -730,43 +821,21 @@ pub mod server_messages {
         ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
             use self::flatbuffers::Verifiable;
             v.visit_table(pos)?
-                .visit_field::<i64>("timestamp", Self::VT_TIMESTAMP, false)?
-                .visit_union::<ServerMessagePayload, _>(
-                    "payload_type",
-                    Self::VT_PAYLOAD_TYPE,
-                    "payload",
-                    Self::VT_PAYLOAD,
-                    false,
-                    |key, v, pos| match key {
-                        ServerMessagePayload::JoinPayload => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<JoinPayload>>(
-                                "ServerMessagePayload::JoinPayload",
-                                pos,
-                            ),
-                        ServerMessagePayload::LeavePayload => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<LeavePayload>>(
-                                "ServerMessagePayload::LeavePayload",
-                                pos,
-                            ),
-                        ServerMessagePayload::ChatPayload => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<ChatPayload>>(
-                                "ServerMessagePayload::ChatPayload",
-                                pos,
-                            ),
-                        ServerMessagePayload::StatePayload => v
-                            .verify_union_variant::<flatbuffers::ForwardsUOffset<StatePayload>>(
-                                "ServerMessagePayload::StatePayload",
-                                pos,
-                            ),
-                        _ => Ok(()),
-                    },
-                )?
-                .finish();
+     .visit_field::<u64>("timestamp", Self::VT_TIMESTAMP, false)?
+     .visit_union::<ServerMessagePayload, _>("payload_type", Self::VT_PAYLOAD_TYPE, "payload", Self::VT_PAYLOAD, false, |key, v, pos| {
+        match key {
+          ServerMessagePayload::JoinResponsePayload => v.verify_union_variant::<flatbuffers::ForwardsUOffset<JoinResponsePayload>>("ServerMessagePayload::JoinResponsePayload", pos),
+          ServerMessagePayload::LeaveResponsePayload => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LeaveResponsePayload>>("ServerMessagePayload::LeaveResponsePayload", pos),
+          ServerMessagePayload::StatePayload => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StatePayload>>("ServerMessagePayload::StatePayload", pos),
+          _ => Ok(()),
+        }
+     })?
+     .finish();
             Ok(())
         }
     }
     pub struct ServerMessageArgs {
-        pub timestamp: i64,
+        pub timestamp: u64,
         pub payload_type: ServerMessagePayload,
         pub payload: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
     }
@@ -787,9 +856,9 @@ pub mod server_messages {
     }
     impl<'a: 'b, 'b> ServerMessageBuilder<'a, 'b> {
         #[inline]
-        pub fn add_timestamp(&mut self, timestamp: i64) {
+        pub fn add_timestamp(&mut self, timestamp: u64) {
             self.fbb_
-                .push_slot::<i64>(ServerMessage::VT_TIMESTAMP, timestamp, 0);
+                .push_slot::<u64>(ServerMessage::VT_TIMESTAMP, timestamp, 0);
         }
         #[inline]
         pub fn add_payload_type(&mut self, payload_type: ServerMessagePayload) {
@@ -830,8 +899,8 @@ pub mod server_messages {
             ds.field("timestamp", &self.timestamp());
             ds.field("payload_type", &self.payload_type());
             match self.payload_type() {
-                ServerMessagePayload::JoinPayload => {
-                    if let Some(x) = self.payload_as_join_payload() {
+                ServerMessagePayload::JoinResponsePayload => {
+                    if let Some(x) = self.payload_as_join_response_payload() {
                         ds.field("payload", &x)
                     } else {
                         ds.field(
@@ -840,18 +909,8 @@ pub mod server_messages {
                         )
                     }
                 }
-                ServerMessagePayload::LeavePayload => {
-                    if let Some(x) = self.payload_as_leave_payload() {
-                        ds.field("payload", &x)
-                    } else {
-                        ds.field(
-                            "payload",
-                            &"InvalidFlatbuffer: Union discriminant does not match value.",
-                        )
-                    }
-                }
-                ServerMessagePayload::ChatPayload => {
-                    if let Some(x) = self.payload_as_chat_payload() {
+                ServerMessagePayload::LeaveResponsePayload => {
+                    if let Some(x) = self.payload_as_leave_response_payload() {
                         ds.field("payload", &x)
                     } else {
                         ds.field(
@@ -877,5 +936,84 @@ pub mod server_messages {
             };
             ds.finish()
         }
+    }
+    #[inline]
+    /// Verifies that a buffer of bytes contains a `ServerMessage`
+    /// and returns it.
+    /// Note that verification is still experimental and may not
+    /// catch every error, or be maximally performant. For the
+    /// previous, unchecked, behavior use
+    /// `root_as_server_message_unchecked`.
+    pub fn root_as_server_message(
+        buf: &[u8],
+    ) -> Result<ServerMessage, flatbuffers::InvalidFlatbuffer> {
+        flatbuffers::root::<ServerMessage>(buf)
+    }
+    #[inline]
+    /// Verifies that a buffer of bytes contains a size prefixed
+    /// `ServerMessage` and returns it.
+    /// Note that verification is still experimental and may not
+    /// catch every error, or be maximally performant. For the
+    /// previous, unchecked, behavior use
+    /// `size_prefixed_root_as_server_message_unchecked`.
+    pub fn size_prefixed_root_as_server_message(
+        buf: &[u8],
+    ) -> Result<ServerMessage, flatbuffers::InvalidFlatbuffer> {
+        flatbuffers::size_prefixed_root::<ServerMessage>(buf)
+    }
+    #[inline]
+    /// Verifies, with the given options, that a buffer of bytes
+    /// contains a `ServerMessage` and returns it.
+    /// Note that verification is still experimental and may not
+    /// catch every error, or be maximally performant. For the
+    /// previous, unchecked, behavior use
+    /// `root_as_server_message_unchecked`.
+    pub fn root_as_server_message_with_opts<'b, 'o>(
+        opts: &'o flatbuffers::VerifierOptions,
+        buf: &'b [u8],
+    ) -> Result<ServerMessage<'b>, flatbuffers::InvalidFlatbuffer> {
+        flatbuffers::root_with_opts::<ServerMessage<'b>>(opts, buf)
+    }
+    #[inline]
+    /// Verifies, with the given verifier options, that a buffer of
+    /// bytes contains a size prefixed `ServerMessage` and returns
+    /// it. Note that verification is still experimental and may not
+    /// catch every error, or be maximally performant. For the
+    /// previous, unchecked, behavior use
+    /// `root_as_server_message_unchecked`.
+    pub fn size_prefixed_root_as_server_message_with_opts<'b, 'o>(
+        opts: &'o flatbuffers::VerifierOptions,
+        buf: &'b [u8],
+    ) -> Result<ServerMessage<'b>, flatbuffers::InvalidFlatbuffer> {
+        flatbuffers::size_prefixed_root_with_opts::<ServerMessage<'b>>(opts, buf)
+    }
+    #[inline]
+    /// Assumes, without verification, that a buffer of bytes contains a ServerMessage and returns it.
+    /// # Safety
+    /// Callers must trust the given bytes do indeed contain a valid `ServerMessage`.
+    pub unsafe fn root_as_server_message_unchecked(buf: &[u8]) -> ServerMessage {
+        flatbuffers::root_unchecked::<ServerMessage>(buf)
+    }
+    #[inline]
+    /// Assumes, without verification, that a buffer of bytes contains a size prefixed ServerMessage and returns it.
+    /// # Safety
+    /// Callers must trust the given bytes do indeed contain a valid size prefixed `ServerMessage`.
+    pub unsafe fn size_prefixed_root_as_server_message_unchecked(buf: &[u8]) -> ServerMessage {
+        flatbuffers::size_prefixed_root_unchecked::<ServerMessage>(buf)
+    }
+    #[inline]
+    pub fn finish_server_message_buffer<'a, 'b>(
+        fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        root: flatbuffers::WIPOffset<ServerMessage<'a>>,
+    ) {
+        fbb.finish(root, None);
+    }
+
+    #[inline]
+    pub fn finish_size_prefixed_server_message_buffer<'a, 'b>(
+        fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        root: flatbuffers::WIPOffset<ServerMessage<'a>>,
+    ) {
+        fbb.finish_size_prefixed(root, None);
     }
 } // pub mod ServerMessages
