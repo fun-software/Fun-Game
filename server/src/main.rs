@@ -270,6 +270,22 @@ async fn handle_join(
     return builder.finished_data().to_vec();
 }
 
+async fn handle_query(
+    name: &str,
+    remote_addr: SocketAddr,
+    players: Arc<RwLock<PlayerMap>>
+) -> Vec<u8> {
+    vec![0u8; 0]
+}
+
+async fn handle_input(
+    name: &str,
+    remote_addr: SocketAddr,
+    players: Arc<RwLock<PlayerMap>>
+) -> Vec<u8> {
+    vec![0u8; 0]
+}
+
 async fn handle_leave(
     name: &str,
     remote_addr: SocketAddr,
