@@ -1,4 +1,3 @@
-extern crate tokio;
 #[allow(non_snake_case, unused_imports)]
 #[path = "../flatbuffers/ClientMessages_generated.rs"]
 mod ClientMessages_generated;
@@ -23,7 +22,7 @@ use hyper::{
 use tokio::{
     runtime,
     sync::RwLock,
-    time::{self, Duration}
+    time::{self, Duration},
 };
 use webrtc_unreliable::{MessageType, Server};
 
@@ -34,20 +33,13 @@ type PlayerMap = HashMap<SocketAddr, String>;
 fn main() {
     dotenv().ok();
 
-    let PUBLIC_PORT: String = std::env::var("PUBLIC_PORT")
-        .expect("PUBLIC_PORT must be set.");
-    let WEBRTC_PORT: String = std::env::var("WEBRTC_PORT")
-        .expect("WEBRTC_PORT must be set.");
-    let LISTEN_PORT: String = std::env::var("LISTEN_PORT")
-        .expect("LISTEN_PORT must be set.");
+    let PUBLIC_PORT: String = std::env::var("PUBLIC_PORT").expect("PUBLIC_PORT must be set.");
+    let WEBRTC_PORT: String = std::env::var("WEBRTC_PORT").expect("WEBRTC_PORT must be set.");
+    let LISTEN_PORT: String = std::env::var("LISTEN_PORT").expect("LISTEN_PORT must be set.");
 
-    let SERVER_URL: String = std::env::var("SERVER_URL")
-        .expect("SERVER_URL must be set.");
+    let SERVER_URL: String = std::env::var("SERVER_URL").expect("SERVER_URL must be set.");
 
-    let TICK_RATE: u64 = std::env::var("TICK_RATE")
-        .unwrap()
-        .parse::<u64>()
-        .unwrap();
+    let TICK_RATE: u64 = std::env::var("TICK_RATE").unwrap().parse::<u64>().unwrap();
 
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("debug"));
 
@@ -56,8 +48,8 @@ fn main() {
         .build()
         .expect("could not create tokio runtime");
 
-    let public_webrtc_addr: SocketAddr  = format!("{SERVER_URL}:{PUBLIC_PORT}").parse().unwrap();
-    let webrtc_listen_addr: SocketAddr  = format!("{SERVER_URL}:{WEBRTC_PORT}").parse().unwrap();
+    let public_webrtc_addr: SocketAddr = format!("{SERVER_URL}:{PUBLIC_PORT}").parse().unwrap();
+    let webrtc_listen_addr: SocketAddr = format!("{SERVER_URL}:{WEBRTC_PORT}").parse().unwrap();
     let session_listen_addr: SocketAddr = format!("{SERVER_URL}:{LISTEN_PORT}").parse().unwrap();
 
     rt.block_on(async {
