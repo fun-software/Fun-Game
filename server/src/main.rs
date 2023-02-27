@@ -198,10 +198,31 @@ async fn handle_msg(
                         }
                     }
                     ClientMessagePayload::QueryStatePayload => {
-                        println!("User queried for state!");
+                        let query_payload = msg
+                            .payload_as_query_state_payload()
+                            .expect("could not parse query payload");
+                        let user = query_payload.user();
+
+                        match user {
+                            Some(user) => handle_query(user.username().unwrap(), remote_addr, players).await,
+                            None => vec![0u8, 0],
+                        }
+                        println!("User {} queried for state!", user.username());
                         vec![0u8; 0]
                     }
-                    _ => vec![0u8; 0],
+                    ClientMessagePayload::InputPayload => {
+                        let input_payload = msg
+                            .payload_as_input_payload()
+                            .expect("could not parse input payload");
+                        let user = input_payload.user();
+
+                        match user {
+                            Some(user) => handle_input(user.username().unwrap(), remote_addr, players).await,
+                            None => vec![0u8, 0],
+                        }
+                        println!("User {} gave InputPayload!", user.username());
+                        user 
+                    }
                 };
             } else {
                 log::warn!("could not parse binary client message");
