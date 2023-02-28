@@ -980,7 +980,7 @@ impl core::fmt::Debug for Game<'_> {
 }  // pub mod Game
 
 #[allow(unused_imports, dead_code)]
-pub mod game_state {
+pub mod gamestate {
 
   use core::mem;
   use core::cmp::Ordering;
@@ -1173,5 +1173,5 @@ pub fn finish_game_state_buffer<'a, 'b>(
 pub fn finish_size_prefixed_game_state_buffer<'a, 'b>(fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>, root: flatbuffers::WIPOffset<GameState<'a>>) {
   fbb.finish_size_prefixed(root, None);
 }
-}  // pub mod GameState
+}  // pub mod Gamestate
 

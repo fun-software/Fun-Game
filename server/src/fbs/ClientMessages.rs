@@ -773,7 +773,7 @@ impl core::fmt::Debug for ChatMessage<'_> {
 }  // pub mod Chat
 
 #[allow(unused_imports, dead_code)]
-pub mod client_messages {
+pub mod clientmessages {
 
   use core::mem;
   use core::cmp::Ordering;
@@ -1002,6 +1002,7 @@ impl<'a> flatbuffers::Follow<'a> for JoinGamePayload<'a> {
 
 impl<'a> JoinGamePayload<'a> {
   pub const VT_USER: flatbuffers::VOffsetT = 4;
+  pub const VT_GAME_ID: flatbuffers::VOffsetT = 6;
 
   #[inline]
   pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
@@ -1013,6 +1014,7 @@ impl<'a> JoinGamePayload<'a> {
     args: &'args JoinGamePayloadArgs<'args>
   ) -> flatbuffers::WIPOffset<JoinGamePayload<'bldr>> {
     let mut builder = JoinGamePayloadBuilder::new(_fbb);
+    builder.add_game_id(args.game_id);
     if let Some(x) = args.user { builder.add_user(x); }
     builder.finish()
   }
@@ -1025,6 +1027,13 @@ impl<'a> JoinGamePayload<'a> {
     // which contains a valid value in this slot
     unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<super::user::User>>(JoinGamePayload::VT_USER, None)}
   }
+  #[inline]
+  pub fn game_id(&self) -> u64 {
+    // Safety:
+    // Created from valid Table for this object
+    // which contains a valid value in this slot
+    unsafe { self._tab.get::<u64>(JoinGamePayload::VT_GAME_ID, Some(0)).unwrap()}
+  }
 }
 
 impl flatbuffers::Verifiable for JoinGamePayload<'_> {
@@ -1035,18 +1044,21 @@ impl flatbuffers::Verifiable for JoinGamePayload<'_> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
      .visit_field::<flatbuffers::ForwardsUOffset<super::user::User>>("user", Self::VT_USER, false)?
+     .visit_field::<u64>("game_id", Self::VT_GAME_ID, false)?
      .finish();
     Ok(())
   }
 }
 pub struct JoinGamePayloadArgs<'a> {
     pub user: Option<flatbuffers::WIPOffset<super::user::User<'a>>>,
+    pub game_id: u64,
 }
 impl<'a> Default for JoinGamePayloadArgs<'a> {
   #[inline]
   fn default() -> Self {
     JoinGamePayloadArgs {
       user: None,
+      game_id: 0,
     }
   }
 }
@@ -1059,6 +1071,10 @@ impl<'a: 'b, 'b> JoinGamePayloadBuilder<'a, 'b> {
   #[inline]
   pub fn add_user(&mut self, user: flatbuffers::WIPOffset<super::user::User<'b >>) {
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<super::user::User>>(JoinGamePayload::VT_USER, user);
+  }
+  #[inline]
+  pub fn add_game_id(&mut self, game_id: u64) {
+    self.fbb_.push_slot::<u64>(JoinGamePayload::VT_GAME_ID, game_id, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> JoinGamePayloadBuilder<'a, 'b> {
@@ -1079,6 +1095,7 @@ impl core::fmt::Debug for JoinGamePayload<'_> {
   fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
     let mut ds = f.debug_struct("JoinGamePayload");
       ds.field("user", &self.user());
+      ds.field("game_id", &self.game_id());
       ds.finish()
   }
 }
@@ -1852,5 +1869,5 @@ pub fn finish_client_message_buffer<'a, 'b>(
 pub fn finish_size_prefixed_client_message_buffer<'a, 'b>(fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>, root: flatbuffers::WIPOffset<ClientMessage<'a>>) {
   fbb.finish_size_prefixed(root, None);
 }
-}  // pub mod ClientMessages
+}  // pub mod Clientmessages
 

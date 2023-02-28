@@ -980,7 +980,7 @@ impl core::fmt::Debug for Game<'_> {
 }  // pub mod Game
 
 #[allow(unused_imports, dead_code)]
-pub mod game_state {
+pub mod gamestate {
 
   use core::mem;
   use core::cmp::Ordering;
@@ -1102,7 +1102,7 @@ impl core::fmt::Debug for GameState<'_> {
       ds.finish()
   }
 }
-}  // pub mod GameState
+}  // pub mod Gamestate
 
 #[allow(unused_imports, dead_code)]
 pub mod chat {
@@ -1315,7 +1315,7 @@ impl core::fmt::Debug for ChatMessage<'_> {
 }  // pub mod Chat
 
 #[allow(unused_imports, dead_code)]
-pub mod server_messages {
+pub mod servermessages {
 
   use core::mem;
   use core::cmp::Ordering;
@@ -1894,11 +1894,11 @@ impl<'a> StatePayload<'a> {
     unsafe { self._tab.get::<ResponseCode>(StatePayload::VT_CODE, Some(ResponseCode::OK)).unwrap()}
   }
   #[inline]
-  pub fn game_state(&self) -> Option<super::game_state::GameState<'a>> {
+  pub fn game_state(&self) -> Option<super::gamestate::GameState<'a>> {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<super::game_state::GameState>>(StatePayload::VT_GAME_STATE, None)}
+    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<super::gamestate::GameState>>(StatePayload::VT_GAME_STATE, None)}
   }
   #[inline]
   pub fn chat(&self) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<super::chat::ChatMessage<'a>>>> {
@@ -1917,7 +1917,7 @@ impl flatbuffers::Verifiable for StatePayload<'_> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
      .visit_field::<ResponseCode>("code", Self::VT_CODE, false)?
-     .visit_field::<flatbuffers::ForwardsUOffset<super::game_state::GameState>>("game_state", Self::VT_GAME_STATE, false)?
+     .visit_field::<flatbuffers::ForwardsUOffset<super::gamestate::GameState>>("game_state", Self::VT_GAME_STATE, false)?
      .visit_field::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<super::chat::ChatMessage>>>>("chat", Self::VT_CHAT, false)?
      .finish();
     Ok(())
@@ -1925,7 +1925,7 @@ impl flatbuffers::Verifiable for StatePayload<'_> {
 }
 pub struct StatePayloadArgs<'a> {
     pub code: ResponseCode,
-    pub game_state: Option<flatbuffers::WIPOffset<super::game_state::GameState<'a>>>,
+    pub game_state: Option<flatbuffers::WIPOffset<super::gamestate::GameState<'a>>>,
     pub chat: Option<flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<super::chat::ChatMessage<'a>>>>>,
 }
 impl<'a> Default for StatePayloadArgs<'a> {
@@ -1949,8 +1949,8 @@ impl<'a: 'b, 'b> StatePayloadBuilder<'a, 'b> {
     self.fbb_.push_slot::<ResponseCode>(StatePayload::VT_CODE, code, ResponseCode::OK);
   }
   #[inline]
-  pub fn add_game_state(&mut self, game_state: flatbuffers::WIPOffset<super::game_state::GameState<'b >>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<super::game_state::GameState>>(StatePayload::VT_GAME_STATE, game_state);
+  pub fn add_game_state(&mut self, game_state: flatbuffers::WIPOffset<super::gamestate::GameState<'b >>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<super::gamestate::GameState>>(StatePayload::VT_GAME_STATE, game_state);
   }
   #[inline]
   pub fn add_chat(&mut self, chat: flatbuffers::WIPOffset<flatbuffers::Vector<'b , flatbuffers::ForwardsUOffset<super::chat::ChatMessage<'b >>>>) {
@@ -2282,5 +2282,5 @@ pub fn finish_server_message_buffer<'a, 'b>(
 pub fn finish_size_prefixed_server_message_buffer<'a, 'b>(fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>, root: flatbuffers::WIPOffset<ServerMessage<'a>>) {
   fbb.finish_size_prefixed(root, None);
 }
-}  // pub mod ServerMessages
+}  // pub mod Servermessages
 

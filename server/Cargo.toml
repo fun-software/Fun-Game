@@ -24,6 +24,7 @@ webrtc-unreliable = "0.5.3"
 env_logger = "0.9"
 flatbuffers = "23.1.21"
 dotenv = "0.15.0"
+chrono = "0.4.23"
 
 
 [[src]]
