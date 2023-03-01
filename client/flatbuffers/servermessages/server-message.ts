@@ -2,10 +2,14 @@
 
 import * as flatbuffers from 'flatbuffers';
 
+import { JoinGameResponsePayload, JoinGameResponsePayloadT } from '../servermessages/join-game-response-payload';
+import { LeaveGameResponsePayload, LeaveGameResponsePayloadT } from '../servermessages/leave-game-response-payload';
+import { NewGameResponsePayload, NewGameResponsePayloadT } from '../servermessages/new-game-response-payload';
 import { ServerMessagePayload, unionToServerMessagePayload, unionListToServerMessagePayload } from '../servermessages/server-message-payload';
+import { StatePayload, StatePayloadT } from '../servermessages/state-payload';
 
 
-export class ServerMessage {
+export class ServerMessage implements flatbuffers.IUnpackableObject<ServerMessageT> {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
   __init(i:number, bb:flatbuffers.ByteBuffer):ServerMessage {
@@ -26,6 +30,17 @@ static getSizePrefixedRootAsServerMessage(bb:flatbuffers.ByteBuffer, obj?:Server
 timestamp():bigint {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.readUint64(this.bb_pos + offset) : BigInt('0');
+}
+
+mutate_timestamp(value:bigint):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 4);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint64(this.bb_pos + offset, value);
+  return true;
 }
 
 payloadType():ServerMessagePayload {
@@ -73,5 +88,47 @@ static createServerMessage(builder:flatbuffers.Builder, timestamp:bigint, payloa
   ServerMessage.addPayloadType(builder, payloadType);
   ServerMessage.addPayload(builder, payloadOffset);
   return ServerMessage.endServerMessage(builder);
+}
+
+unpack(): ServerMessageT {
+  return new ServerMessageT(
+    this.timestamp(),
+    this.payloadType(),
+    (() => {
+      const temp = unionToServerMessagePayload(this.payloadType(), this.payload.bind(this));
+      if(temp === null) { return null; }
+      return temp.unpack()
+  })()
+  );
+}
+
+
+unpackTo(_o: ServerMessageT): void {
+  _o.timestamp = this.timestamp();
+  _o.payloadType = this.payloadType();
+  _o.payload = (() => {
+      const temp = unionToServerMessagePayload(this.payloadType(), this.payload.bind(this));
+      if(temp === null) { return null; }
+      return temp.unpack()
+  })();
+}
+}
+
+export class ServerMessageT implements flatbuffers.IGeneratedObject {
+constructor(
+  public timestamp: bigint = BigInt('0'),
+  public payloadType: ServerMessagePayload = ServerMessagePayload.NONE,
+  public payload: JoinGameResponsePayloadT|LeaveGameResponsePayloadT|NewGameResponsePayloadT|StatePayloadT|null = null
+){}
+
+
+pack(builder:flatbuffers.Builder): flatbuffers.Offset {
+  const payload = builder.createObjectOffset(this.payload);
+
+  return ServerMessage.createServerMessage(builder,
+    this.timestamp,
+    this.payloadType,
+    payload
+  );
 }
 }

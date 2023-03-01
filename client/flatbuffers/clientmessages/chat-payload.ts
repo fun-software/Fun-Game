@@ -2,11 +2,11 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { ChatMessage } from '../chat/chat-message';
-import { User } from '../user/user';
+import { ChatMessage, ChatMessageT } from '../chat/chat-message';
+import { User, UserT } from '../user/user';
 
 
-export class ChatPayload {
+export class ChatPayload implements flatbuffers.IUnpackableObject<ChatPayloadT> {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
   __init(i:number, bb:flatbuffers.ByteBuffer):ChatPayload {
@@ -51,4 +51,36 @@ static endChatPayload(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 }
 
+
+unpack(): ChatPayloadT {
+  return new ChatPayloadT(
+    (this.user() !== null ? this.user()!.unpack() : null),
+    (this.message() !== null ? this.message()!.unpack() : null)
+  );
+}
+
+
+unpackTo(_o: ChatPayloadT): void {
+  _o.user = (this.user() !== null ? this.user()!.unpack() : null);
+  _o.message = (this.message() !== null ? this.message()!.unpack() : null);
+}
+}
+
+export class ChatPayloadT implements flatbuffers.IGeneratedObject {
+constructor(
+  public user: UserT|null = null,
+  public message: ChatMessageT|null = null
+){}
+
+
+pack(builder:flatbuffers.Builder): flatbuffers.Offset {
+  const user = (this.user !== null ? this.user!.pack(builder) : 0);
+  const message = (this.message !== null ? this.message!.pack(builder) : 0);
+
+  ChatPayload.startChatPayload(builder);
+  ChatPayload.addUser(builder, user);
+  ChatPayload.addMessage(builder, message);
+
+  return ChatPayload.endChatPayload(builder);
+}
 }

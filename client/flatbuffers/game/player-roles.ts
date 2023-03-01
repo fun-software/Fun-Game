@@ -2,10 +2,9 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { User } from '../user/user';
 
 
-export class PlayerRoles {
+export class PlayerRoles implements flatbuffers.IUnpackableObject<PlayerRolesT> {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
   __init(i:number, bb:flatbuffers.ByteBuffer):PlayerRoles {
@@ -23,44 +22,88 @@ static getSizePrefixedRootAsPlayerRoles(bb:flatbuffers.ByteBuffer, obj?:PlayerRo
   return (obj || new PlayerRoles()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 }
 
-red(obj?:User):User|null {
+red():bigint {
   const offset = this.bb!.__offset(this.bb_pos, 4);
-  return offset ? (obj || new User()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
+  return offset ? this.bb!.readUint64(this.bb_pos + offset) : BigInt('0');
 }
 
-blue(obj?:User):User|null {
+mutate_red(value:bigint):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 4);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint64(this.bb_pos + offset, value);
+  return true;
+}
+
+blue():bigint {
   const offset = this.bb!.__offset(this.bb_pos, 6);
-  return offset ? (obj || new User()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
+  return offset ? this.bb!.readUint64(this.bb_pos + offset) : BigInt('0');
 }
 
-green(obj?:User):User|null {
+mutate_blue(value:bigint):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 6);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint64(this.bb_pos + offset, value);
+  return true;
+}
+
+green():bigint {
   const offset = this.bb!.__offset(this.bb_pos, 8);
-  return offset ? (obj || new User()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
+  return offset ? this.bb!.readUint64(this.bb_pos + offset) : BigInt('0');
 }
 
-yellow(obj?:User):User|null {
+mutate_green(value:bigint):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 8);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint64(this.bb_pos + offset, value);
+  return true;
+}
+
+yellow():bigint {
   const offset = this.bb!.__offset(this.bb_pos, 10);
-  return offset ? (obj || new User()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
+  return offset ? this.bb!.readUint64(this.bb_pos + offset) : BigInt('0');
+}
+
+mutate_yellow(value:bigint):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 10);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint64(this.bb_pos + offset, value);
+  return true;
 }
 
 static startPlayerRoles(builder:flatbuffers.Builder) {
   builder.startObject(4);
 }
 
-static addRed(builder:flatbuffers.Builder, redOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(0, redOffset, 0);
+static addRed(builder:flatbuffers.Builder, red:bigint) {
+  builder.addFieldInt64(0, red, BigInt('0'));
 }
 
-static addBlue(builder:flatbuffers.Builder, blueOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(1, blueOffset, 0);
+static addBlue(builder:flatbuffers.Builder, blue:bigint) {
+  builder.addFieldInt64(1, blue, BigInt('0'));
 }
 
-static addGreen(builder:flatbuffers.Builder, greenOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(2, greenOffset, 0);
+static addGreen(builder:flatbuffers.Builder, green:bigint) {
+  builder.addFieldInt64(2, green, BigInt('0'));
 }
 
-static addYellow(builder:flatbuffers.Builder, yellowOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(3, yellowOffset, 0);
+static addYellow(builder:flatbuffers.Builder, yellow:bigint) {
+  builder.addFieldInt64(3, yellow, BigInt('0'));
 }
 
 static endPlayerRoles(builder:flatbuffers.Builder):flatbuffers.Offset {
@@ -68,4 +111,48 @@ static endPlayerRoles(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 }
 
+static createPlayerRoles(builder:flatbuffers.Builder, red:bigint, blue:bigint, green:bigint, yellow:bigint):flatbuffers.Offset {
+  PlayerRoles.startPlayerRoles(builder);
+  PlayerRoles.addRed(builder, red);
+  PlayerRoles.addBlue(builder, blue);
+  PlayerRoles.addGreen(builder, green);
+  PlayerRoles.addYellow(builder, yellow);
+  return PlayerRoles.endPlayerRoles(builder);
+}
+
+unpack(): PlayerRolesT {
+  return new PlayerRolesT(
+    this.red(),
+    this.blue(),
+    this.green(),
+    this.yellow()
+  );
+}
+
+
+unpackTo(_o: PlayerRolesT): void {
+  _o.red = this.red();
+  _o.blue = this.blue();
+  _o.green = this.green();
+  _o.yellow = this.yellow();
+}
+}
+
+export class PlayerRolesT implements flatbuffers.IGeneratedObject {
+constructor(
+  public red: bigint = BigInt('0'),
+  public blue: bigint = BigInt('0'),
+  public green: bigint = BigInt('0'),
+  public yellow: bigint = BigInt('0')
+){}
+
+
+pack(builder:flatbuffers.Builder): flatbuffers.Offset {
+  return PlayerRoles.createPlayerRoles(builder,
+    this.red,
+    this.blue,
+    this.green,
+    this.yellow
+  );
+}
 }

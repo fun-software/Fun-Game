@@ -2,10 +2,10 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { User } from '../user/user';
+import { User, UserT } from '../user/user';
 
 
-export class JoinGamePayload {
+export class JoinGamePayload implements flatbuffers.IUnpackableObject<JoinGamePayloadT> {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
   __init(i:number, bb:flatbuffers.ByteBuffer):JoinGamePayload {
@@ -33,6 +33,17 @@ gameId():bigint {
   return offset ? this.bb!.readUint64(this.bb_pos + offset) : BigInt('0');
 }
 
+mutate_game_id(value:bigint):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 6);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint64(this.bb_pos + offset, value);
+  return true;
+}
+
 static startJoinGamePayload(builder:flatbuffers.Builder) {
   builder.startObject(2);
 }
@@ -55,5 +66,35 @@ static createJoinGamePayload(builder:flatbuffers.Builder, userOffset:flatbuffers
   JoinGamePayload.addUser(builder, userOffset);
   JoinGamePayload.addGameId(builder, gameId);
   return JoinGamePayload.endJoinGamePayload(builder);
+}
+
+unpack(): JoinGamePayloadT {
+  return new JoinGamePayloadT(
+    (this.user() !== null ? this.user()!.unpack() : null),
+    this.gameId()
+  );
+}
+
+
+unpackTo(_o: JoinGamePayloadT): void {
+  _o.user = (this.user() !== null ? this.user()!.unpack() : null);
+  _o.gameId = this.gameId();
+}
+}
+
+export class JoinGamePayloadT implements flatbuffers.IGeneratedObject {
+constructor(
+  public user: UserT|null = null,
+  public gameId: bigint = BigInt('0')
+){}
+
+
+pack(builder:flatbuffers.Builder): flatbuffers.Offset {
+  const user = (this.user !== null ? this.user!.pack(builder) : 0);
+
+  return JoinGamePayload.createJoinGamePayload(builder,
+    user,
+    this.gameId
+  );
 }
 }

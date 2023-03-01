@@ -4,7 +4,7 @@ import * as flatbuffers from 'flatbuffers';
 
 
 
-export class User {
+export class User implements flatbuffers.IUnpackableObject<UserT> {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
   __init(i:number, bb:flatbuffers.ByteBuffer):User {
@@ -27,6 +27,17 @@ id():bigint {
   return offset ? this.bb!.readUint64(this.bb_pos + offset) : BigInt('0');
 }
 
+mutate_id(value:bigint):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 4);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint64(this.bb_pos + offset, value);
+  return true;
+}
+
 username():string|null
 username(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
 username(optionalEncoding?:any):string|Uint8Array|null {
@@ -46,9 +57,31 @@ createdAt():bigint {
   return offset ? this.bb!.readUint64(this.bb_pos + offset) : BigInt('0');
 }
 
+mutate_created_at(value:bigint):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 10);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint64(this.bb_pos + offset, value);
+  return true;
+}
+
 updatedAt():bigint {
   const offset = this.bb!.__offset(this.bb_pos, 12);
   return offset ? this.bb!.readUint64(this.bb_pos + offset) : BigInt('0');
+}
+
+mutate_updated_at(value:bigint):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 12);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint64(this.bb_pos + offset, value);
+  return true;
 }
 
 static startUser(builder:flatbuffers.Builder) {
@@ -80,14 +113,6 @@ static endUser(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 }
 
-static finishUserBuffer(builder:flatbuffers.Builder, offset:flatbuffers.Offset) {
-  builder.finish(offset);
-}
-
-static finishSizePrefixedUserBuffer(builder:flatbuffers.Builder, offset:flatbuffers.Offset) {
-  builder.finish(offset, undefined, true);
-}
-
 static createUser(builder:flatbuffers.Builder, id:bigint, usernameOffset:flatbuffers.Offset, emailOffset:flatbuffers.Offset, createdAt:bigint, updatedAt:bigint):flatbuffers.Offset {
   User.startUser(builder);
   User.addId(builder, id);
@@ -96,5 +121,48 @@ static createUser(builder:flatbuffers.Builder, id:bigint, usernameOffset:flatbuf
   User.addCreatedAt(builder, createdAt);
   User.addUpdatedAt(builder, updatedAt);
   return User.endUser(builder);
+}
+
+unpack(): UserT {
+  return new UserT(
+    this.id(),
+    this.username(),
+    this.email(),
+    this.createdAt(),
+    this.updatedAt()
+  );
+}
+
+
+unpackTo(_o: UserT): void {
+  _o.id = this.id();
+  _o.username = this.username();
+  _o.email = this.email();
+  _o.createdAt = this.createdAt();
+  _o.updatedAt = this.updatedAt();
+}
+}
+
+export class UserT implements flatbuffers.IGeneratedObject {
+constructor(
+  public id: bigint = BigInt('0'),
+  public username: string|Uint8Array|null = null,
+  public email: string|Uint8Array|null = null,
+  public createdAt: bigint = BigInt('0'),
+  public updatedAt: bigint = BigInt('0')
+){}
+
+
+pack(builder:flatbuffers.Builder): flatbuffers.Offset {
+  const username = (this.username !== null ? builder.createString(this.username!) : 0);
+  const email = (this.email !== null ? builder.createString(this.email!) : 0);
+
+  return User.createUser(builder,
+    this.id,
+    username,
+    email,
+    this.createdAt,
+    this.updatedAt
+  );
 }
 }

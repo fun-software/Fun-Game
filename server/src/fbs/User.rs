@@ -58,6 +58,24 @@ impl<'a> User<'a> {
     builder.finish()
   }
 
+  pub fn unpack(&self) -> UserT {
+    let id = self.id();
+    let username = self.username().map(|x| {
+      x.to_string()
+    });
+    let email = self.email().map(|x| {
+      x.to_string()
+    });
+    let created_at = self.created_at();
+    let updated_at = self.updated_at();
+    UserT {
+      id,
+      username,
+      email,
+      created_at,
+      updated_at,
+    }
+  }
 
   #[inline]
   pub fn id(&self) -> u64 {
@@ -181,6 +199,49 @@ impl core::fmt::Debug for User<'_> {
       ds.field("created_at", &self.created_at());
       ds.field("updated_at", &self.updated_at());
       ds.finish()
+  }
+}
+#[non_exhaustive]
+#[derive(Debug, Clone, PartialEq)]
+pub struct UserT {
+  pub id: u64,
+  pub username: Option<String>,
+  pub email: Option<String>,
+  pub created_at: u64,
+  pub updated_at: u64,
+}
+impl Default for UserT {
+  fn default() -> Self {
+    Self {
+      id: 0,
+      username: None,
+      email: None,
+      created_at: 0,
+      updated_at: 0,
+    }
+  }
+}
+impl UserT {
+  pub fn pack<'b>(
+    &self,
+    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
+  ) -> flatbuffers::WIPOffset<User<'b>> {
+    let id = self.id;
+    let username = self.username.as_ref().map(|x|{
+      _fbb.create_string(x)
+    });
+    let email = self.email.as_ref().map(|x|{
+      _fbb.create_string(x)
+    });
+    let created_at = self.created_at;
+    let updated_at = self.updated_at;
+    User::create(_fbb, &UserArgs{
+      id,
+      username,
+      email,
+      created_at,
+      updated_at,
+    })
   }
 }
 #[inline]

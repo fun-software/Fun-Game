@@ -172,6 +172,29 @@ impl<'a> Vec3 {
     }
   }
 
+  pub fn unpack(&self) -> Vec3T {
+    Vec3T {
+      x: self.x(),
+      y: self.y(),
+      z: self.z(),
+    }
+  }
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct Vec3T {
+  pub x: f32,
+  pub y: f32,
+  pub z: f32,
+}
+impl Vec3T {
+  pub fn pack(&self) -> Vec3 {
+    Vec3::new(
+      self.x,
+      self.y,
+      self.z,
+    )
+  }
 }
 
 }  // pub mod Math
@@ -229,6 +252,30 @@ impl<'a> Player<'a> {
     builder.finish()
   }
 
+  pub fn unpack(&self) -> PlayerT {
+    let position = self.position().map(|x| {
+      x.unpack()
+    });
+    let velocity = self.velocity().map(|x| {
+      x.unpack()
+    });
+    let look_direction = self.look_direction().map(|x| {
+      x.unpack()
+    });
+    let hp = self.hp();
+    let speed = self.speed();
+    let sprinting = self.sprinting();
+    let sneaking = self.sneaking();
+    PlayerT {
+      position,
+      velocity,
+      look_direction,
+      hp,
+      speed,
+      sprinting,
+      sneaking,
+    }
+  }
 
   #[inline]
   pub fn position(&self) -> Option<&'a super::math::Vec3> {
@@ -382,6 +429,56 @@ impl core::fmt::Debug for Player<'_> {
       ds.field("sprinting", &self.sprinting());
       ds.field("sneaking", &self.sneaking());
       ds.finish()
+  }
+}
+#[non_exhaustive]
+#[derive(Debug, Clone, PartialEq)]
+pub struct PlayerT {
+  pub position: Option<super::math::Vec3T>,
+  pub velocity: Option<super::math::Vec3T>,
+  pub look_direction: Option<super::math::Vec3T>,
+  pub hp: i8,
+  pub speed: i8,
+  pub sprinting: bool,
+  pub sneaking: bool,
+}
+impl Default for PlayerT {
+  fn default() -> Self {
+    Self {
+      position: None,
+      velocity: None,
+      look_direction: None,
+      hp: 100,
+      speed: 100,
+      sprinting: false,
+      sneaking: false,
+    }
+  }
+}
+impl PlayerT {
+  pub fn pack<'b>(
+    &self,
+    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
+  ) -> flatbuffers::WIPOffset<Player<'b>> {
+    let position_tmp = self.position.as_ref().map(|x| x.pack());
+    let position = position_tmp.as_ref();
+    let velocity_tmp = self.velocity.as_ref().map(|x| x.pack());
+    let velocity = velocity_tmp.as_ref();
+    let look_direction_tmp = self.look_direction.as_ref().map(|x| x.pack());
+    let look_direction = look_direction_tmp.as_ref();
+    let hp = self.hp;
+    let speed = self.speed;
+    let sprinting = self.sprinting;
+    let sneaking = self.sneaking;
+    Player::create(_fbb, &PlayerArgs{
+      position,
+      velocity,
+      look_direction,
+      hp,
+      speed,
+      sprinting,
+      sneaking,
+    })
   }
 }
 #[inline]

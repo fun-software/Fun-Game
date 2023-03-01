@@ -2,10 +2,16 @@
 
 import * as flatbuffers from 'flatbuffers';
 
+import { ChatPayload, ChatPayloadT } from '../clientmessages/chat-payload';
 import { ClientMessagePayload, unionToClientMessagePayload, unionListToClientMessagePayload } from '../clientmessages/client-message-payload';
+import { InputPayload, InputPayloadT } from '../clientmessages/input-payload';
+import { JoinGamePayload, JoinGamePayloadT } from '../clientmessages/join-game-payload';
+import { LeaveGamePayload, LeaveGamePayloadT } from '../clientmessages/leave-game-payload';
+import { NewGamePayload, NewGamePayloadT } from '../clientmessages/new-game-payload';
+import { QueryStatePayload, QueryStatePayloadT } from '../clientmessages/query-state-payload';
 
 
-export class ClientMessage {
+export class ClientMessage implements flatbuffers.IUnpackableObject<ClientMessageT> {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
   __init(i:number, bb:flatbuffers.ByteBuffer):ClientMessage {
@@ -26,6 +32,17 @@ static getSizePrefixedRootAsClientMessage(bb:flatbuffers.ByteBuffer, obj?:Client
 timestamp():bigint {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.readUint64(this.bb_pos + offset) : BigInt('0');
+}
+
+mutate_timestamp(value:bigint):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 4);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint64(this.bb_pos + offset, value);
+  return true;
 }
 
 payloadType():ClientMessagePayload {
@@ -73,5 +90,47 @@ static createClientMessage(builder:flatbuffers.Builder, timestamp:bigint, payloa
   ClientMessage.addPayloadType(builder, payloadType);
   ClientMessage.addPayload(builder, payloadOffset);
   return ClientMessage.endClientMessage(builder);
+}
+
+unpack(): ClientMessageT {
+  return new ClientMessageT(
+    this.timestamp(),
+    this.payloadType(),
+    (() => {
+      const temp = unionToClientMessagePayload(this.payloadType(), this.payload.bind(this));
+      if(temp === null) { return null; }
+      return temp.unpack()
+  })()
+  );
+}
+
+
+unpackTo(_o: ClientMessageT): void {
+  _o.timestamp = this.timestamp();
+  _o.payloadType = this.payloadType();
+  _o.payload = (() => {
+      const temp = unionToClientMessagePayload(this.payloadType(), this.payload.bind(this));
+      if(temp === null) { return null; }
+      return temp.unpack()
+  })();
+}
+}
+
+export class ClientMessageT implements flatbuffers.IGeneratedObject {
+constructor(
+  public timestamp: bigint = BigInt('0'),
+  public payloadType: ClientMessagePayload = ClientMessagePayload.NONE,
+  public payload: ChatPayloadT|InputPayloadT|JoinGamePayloadT|LeaveGamePayloadT|NewGamePayloadT|QueryStatePayloadT|null = null
+){}
+
+
+pack(builder:flatbuffers.Builder): flatbuffers.Offset {
+  const payload = builder.createObjectOffset(this.payload);
+
+  return ClientMessage.createClientMessage(builder,
+    this.timestamp,
+    this.payloadType,
+    payload
+  );
 }
 }

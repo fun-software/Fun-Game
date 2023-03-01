@@ -2,11 +2,11 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { Game } from '../game/game';
+import { Game, GameT } from '../game/game';
 import { ResponseCode } from '../servermessages/response-code';
 
 
-export class JoinGameResponsePayload {
+export class JoinGameResponsePayload implements flatbuffers.IUnpackableObject<JoinGameResponsePayloadT> {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
   __init(i:number, bb:flatbuffers.ByteBuffer):JoinGameResponsePayload {
@@ -27,6 +27,17 @@ static getSizePrefixedRootAsJoinGameResponsePayload(bb:flatbuffers.ByteBuffer, o
 code():ResponseCode {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.readInt8(this.bb_pos + offset) : ResponseCode.OK;
+}
+
+mutate_code(value:ResponseCode):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 4);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt8(this.bb_pos + offset, value);
+  return true;
 }
 
 game(obj?:Game):Game|null {
@@ -51,4 +62,35 @@ static endJoinGameResponsePayload(builder:flatbuffers.Builder):flatbuffers.Offse
   return offset;
 }
 
+
+unpack(): JoinGameResponsePayloadT {
+  return new JoinGameResponsePayloadT(
+    this.code(),
+    (this.game() !== null ? this.game()!.unpack() : null)
+  );
+}
+
+
+unpackTo(_o: JoinGameResponsePayloadT): void {
+  _o.code = this.code();
+  _o.game = (this.game() !== null ? this.game()!.unpack() : null);
+}
+}
+
+export class JoinGameResponsePayloadT implements flatbuffers.IGeneratedObject {
+constructor(
+  public code: ResponseCode = ResponseCode.OK,
+  public game: GameT|null = null
+){}
+
+
+pack(builder:flatbuffers.Builder): flatbuffers.Offset {
+  const game = (this.game !== null ? this.game!.pack(builder) : 0);
+
+  JoinGameResponsePayload.startJoinGameResponsePayload(builder);
+  JoinGameResponsePayload.addCode(builder, this.code);
+  JoinGameResponsePayload.addGame(builder, game);
+
+  return JoinGameResponsePayload.endJoinGameResponsePayload(builder);
+}
 }
