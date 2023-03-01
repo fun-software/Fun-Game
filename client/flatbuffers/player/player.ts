@@ -2,10 +2,10 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { Vec3 } from '../math/vec3';
+import { Vec3, Vec3T } from '../math/vec3';
 
 
-export class Player {
+export class Player implements flatbuffers.IUnpackableObject<PlayerT> {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
   __init(i:number, bb:flatbuffers.ByteBuffer):Player {
@@ -43,9 +43,31 @@ hp():number {
   return offset ? this.bb!.readInt8(this.bb_pos + offset) : 100;
 }
 
+mutate_hp(value:number):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 10);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt8(this.bb_pos + offset, value);
+  return true;
+}
+
 speed():number {
   const offset = this.bb!.__offset(this.bb_pos, 12);
   return offset ? this.bb!.readInt8(this.bb_pos + offset) : 100;
+}
+
+mutate_speed(value:number):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 12);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt8(this.bb_pos + offset, value);
+  return true;
 }
 
 sprinting():boolean {
@@ -53,9 +75,31 @@ sprinting():boolean {
   return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
 }
 
+mutate_sprinting(value:boolean):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 14);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt8(this.bb_pos + offset, +value);
+  return true;
+}
+
 sneaking():boolean {
   const offset = this.bb!.__offset(this.bb_pos, 16);
   return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
+}
+
+mutate_sneaking(value:boolean):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 16);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt8(this.bb_pos + offset, +value);
+  return true;
 }
 
 static startPlayer(builder:flatbuffers.Builder) {
@@ -95,12 +139,53 @@ static endPlayer(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 }
 
-static finishPlayerBuffer(builder:flatbuffers.Builder, offset:flatbuffers.Offset) {
-  builder.finish(offset);
+
+unpack(): PlayerT {
+  return new PlayerT(
+    (this.position() !== null ? this.position()!.unpack() : null),
+    (this.velocity() !== null ? this.velocity()!.unpack() : null),
+    (this.lookDirection() !== null ? this.lookDirection()!.unpack() : null),
+    this.hp(),
+    this.speed(),
+    this.sprinting(),
+    this.sneaking()
+  );
 }
 
-static finishSizePrefixedPlayerBuffer(builder:flatbuffers.Builder, offset:flatbuffers.Offset) {
-  builder.finish(offset, undefined, true);
+
+unpackTo(_o: PlayerT): void {
+  _o.position = (this.position() !== null ? this.position()!.unpack() : null);
+  _o.velocity = (this.velocity() !== null ? this.velocity()!.unpack() : null);
+  _o.lookDirection = (this.lookDirection() !== null ? this.lookDirection()!.unpack() : null);
+  _o.hp = this.hp();
+  _o.speed = this.speed();
+  _o.sprinting = this.sprinting();
+  _o.sneaking = this.sneaking();
+}
 }
 
+export class PlayerT implements flatbuffers.IGeneratedObject {
+constructor(
+  public position: Vec3T|null = null,
+  public velocity: Vec3T|null = null,
+  public lookDirection: Vec3T|null = null,
+  public hp: number = 100,
+  public speed: number = 100,
+  public sprinting: boolean = false,
+  public sneaking: boolean = false
+){}
+
+
+pack(builder:flatbuffers.Builder): flatbuffers.Offset {
+  Player.startPlayer(builder);
+  Player.addPosition(builder, (this.position !== null ? this.position!.pack(builder) : 0));
+  Player.addVelocity(builder, (this.velocity !== null ? this.velocity!.pack(builder) : 0));
+  Player.addLookDirection(builder, (this.lookDirection !== null ? this.lookDirection!.pack(builder) : 0));
+  Player.addHp(builder, this.hp);
+  Player.addSpeed(builder, this.speed);
+  Player.addSprinting(builder, this.sprinting);
+  Player.addSneaking(builder, this.sneaking);
+
+  return Player.endPlayer(builder);
+}
 }

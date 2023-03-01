@@ -2,11 +2,11 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { Player } from '../player/player';
-import { User } from '../user/user';
+import { Player, PlayerT } from '../player/player';
+import { User, UserT } from '../user/user';
 
 
-export class InputPayload {
+export class InputPayload implements flatbuffers.IUnpackableObject<InputPayloadT> {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
   __init(i:number, bb:flatbuffers.ByteBuffer):InputPayload {
@@ -51,4 +51,36 @@ static endInputPayload(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 }
 
+
+unpack(): InputPayloadT {
+  return new InputPayloadT(
+    (this.user() !== null ? this.user()!.unpack() : null),
+    (this.player() !== null ? this.player()!.unpack() : null)
+  );
+}
+
+
+unpackTo(_o: InputPayloadT): void {
+  _o.user = (this.user() !== null ? this.user()!.unpack() : null);
+  _o.player = (this.player() !== null ? this.player()!.unpack() : null);
+}
+}
+
+export class InputPayloadT implements flatbuffers.IGeneratedObject {
+constructor(
+  public user: UserT|null = null,
+  public player: PlayerT|null = null
+){}
+
+
+pack(builder:flatbuffers.Builder): flatbuffers.Offset {
+  const user = (this.user !== null ? this.user!.pack(builder) : 0);
+  const player = (this.player !== null ? this.player!.pack(builder) : 0);
+
+  InputPayload.startInputPayload(builder);
+  InputPayload.addUser(builder, user);
+  InputPayload.addPlayer(builder, player);
+
+  return InputPayload.endInputPayload(builder);
+}
 }

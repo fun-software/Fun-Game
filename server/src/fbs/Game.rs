@@ -10,559 +10,6 @@ extern crate flatbuffers;
 use self::flatbuffers::{EndianScalar, Follow};
 
 #[allow(unused_imports, dead_code)]
-pub mod math {
-
-  use core::mem;
-  use core::cmp::Ordering;
-
-  extern crate flatbuffers;
-  use self::flatbuffers::{EndianScalar, Follow};
-
-// struct Vec3, aligned to 4
-#[repr(transparent)]
-#[derive(Clone, Copy, PartialEq)]
-pub struct Vec3(pub [u8; 12]);
-impl Default for Vec3 { 
-  fn default() -> Self { 
-    Self([0; 12])
-  }
-}
-impl core::fmt::Debug for Vec3 {
-  fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-    f.debug_struct("Vec3")
-      .field("x", &self.x())
-      .field("y", &self.y())
-      .field("z", &self.z())
-      .finish()
-  }
-}
-
-impl flatbuffers::SimpleToVerifyInSlice for Vec3 {}
-impl<'a> flatbuffers::Follow<'a> for Vec3 {
-  type Inner = &'a Vec3;
-  #[inline]
-  unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-    <&'a Vec3>::follow(buf, loc)
-  }
-}
-impl<'a> flatbuffers::Follow<'a> for &'a Vec3 {
-  type Inner = &'a Vec3;
-  #[inline]
-  unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-    flatbuffers::follow_cast_ref::<Vec3>(buf, loc)
-  }
-}
-impl<'b> flatbuffers::Push for Vec3 {
-    type Output = Vec3;
-    #[inline]
-    unsafe fn push(&self, dst: &mut [u8], _written_len: usize) {
-        let src = ::core::slice::from_raw_parts(self as *const Vec3 as *const u8, Self::size());
-        dst.copy_from_slice(src);
-    }
-}
-
-impl<'a> flatbuffers::Verifiable for Vec3 {
-  #[inline]
-  fn run_verifier(
-    v: &mut flatbuffers::Verifier, pos: usize
-  ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
-    use self::flatbuffers::Verifiable;
-    v.in_buffer::<Self>(pos)
-  }
-}
-
-impl<'a> Vec3 {
-  #[allow(clippy::too_many_arguments)]
-  pub fn new(
-    x: f32,
-    y: f32,
-    z: f32,
-  ) -> Self {
-    let mut s = Self([0; 12]);
-    s.set_x(x);
-    s.set_y(y);
-    s.set_z(z);
-    s
-  }
-
-  pub fn x(&self) -> f32 {
-    let mut mem = core::mem::MaybeUninit::<<f32 as EndianScalar>::Scalar>::uninit();
-    // Safety:
-    // Created from a valid Table for this object
-    // Which contains a valid value in this slot
-    EndianScalar::from_little_endian(unsafe {
-      core::ptr::copy_nonoverlapping(
-        self.0[0..].as_ptr(),
-        mem.as_mut_ptr() as *mut u8,
-        core::mem::size_of::<<f32 as EndianScalar>::Scalar>(),
-      );
-      mem.assume_init()
-    })
-  }
-
-  pub fn set_x(&mut self, x: f32) {
-    let x_le = x.to_little_endian();
-    // Safety:
-    // Created from a valid Table for this object
-    // Which contains a valid value in this slot
-    unsafe {
-      core::ptr::copy_nonoverlapping(
-        &x_le as *const _ as *const u8,
-        self.0[0..].as_mut_ptr(),
-        core::mem::size_of::<<f32 as EndianScalar>::Scalar>(),
-      );
-    }
-  }
-
-  pub fn y(&self) -> f32 {
-    let mut mem = core::mem::MaybeUninit::<<f32 as EndianScalar>::Scalar>::uninit();
-    // Safety:
-    // Created from a valid Table for this object
-    // Which contains a valid value in this slot
-    EndianScalar::from_little_endian(unsafe {
-      core::ptr::copy_nonoverlapping(
-        self.0[4..].as_ptr(),
-        mem.as_mut_ptr() as *mut u8,
-        core::mem::size_of::<<f32 as EndianScalar>::Scalar>(),
-      );
-      mem.assume_init()
-    })
-  }
-
-  pub fn set_y(&mut self, x: f32) {
-    let x_le = x.to_little_endian();
-    // Safety:
-    // Created from a valid Table for this object
-    // Which contains a valid value in this slot
-    unsafe {
-      core::ptr::copy_nonoverlapping(
-        &x_le as *const _ as *const u8,
-        self.0[4..].as_mut_ptr(),
-        core::mem::size_of::<<f32 as EndianScalar>::Scalar>(),
-      );
-    }
-  }
-
-  pub fn z(&self) -> f32 {
-    let mut mem = core::mem::MaybeUninit::<<f32 as EndianScalar>::Scalar>::uninit();
-    // Safety:
-    // Created from a valid Table for this object
-    // Which contains a valid value in this slot
-    EndianScalar::from_little_endian(unsafe {
-      core::ptr::copy_nonoverlapping(
-        self.0[8..].as_ptr(),
-        mem.as_mut_ptr() as *mut u8,
-        core::mem::size_of::<<f32 as EndianScalar>::Scalar>(),
-      );
-      mem.assume_init()
-    })
-  }
-
-  pub fn set_z(&mut self, x: f32) {
-    let x_le = x.to_little_endian();
-    // Safety:
-    // Created from a valid Table for this object
-    // Which contains a valid value in this slot
-    unsafe {
-      core::ptr::copy_nonoverlapping(
-        &x_le as *const _ as *const u8,
-        self.0[8..].as_mut_ptr(),
-        core::mem::size_of::<<f32 as EndianScalar>::Scalar>(),
-      );
-    }
-  }
-
-}
-
-}  // pub mod Math
-
-#[allow(unused_imports, dead_code)]
-pub mod player {
-
-  use core::mem;
-  use core::cmp::Ordering;
-
-  extern crate flatbuffers;
-  use self::flatbuffers::{EndianScalar, Follow};
-
-pub enum PlayerOffset {}
-#[derive(Copy, Clone, PartialEq)]
-
-pub struct Player<'a> {
-  pub _tab: flatbuffers::Table<'a>,
-}
-
-impl<'a> flatbuffers::Follow<'a> for Player<'a> {
-  type Inner = Player<'a>;
-  #[inline]
-  unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-    Self { _tab: flatbuffers::Table::new(buf, loc) }
-  }
-}
-
-impl<'a> Player<'a> {
-  pub const VT_POSITION: flatbuffers::VOffsetT = 4;
-  pub const VT_VELOCITY: flatbuffers::VOffsetT = 6;
-  pub const VT_LOOK_DIRECTION: flatbuffers::VOffsetT = 8;
-  pub const VT_HP: flatbuffers::VOffsetT = 10;
-  pub const VT_SPEED: flatbuffers::VOffsetT = 12;
-  pub const VT_SPRINTING: flatbuffers::VOffsetT = 14;
-  pub const VT_SNEAKING: flatbuffers::VOffsetT = 16;
-
-  #[inline]
-  pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
-    Player { _tab: table }
-  }
-  #[allow(unused_mut)]
-  pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-    _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
-    args: &'args PlayerArgs<'args>
-  ) -> flatbuffers::WIPOffset<Player<'bldr>> {
-    let mut builder = PlayerBuilder::new(_fbb);
-    if let Some(x) = args.look_direction { builder.add_look_direction(x); }
-    if let Some(x) = args.velocity { builder.add_velocity(x); }
-    if let Some(x) = args.position { builder.add_position(x); }
-    builder.add_sneaking(args.sneaking);
-    builder.add_sprinting(args.sprinting);
-    builder.add_speed(args.speed);
-    builder.add_hp(args.hp);
-    builder.finish()
-  }
-
-
-  #[inline]
-  pub fn position(&self) -> Option<&'a super::math::Vec3> {
-    // Safety:
-    // Created from valid Table for this object
-    // which contains a valid value in this slot
-    unsafe { self._tab.get::<super::math::Vec3>(Player::VT_POSITION, None)}
-  }
-  #[inline]
-  pub fn velocity(&self) -> Option<&'a super::math::Vec3> {
-    // Safety:
-    // Created from valid Table for this object
-    // which contains a valid value in this slot
-    unsafe { self._tab.get::<super::math::Vec3>(Player::VT_VELOCITY, None)}
-  }
-  #[inline]
-  pub fn look_direction(&self) -> Option<&'a super::math::Vec3> {
-    // Safety:
-    // Created from valid Table for this object
-    // which contains a valid value in this slot
-    unsafe { self._tab.get::<super::math::Vec3>(Player::VT_LOOK_DIRECTION, None)}
-  }
-  #[inline]
-  pub fn hp(&self) -> i8 {
-    // Safety:
-    // Created from valid Table for this object
-    // which contains a valid value in this slot
-    unsafe { self._tab.get::<i8>(Player::VT_HP, Some(100)).unwrap()}
-  }
-  #[inline]
-  pub fn speed(&self) -> i8 {
-    // Safety:
-    // Created from valid Table for this object
-    // which contains a valid value in this slot
-    unsafe { self._tab.get::<i8>(Player::VT_SPEED, Some(100)).unwrap()}
-  }
-  #[inline]
-  pub fn sprinting(&self) -> bool {
-    // Safety:
-    // Created from valid Table for this object
-    // which contains a valid value in this slot
-    unsafe { self._tab.get::<bool>(Player::VT_SPRINTING, Some(false)).unwrap()}
-  }
-  #[inline]
-  pub fn sneaking(&self) -> bool {
-    // Safety:
-    // Created from valid Table for this object
-    // which contains a valid value in this slot
-    unsafe { self._tab.get::<bool>(Player::VT_SNEAKING, Some(false)).unwrap()}
-  }
-}
-
-impl flatbuffers::Verifiable for Player<'_> {
-  #[inline]
-  fn run_verifier(
-    v: &mut flatbuffers::Verifier, pos: usize
-  ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
-    use self::flatbuffers::Verifiable;
-    v.visit_table(pos)?
-     .visit_field::<super::math::Vec3>("position", Self::VT_POSITION, false)?
-     .visit_field::<super::math::Vec3>("velocity", Self::VT_VELOCITY, false)?
-     .visit_field::<super::math::Vec3>("look_direction", Self::VT_LOOK_DIRECTION, false)?
-     .visit_field::<i8>("hp", Self::VT_HP, false)?
-     .visit_field::<i8>("speed", Self::VT_SPEED, false)?
-     .visit_field::<bool>("sprinting", Self::VT_SPRINTING, false)?
-     .visit_field::<bool>("sneaking", Self::VT_SNEAKING, false)?
-     .finish();
-    Ok(())
-  }
-}
-pub struct PlayerArgs<'a> {
-    pub position: Option<&'a super::math::Vec3>,
-    pub velocity: Option<&'a super::math::Vec3>,
-    pub look_direction: Option<&'a super::math::Vec3>,
-    pub hp: i8,
-    pub speed: i8,
-    pub sprinting: bool,
-    pub sneaking: bool,
-}
-impl<'a> Default for PlayerArgs<'a> {
-  #[inline]
-  fn default() -> Self {
-    PlayerArgs {
-      position: None,
-      velocity: None,
-      look_direction: None,
-      hp: 100,
-      speed: 100,
-      sprinting: false,
-      sneaking: false,
-    }
-  }
-}
-
-pub struct PlayerBuilder<'a: 'b, 'b> {
-  fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-  start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
-}
-impl<'a: 'b, 'b> PlayerBuilder<'a, 'b> {
-  #[inline]
-  pub fn add_position(&mut self, position: &super::math::Vec3) {
-    self.fbb_.push_slot_always::<&super::math::Vec3>(Player::VT_POSITION, position);
-  }
-  #[inline]
-  pub fn add_velocity(&mut self, velocity: &super::math::Vec3) {
-    self.fbb_.push_slot_always::<&super::math::Vec3>(Player::VT_VELOCITY, velocity);
-  }
-  #[inline]
-  pub fn add_look_direction(&mut self, look_direction: &super::math::Vec3) {
-    self.fbb_.push_slot_always::<&super::math::Vec3>(Player::VT_LOOK_DIRECTION, look_direction);
-  }
-  #[inline]
-  pub fn add_hp(&mut self, hp: i8) {
-    self.fbb_.push_slot::<i8>(Player::VT_HP, hp, 100);
-  }
-  #[inline]
-  pub fn add_speed(&mut self, speed: i8) {
-    self.fbb_.push_slot::<i8>(Player::VT_SPEED, speed, 100);
-  }
-  #[inline]
-  pub fn add_sprinting(&mut self, sprinting: bool) {
-    self.fbb_.push_slot::<bool>(Player::VT_SPRINTING, sprinting, false);
-  }
-  #[inline]
-  pub fn add_sneaking(&mut self, sneaking: bool) {
-    self.fbb_.push_slot::<bool>(Player::VT_SNEAKING, sneaking, false);
-  }
-  #[inline]
-  pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> PlayerBuilder<'a, 'b> {
-    let start = _fbb.start_table();
-    PlayerBuilder {
-      fbb_: _fbb,
-      start_: start,
-    }
-  }
-  #[inline]
-  pub fn finish(self) -> flatbuffers::WIPOffset<Player<'a>> {
-    let o = self.fbb_.end_table(self.start_);
-    flatbuffers::WIPOffset::new(o.value())
-  }
-}
-
-impl core::fmt::Debug for Player<'_> {
-  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-    let mut ds = f.debug_struct("Player");
-      ds.field("position", &self.position());
-      ds.field("velocity", &self.velocity());
-      ds.field("look_direction", &self.look_direction());
-      ds.field("hp", &self.hp());
-      ds.field("speed", &self.speed());
-      ds.field("sprinting", &self.sprinting());
-      ds.field("sneaking", &self.sneaking());
-      ds.finish()
-  }
-}
-}  // pub mod Player
-
-#[allow(unused_imports, dead_code)]
-pub mod user {
-
-  use core::mem;
-  use core::cmp::Ordering;
-
-  extern crate flatbuffers;
-  use self::flatbuffers::{EndianScalar, Follow};
-
-pub enum UserOffset {}
-#[derive(Copy, Clone, PartialEq)]
-
-pub struct User<'a> {
-  pub _tab: flatbuffers::Table<'a>,
-}
-
-impl<'a> flatbuffers::Follow<'a> for User<'a> {
-  type Inner = User<'a>;
-  #[inline]
-  unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-    Self { _tab: flatbuffers::Table::new(buf, loc) }
-  }
-}
-
-impl<'a> User<'a> {
-  pub const VT_ID: flatbuffers::VOffsetT = 4;
-  pub const VT_USERNAME: flatbuffers::VOffsetT = 6;
-  pub const VT_EMAIL: flatbuffers::VOffsetT = 8;
-  pub const VT_CREATED_AT: flatbuffers::VOffsetT = 10;
-  pub const VT_UPDATED_AT: flatbuffers::VOffsetT = 12;
-
-  #[inline]
-  pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
-    User { _tab: table }
-  }
-  #[allow(unused_mut)]
-  pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-    _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
-    args: &'args UserArgs<'args>
-  ) -> flatbuffers::WIPOffset<User<'bldr>> {
-    let mut builder = UserBuilder::new(_fbb);
-    builder.add_updated_at(args.updated_at);
-    builder.add_created_at(args.created_at);
-    builder.add_id(args.id);
-    if let Some(x) = args.email { builder.add_email(x); }
-    if let Some(x) = args.username { builder.add_username(x); }
-    builder.finish()
-  }
-
-
-  #[inline]
-  pub fn id(&self) -> u64 {
-    // Safety:
-    // Created from valid Table for this object
-    // which contains a valid value in this slot
-    unsafe { self._tab.get::<u64>(User::VT_ID, Some(0)).unwrap()}
-  }
-  #[inline]
-  pub fn username(&self) -> Option<&'a str> {
-    // Safety:
-    // Created from valid Table for this object
-    // which contains a valid value in this slot
-    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(User::VT_USERNAME, None)}
-  }
-  #[inline]
-  pub fn email(&self) -> Option<&'a str> {
-    // Safety:
-    // Created from valid Table for this object
-    // which contains a valid value in this slot
-    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(User::VT_EMAIL, None)}
-  }
-  #[inline]
-  pub fn created_at(&self) -> u64 {
-    // Safety:
-    // Created from valid Table for this object
-    // which contains a valid value in this slot
-    unsafe { self._tab.get::<u64>(User::VT_CREATED_AT, Some(0)).unwrap()}
-  }
-  #[inline]
-  pub fn updated_at(&self) -> u64 {
-    // Safety:
-    // Created from valid Table for this object
-    // which contains a valid value in this slot
-    unsafe { self._tab.get::<u64>(User::VT_UPDATED_AT, Some(0)).unwrap()}
-  }
-}
-
-impl flatbuffers::Verifiable for User<'_> {
-  #[inline]
-  fn run_verifier(
-    v: &mut flatbuffers::Verifier, pos: usize
-  ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
-    use self::flatbuffers::Verifiable;
-    v.visit_table(pos)?
-     .visit_field::<u64>("id", Self::VT_ID, false)?
-     .visit_field::<flatbuffers::ForwardsUOffset<&str>>("username", Self::VT_USERNAME, false)?
-     .visit_field::<flatbuffers::ForwardsUOffset<&str>>("email", Self::VT_EMAIL, false)?
-     .visit_field::<u64>("created_at", Self::VT_CREATED_AT, false)?
-     .visit_field::<u64>("updated_at", Self::VT_UPDATED_AT, false)?
-     .finish();
-    Ok(())
-  }
-}
-pub struct UserArgs<'a> {
-    pub id: u64,
-    pub username: Option<flatbuffers::WIPOffset<&'a str>>,
-    pub email: Option<flatbuffers::WIPOffset<&'a str>>,
-    pub created_at: u64,
-    pub updated_at: u64,
-}
-impl<'a> Default for UserArgs<'a> {
-  #[inline]
-  fn default() -> Self {
-    UserArgs {
-      id: 0,
-      username: None,
-      email: None,
-      created_at: 0,
-      updated_at: 0,
-    }
-  }
-}
-
-pub struct UserBuilder<'a: 'b, 'b> {
-  fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-  start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
-}
-impl<'a: 'b, 'b> UserBuilder<'a, 'b> {
-  #[inline]
-  pub fn add_id(&mut self, id: u64) {
-    self.fbb_.push_slot::<u64>(User::VT_ID, id, 0);
-  }
-  #[inline]
-  pub fn add_username(&mut self, username: flatbuffers::WIPOffset<&'b  str>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(User::VT_USERNAME, username);
-  }
-  #[inline]
-  pub fn add_email(&mut self, email: flatbuffers::WIPOffset<&'b  str>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(User::VT_EMAIL, email);
-  }
-  #[inline]
-  pub fn add_created_at(&mut self, created_at: u64) {
-    self.fbb_.push_slot::<u64>(User::VT_CREATED_AT, created_at, 0);
-  }
-  #[inline]
-  pub fn add_updated_at(&mut self, updated_at: u64) {
-    self.fbb_.push_slot::<u64>(User::VT_UPDATED_AT, updated_at, 0);
-  }
-  #[inline]
-  pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> UserBuilder<'a, 'b> {
-    let start = _fbb.start_table();
-    UserBuilder {
-      fbb_: _fbb,
-      start_: start,
-    }
-  }
-  #[inline]
-  pub fn finish(self) -> flatbuffers::WIPOffset<User<'a>> {
-    let o = self.fbb_.end_table(self.start_);
-    flatbuffers::WIPOffset::new(o.value())
-  }
-}
-
-impl core::fmt::Debug for User<'_> {
-  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-    let mut ds = f.debug_struct("User");
-      ds.field("id", &self.id());
-      ds.field("username", &self.username());
-      ds.field("email", &self.email());
-      ds.field("created_at", &self.created_at());
-      ds.field("updated_at", &self.updated_at());
-      ds.finish()
-  }
-}
-}  // pub mod User
-
-#[allow(unused_imports, dead_code)]
 pub mod game {
 
   use core::mem;
@@ -692,44 +139,56 @@ impl<'a> PlayerRoles<'a> {
   #[allow(unused_mut)]
   pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
     _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
-    args: &'args PlayerRolesArgs<'args>
+    args: &'args PlayerRolesArgs
   ) -> flatbuffers::WIPOffset<PlayerRoles<'bldr>> {
     let mut builder = PlayerRolesBuilder::new(_fbb);
-    if let Some(x) = args.yellow { builder.add_yellow(x); }
-    if let Some(x) = args.green { builder.add_green(x); }
-    if let Some(x) = args.blue { builder.add_blue(x); }
-    if let Some(x) = args.red { builder.add_red(x); }
+    builder.add_yellow(args.yellow);
+    builder.add_green(args.green);
+    builder.add_blue(args.blue);
+    builder.add_red(args.red);
     builder.finish()
   }
 
+  pub fn unpack(&self) -> PlayerRolesT {
+    let red = self.red();
+    let blue = self.blue();
+    let green = self.green();
+    let yellow = self.yellow();
+    PlayerRolesT {
+      red,
+      blue,
+      green,
+      yellow,
+    }
+  }
 
   #[inline]
-  pub fn red(&self) -> Option<super::user::User<'a>> {
+  pub fn red(&self) -> u64 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<super::user::User>>(PlayerRoles::VT_RED, None)}
+    unsafe { self._tab.get::<u64>(PlayerRoles::VT_RED, Some(0)).unwrap()}
   }
   #[inline]
-  pub fn blue(&self) -> Option<super::user::User<'a>> {
+  pub fn blue(&self) -> u64 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<super::user::User>>(PlayerRoles::VT_BLUE, None)}
+    unsafe { self._tab.get::<u64>(PlayerRoles::VT_BLUE, Some(0)).unwrap()}
   }
   #[inline]
-  pub fn green(&self) -> Option<super::user::User<'a>> {
+  pub fn green(&self) -> u64 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<super::user::User>>(PlayerRoles::VT_GREEN, None)}
+    unsafe { self._tab.get::<u64>(PlayerRoles::VT_GREEN, Some(0)).unwrap()}
   }
   #[inline]
-  pub fn yellow(&self) -> Option<super::user::User<'a>> {
+  pub fn yellow(&self) -> u64 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<super::user::User>>(PlayerRoles::VT_YELLOW, None)}
+    unsafe { self._tab.get::<u64>(PlayerRoles::VT_YELLOW, Some(0)).unwrap()}
   }
 }
 
@@ -740,28 +199,28 @@ impl flatbuffers::Verifiable for PlayerRoles<'_> {
   ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
-     .visit_field::<flatbuffers::ForwardsUOffset<super::user::User>>("red", Self::VT_RED, false)?
-     .visit_field::<flatbuffers::ForwardsUOffset<super::user::User>>("blue", Self::VT_BLUE, false)?
-     .visit_field::<flatbuffers::ForwardsUOffset<super::user::User>>("green", Self::VT_GREEN, false)?
-     .visit_field::<flatbuffers::ForwardsUOffset<super::user::User>>("yellow", Self::VT_YELLOW, false)?
+     .visit_field::<u64>("red", Self::VT_RED, false)?
+     .visit_field::<u64>("blue", Self::VT_BLUE, false)?
+     .visit_field::<u64>("green", Self::VT_GREEN, false)?
+     .visit_field::<u64>("yellow", Self::VT_YELLOW, false)?
      .finish();
     Ok(())
   }
 }
-pub struct PlayerRolesArgs<'a> {
-    pub red: Option<flatbuffers::WIPOffset<super::user::User<'a>>>,
-    pub blue: Option<flatbuffers::WIPOffset<super::user::User<'a>>>,
-    pub green: Option<flatbuffers::WIPOffset<super::user::User<'a>>>,
-    pub yellow: Option<flatbuffers::WIPOffset<super::user::User<'a>>>,
+pub struct PlayerRolesArgs {
+    pub red: u64,
+    pub blue: u64,
+    pub green: u64,
+    pub yellow: u64,
 }
-impl<'a> Default for PlayerRolesArgs<'a> {
+impl<'a> Default for PlayerRolesArgs {
   #[inline]
   fn default() -> Self {
     PlayerRolesArgs {
-      red: None,
-      blue: None,
-      green: None,
-      yellow: None,
+      red: 0,
+      blue: 0,
+      green: 0,
+      yellow: 0,
     }
   }
 }
@@ -772,20 +231,20 @@ pub struct PlayerRolesBuilder<'a: 'b, 'b> {
 }
 impl<'a: 'b, 'b> PlayerRolesBuilder<'a, 'b> {
   #[inline]
-  pub fn add_red(&mut self, red: flatbuffers::WIPOffset<super::user::User<'b >>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<super::user::User>>(PlayerRoles::VT_RED, red);
+  pub fn add_red(&mut self, red: u64) {
+    self.fbb_.push_slot::<u64>(PlayerRoles::VT_RED, red, 0);
   }
   #[inline]
-  pub fn add_blue(&mut self, blue: flatbuffers::WIPOffset<super::user::User<'b >>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<super::user::User>>(PlayerRoles::VT_BLUE, blue);
+  pub fn add_blue(&mut self, blue: u64) {
+    self.fbb_.push_slot::<u64>(PlayerRoles::VT_BLUE, blue, 0);
   }
   #[inline]
-  pub fn add_green(&mut self, green: flatbuffers::WIPOffset<super::user::User<'b >>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<super::user::User>>(PlayerRoles::VT_GREEN, green);
+  pub fn add_green(&mut self, green: u64) {
+    self.fbb_.push_slot::<u64>(PlayerRoles::VT_GREEN, green, 0);
   }
   #[inline]
-  pub fn add_yellow(&mut self, yellow: flatbuffers::WIPOffset<super::user::User<'b >>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<super::user::User>>(PlayerRoles::VT_YELLOW, yellow);
+  pub fn add_yellow(&mut self, yellow: u64) {
+    self.fbb_.push_slot::<u64>(PlayerRoles::VT_YELLOW, yellow, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> PlayerRolesBuilder<'a, 'b> {
@@ -810,6 +269,41 @@ impl core::fmt::Debug for PlayerRoles<'_> {
       ds.field("green", &self.green());
       ds.field("yellow", &self.yellow());
       ds.finish()
+  }
+}
+#[non_exhaustive]
+#[derive(Debug, Clone, PartialEq)]
+pub struct PlayerRolesT {
+  pub red: u64,
+  pub blue: u64,
+  pub green: u64,
+  pub yellow: u64,
+}
+impl Default for PlayerRolesT {
+  fn default() -> Self {
+    Self {
+      red: 0,
+      blue: 0,
+      green: 0,
+      yellow: 0,
+    }
+  }
+}
+impl PlayerRolesT {
+  pub fn pack<'b>(
+    &self,
+    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
+  ) -> flatbuffers::WIPOffset<PlayerRoles<'b>> {
+    let red = self.red;
+    let blue = self.blue;
+    let green = self.green;
+    let yellow = self.yellow;
+    PlayerRoles::create(_fbb, &PlayerRolesArgs{
+      red,
+      blue,
+      green,
+      yellow,
+    })
   }
 }
 pub enum GameOffset {}
@@ -852,6 +346,22 @@ impl<'a> Game<'a> {
     builder.finish()
   }
 
+  pub fn unpack(&self) -> GameT {
+    let id = self.id();
+    let phase = self.phase();
+    let players = self.players().map(|x| {
+      Box::new(x.unpack())
+    });
+    let starttime = self.starttime();
+    let endtime = self.endtime();
+    GameT {
+      id,
+      phase,
+      players,
+      starttime,
+      endtime,
+    }
+  }
 
   #[inline]
   pub fn id(&self) -> u64 {
@@ -975,6 +485,47 @@ impl core::fmt::Debug for Game<'_> {
       ds.field("starttime", &self.starttime());
       ds.field("endtime", &self.endtime());
       ds.finish()
+  }
+}
+#[non_exhaustive]
+#[derive(Debug, Clone, PartialEq)]
+pub struct GameT {
+  pub id: u64,
+  pub phase: GamePhase,
+  pub players: Option<Box<PlayerRolesT>>,
+  pub starttime: u64,
+  pub endtime: u64,
+}
+impl Default for GameT {
+  fn default() -> Self {
+    Self {
+      id: 0,
+      phase: GamePhase::Lobby,
+      players: None,
+      starttime: 0,
+      endtime: 0,
+    }
+  }
+}
+impl GameT {
+  pub fn pack<'b>(
+    &self,
+    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
+  ) -> flatbuffers::WIPOffset<Game<'b>> {
+    let id = self.id;
+    let phase = self.phase;
+    let players = self.players.as_ref().map(|x|{
+      x.pack(_fbb)
+    });
+    let starttime = self.starttime;
+    let endtime = self.endtime;
+    Game::create(_fbb, &GameArgs{
+      id,
+      phase,
+      players,
+      starttime,
+      endtime,
+    })
   }
 }
 #[inline]

@@ -2,7 +2,9 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-export class Vec3 {
+
+
+export class Vec3 implements flatbuffers.IUnpackableObject<Vec3T> {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
   __init(i:number, bb:flatbuffers.ByteBuffer):Vec3 {
@@ -15,12 +17,27 @@ x():number {
   return this.bb!.readFloat32(this.bb_pos);
 }
 
+mutate_x(value:number):boolean {
+  this.bb!.writeFloat32(this.bb_pos + 0, value);
+  return true;
+}
+
 y():number {
   return this.bb!.readFloat32(this.bb_pos + 4);
 }
 
+mutate_y(value:number):boolean {
+  this.bb!.writeFloat32(this.bb_pos + 4, value);
+  return true;
+}
+
 z():number {
   return this.bb!.readFloat32(this.bb_pos + 8);
+}
+
+mutate_z(value:number):boolean {
+  this.bb!.writeFloat32(this.bb_pos + 8, value);
+  return true;
 }
 
 static sizeOf():number {
@@ -35,4 +52,36 @@ static createVec3(builder:flatbuffers.Builder, x: number, y: number, z: number):
   return builder.offset();
 }
 
+
+unpack(): Vec3T {
+  return new Vec3T(
+    this.x(),
+    this.y(),
+    this.z()
+  );
+}
+
+
+unpackTo(_o: Vec3T): void {
+  _o.x = this.x();
+  _o.y = this.y();
+  _o.z = this.z();
+}
+}
+
+export class Vec3T implements flatbuffers.IGeneratedObject {
+constructor(
+  public x: number = 0.0,
+  public y: number = 0.0,
+  public z: number = 0.0
+){}
+
+
+pack(builder:flatbuffers.Builder): flatbuffers.Offset {
+  return Vec3.createVec3(builder,
+    this.x,
+    this.y,
+    this.z
+  );
+}
 }

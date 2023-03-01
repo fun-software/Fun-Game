@@ -1,6 +1,3 @@
-include "Player.fbs";
-include "User.fbs";
-
 namespace Game;
 
 enum GamePhase: byte {
@@ -11,10 +8,10 @@ enum GamePhase: byte {
 }
 
 table PlayerRoles {
-  red: User.User;
-  blue: User.User;
-  green: User.User;
-  yellow: User.User;
+  red: uint64;
+  blue: uint64;
+  green: uint64;
+  yellow: uint64;
 }
 
 table Game {

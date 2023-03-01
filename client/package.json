@@ -13,7 +13,7 @@
     "@react-three/drei": "^9.56.5",
     "@react-three/fiber": "^8.10.1",
     "cz-conventional-changelog": "^3.3.0",
-    "flatbuffers": "^23.1.21",
+    "flatbuffers": "^23.1.20",
     "glsl-random": "^0.0.5",
     "next": "^13.1.6",
     "next-pwa": "^5.6.0",
@@ -48,13 +48,8 @@
     "format": "prettier -w \"./**/*.{ts,tsx,md,js,css,html,json}\"",
     "format:check": "prettier --list-different \"./src/**/*.{ts,tsx,md,js,css,html,json}\"",
     "dev": "next dev",
-<<<<<<< HEAD
-    "flatbuffers": "rm -rf ./flatbuffers && flatc --ts -o ./flatbuffers/ ../flatbuffers/*",
     "build": "npm run lint && next build",
-=======
     "flatbuffers": "rm -rf ./flatbuffers && flatc --ts --ts-no-import-ext --filename-suffix '' -o ./flatbuffers/ $(find ../flatbuffers -name '*.fbs')",
-    "build": "npm run flatbuffers && next build",
->>>>>>> 921cc86 (POC for server<->client communication)
     "export": "EXPORT=true next build && EXPORT=true next export",
     "analyze": "ANALYZE=true next build",
     "start": "next start",

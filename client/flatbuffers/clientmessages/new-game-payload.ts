@@ -2,10 +2,10 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { User } from '../user/user';
+import { User, UserT } from '../user/user';
 
 
-export class NewGamePayload {
+export class NewGamePayload implements flatbuffers.IUnpackableObject<NewGamePayloadT> {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
   __init(i:number, bb:flatbuffers.ByteBuffer):NewGamePayload {
@@ -45,5 +45,31 @@ static createNewGamePayload(builder:flatbuffers.Builder, userOffset:flatbuffers.
   NewGamePayload.startNewGamePayload(builder);
   NewGamePayload.addUser(builder, userOffset);
   return NewGamePayload.endNewGamePayload(builder);
+}
+
+unpack(): NewGamePayloadT {
+  return new NewGamePayloadT(
+    (this.user() !== null ? this.user()!.unpack() : null)
+  );
+}
+
+
+unpackTo(_o: NewGamePayloadT): void {
+  _o.user = (this.user() !== null ? this.user()!.unpack() : null);
+}
+}
+
+export class NewGamePayloadT implements flatbuffers.IGeneratedObject {
+constructor(
+  public user: UserT|null = null
+){}
+
+
+pack(builder:flatbuffers.Builder): flatbuffers.Offset {
+  const user = (this.user !== null ? this.user!.pack(builder) : 0);
+
+  return NewGamePayload.createNewGamePayload(builder,
+    user
+  );
 }
 }

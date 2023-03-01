@@ -2,10 +2,10 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { User } from '../user/user';
+import { User, UserT } from '../user/user';
 
 
-export class QueryStatePayload {
+export class QueryStatePayload implements flatbuffers.IUnpackableObject<QueryStatePayloadT> {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
   __init(i:number, bb:flatbuffers.ByteBuffer):QueryStatePayload {
@@ -45,5 +45,31 @@ static createQueryStatePayload(builder:flatbuffers.Builder, userOffset:flatbuffe
   QueryStatePayload.startQueryStatePayload(builder);
   QueryStatePayload.addUser(builder, userOffset);
   return QueryStatePayload.endQueryStatePayload(builder);
+}
+
+unpack(): QueryStatePayloadT {
+  return new QueryStatePayloadT(
+    (this.user() !== null ? this.user()!.unpack() : null)
+  );
+}
+
+
+unpackTo(_o: QueryStatePayloadT): void {
+  _o.user = (this.user() !== null ? this.user()!.unpack() : null);
+}
+}
+
+export class QueryStatePayloadT implements flatbuffers.IGeneratedObject {
+constructor(
+  public user: UserT|null = null
+){}
+
+
+pack(builder:flatbuffers.Builder): flatbuffers.Offset {
+  const user = (this.user !== null ? this.user!.pack(builder) : 0);
+
+  return QueryStatePayload.createQueryStatePayload(builder,
+    user
+  );
 }
 }

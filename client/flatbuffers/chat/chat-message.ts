@@ -5,7 +5,7 @@ import * as flatbuffers from 'flatbuffers';
 import { ChatSource } from '../chat/chat-source';
 
 
-export class ChatMessage {
+export class ChatMessage implements flatbuffers.IUnpackableObject<ChatMessageT> {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
   __init(i:number, bb:flatbuffers.ByteBuffer):ChatMessage {
@@ -26,6 +26,17 @@ static getSizePrefixedRootAsChatMessage(bb:flatbuffers.ByteBuffer, obj?:ChatMess
 source():ChatSource {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.readInt8(this.bb_pos + offset) : ChatSource.System;
+}
+
+mutate_source(value:ChatSource):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 4);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt8(this.bb_pos + offset, value);
+  return true;
 }
 
 message():string|null
@@ -52,18 +63,40 @@ static endChatMessage(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 }
 
-static finishChatMessageBuffer(builder:flatbuffers.Builder, offset:flatbuffers.Offset) {
-  builder.finish(offset);
-}
-
-static finishSizePrefixedChatMessageBuffer(builder:flatbuffers.Builder, offset:flatbuffers.Offset) {
-  builder.finish(offset, undefined, true);
-}
-
 static createChatMessage(builder:flatbuffers.Builder, source:ChatSource, messageOffset:flatbuffers.Offset):flatbuffers.Offset {
   ChatMessage.startChatMessage(builder);
   ChatMessage.addSource(builder, source);
   ChatMessage.addMessage(builder, messageOffset);
   return ChatMessage.endChatMessage(builder);
+}
+
+unpack(): ChatMessageT {
+  return new ChatMessageT(
+    this.source(),
+    this.message()
+  );
+}
+
+
+unpackTo(_o: ChatMessageT): void {
+  _o.source = this.source();
+  _o.message = this.message();
+}
+}
+
+export class ChatMessageT implements flatbuffers.IGeneratedObject {
+constructor(
+  public source: ChatSource = ChatSource.System,
+  public message: string|Uint8Array|null = null
+){}
+
+
+pack(builder:flatbuffers.Builder): flatbuffers.Offset {
+  const message = (this.message !== null ? builder.createString(this.message!) : 0);
+
+  return ChatMessage.createChatMessage(builder,
+    this.source,
+    message
+  );
 }
 }

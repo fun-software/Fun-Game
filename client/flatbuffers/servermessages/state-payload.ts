@@ -2,12 +2,12 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { ChatMessage } from '../chat/chat-message';
-import { GameState } from '../gamestate/game-state';
+import { ChatMessage, ChatMessageT } from '../chat/chat-message';
+import { GameState, GameStateT } from '../gamestate/game-state';
 import { ResponseCode } from '../servermessages/response-code';
 
 
-export class StatePayload {
+export class StatePayload implements flatbuffers.IUnpackableObject<StatePayloadT> {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
   __init(i:number, bb:flatbuffers.ByteBuffer):StatePayload {
@@ -28,6 +28,17 @@ static getSizePrefixedRootAsStatePayload(bb:flatbuffers.ByteBuffer, obj?:StatePa
 code():ResponseCode {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? this.bb!.readInt8(this.bb_pos + offset) : ResponseCode.OK;
+}
+
+mutate_code(value:ResponseCode):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 4);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt8(this.bb_pos + offset, value);
+  return true;
 }
 
 gameState(obj?:GameState):GameState|null {
@@ -78,4 +89,40 @@ static endStatePayload(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 }
 
+
+unpack(): StatePayloadT {
+  return new StatePayloadT(
+    this.code(),
+    (this.gameState() !== null ? this.gameState()!.unpack() : null),
+    this.bb!.createObjList<ChatMessage, ChatMessageT>(this.chat.bind(this), this.chatLength())
+  );
+}
+
+
+unpackTo(_o: StatePayloadT): void {
+  _o.code = this.code();
+  _o.gameState = (this.gameState() !== null ? this.gameState()!.unpack() : null);
+  _o.chat = this.bb!.createObjList<ChatMessage, ChatMessageT>(this.chat.bind(this), this.chatLength());
+}
+}
+
+export class StatePayloadT implements flatbuffers.IGeneratedObject {
+constructor(
+  public code: ResponseCode = ResponseCode.OK,
+  public gameState: GameStateT|null = null,
+  public chat: (ChatMessageT)[] = []
+){}
+
+
+pack(builder:flatbuffers.Builder): flatbuffers.Offset {
+  const gameState = (this.gameState !== null ? this.gameState!.pack(builder) : 0);
+  const chat = StatePayload.createChatVector(builder, builder.createObjectOffsetList(this.chat));
+
+  StatePayload.startStatePayload(builder);
+  StatePayload.addCode(builder, this.code);
+  StatePayload.addGameState(builder, gameState);
+  StatePayload.addChat(builder, chat);
+
+  return StatePayload.endStatePayload(builder);
+}
 }

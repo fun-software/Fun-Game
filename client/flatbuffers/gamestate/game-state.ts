@@ -2,11 +2,11 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { Game } from '../game/game';
-import { PlayerRoles } from '../game/player-roles';
+import { Game, GameT } from '../game/game';
+import { PlayerRoles, PlayerRolesT } from '../game/player-roles';
 
 
-export class GameState {
+export class GameState implements flatbuffers.IUnpackableObject<GameStateT> {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
   __init(i:number, bb:flatbuffers.ByteBuffer):GameState {
@@ -51,12 +51,36 @@ static endGameState(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 }
 
-static finishGameStateBuffer(builder:flatbuffers.Builder, offset:flatbuffers.Offset) {
-  builder.finish(offset);
+
+unpack(): GameStateT {
+  return new GameStateT(
+    (this.game() !== null ? this.game()!.unpack() : null),
+    (this.players() !== null ? this.players()!.unpack() : null)
+  );
 }
 
-static finishSizePrefixedGameStateBuffer(builder:flatbuffers.Builder, offset:flatbuffers.Offset) {
-  builder.finish(offset, undefined, true);
+
+unpackTo(_o: GameStateT): void {
+  _o.game = (this.game() !== null ? this.game()!.unpack() : null);
+  _o.players = (this.players() !== null ? this.players()!.unpack() : null);
+}
 }
 
+export class GameStateT implements flatbuffers.IGeneratedObject {
+constructor(
+  public game: GameT|null = null,
+  public players: PlayerRolesT|null = null
+){}
+
+
+pack(builder:flatbuffers.Builder): flatbuffers.Offset {
+  const game = (this.game !== null ? this.game!.pack(builder) : 0);
+  const players = (this.players !== null ? this.players!.pack(builder) : 0);
+
+  GameState.startGameState(builder);
+  GameState.addGame(builder, game);
+  GameState.addPlayers(builder, players);
+
+  return GameState.endGameState(builder);
+}
 }

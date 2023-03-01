@@ -3,10 +3,10 @@
 import * as flatbuffers from 'flatbuffers';
 
 import { GamePhase } from '../game/game-phase';
-import { PlayerRoles } from '../game/player-roles';
+import { PlayerRoles, PlayerRolesT } from '../game/player-roles';
 
 
-export class Game {
+export class Game implements flatbuffers.IUnpackableObject<GameT> {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
   __init(i:number, bb:flatbuffers.ByteBuffer):Game {
@@ -29,9 +29,31 @@ id():bigint {
   return offset ? this.bb!.readUint64(this.bb_pos + offset) : BigInt('0');
 }
 
+mutate_id(value:bigint):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 4);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint64(this.bb_pos + offset, value);
+  return true;
+}
+
 phase():GamePhase {
   const offset = this.bb!.__offset(this.bb_pos, 6);
   return offset ? this.bb!.readInt8(this.bb_pos + offset) : GamePhase.Lobby;
+}
+
+mutate_phase(value:GamePhase):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 6);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeInt8(this.bb_pos + offset, value);
+  return true;
 }
 
 players(obj?:PlayerRoles):PlayerRoles|null {
@@ -44,9 +66,31 @@ starttime():bigint {
   return offset ? this.bb!.readUint64(this.bb_pos + offset) : BigInt('0');
 }
 
+mutate_starttime(value:bigint):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 10);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint64(this.bb_pos + offset, value);
+  return true;
+}
+
 endtime():bigint {
   const offset = this.bb!.__offset(this.bb_pos, 12);
   return offset ? this.bb!.readUint64(this.bb_pos + offset) : BigInt('0');
+}
+
+mutate_endtime(value:bigint):boolean {
+  const offset = this.bb!.__offset(this.bb_pos, 12);
+
+  if (offset === 0) {
+    return false;
+  }
+
+  this.bb!.writeUint64(this.bb_pos + offset, value);
+  return true;
 }
 
 static startGame(builder:flatbuffers.Builder) {
@@ -78,12 +122,47 @@ static endGame(builder:flatbuffers.Builder):flatbuffers.Offset {
   return offset;
 }
 
-static finishGameBuffer(builder:flatbuffers.Builder, offset:flatbuffers.Offset) {
-  builder.finish(offset);
+
+unpack(): GameT {
+  return new GameT(
+    this.id(),
+    this.phase(),
+    (this.players() !== null ? this.players()!.unpack() : null),
+    this.starttime(),
+    this.endtime()
+  );
 }
 
-static finishSizePrefixedGameBuffer(builder:flatbuffers.Builder, offset:flatbuffers.Offset) {
-  builder.finish(offset, undefined, true);
+
+unpackTo(_o: GameT): void {
+  _o.id = this.id();
+  _o.phase = this.phase();
+  _o.players = (this.players() !== null ? this.players()!.unpack() : null);
+  _o.starttime = this.starttime();
+  _o.endtime = this.endtime();
+}
 }
 
+export class GameT implements flatbuffers.IGeneratedObject {
+constructor(
+  public id: bigint = BigInt('0'),
+  public phase: GamePhase = GamePhase.Lobby,
+  public players: PlayerRolesT|null = null,
+  public starttime: bigint = BigInt('0'),
+  public endtime: bigint = BigInt('0')
+){}
+
+
+pack(builder:flatbuffers.Builder): flatbuffers.Offset {
+  const players = (this.players !== null ? this.players!.pack(builder) : 0);
+
+  Game.startGame(builder);
+  Game.addId(builder, this.id);
+  Game.addPhase(builder, this.phase);
+  Game.addPlayers(builder, players);
+  Game.addStarttime(builder, this.starttime);
+  Game.addEndtime(builder, this.endtime);
+
+  return Game.endGame(builder);
+}
 }
