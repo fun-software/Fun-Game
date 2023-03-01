@@ -4,10 +4,9 @@ mod utils;
 use std::net::SocketAddr;
 
 use hyper::{
-  header::{self, HeaderValue},
   server::conn::AddrStream,
   service::{make_service_fn, service_fn},
-  Body, Error, Method, Response, StatusCode,
+  Error,
 };
 use tokio::{
   runtime,
@@ -17,7 +16,7 @@ use webrtc_unreliable::Server;
 
 use dotenv::dotenv;
 
-use utils::handler::handle_msg;
+use utils::{handler::handle_msg, http_service::http_service};
 
 #[allow(non_snake_case)]
 fn main() {
@@ -50,7 +49,7 @@ fn main() {
         interval.tick().await;
 
         // flush the queue, make state updates
-        println!("Tick")
+        // println!("Tick")
       }
     });
 
@@ -68,31 +67,7 @@ fn main() {
       async move {
         Ok::<_, Error>(service_fn(move |req| {
           let mut session_endpoint = session_endpoint.clone();
-          async move {
-            if req.uri().path() == "/offer" && req.method() == Method::POST {
-              log::info!("WebRTC session request from {}", remote_addr);
-              match session_endpoint.http_session_request(req.into_body()).await {
-                Ok(mut resp) => {
-                  resp.headers_mut().insert(
-                    // TODO: make stricter CORS policy
-                    header::ACCESS_CONTROL_ALLOW_ORIGIN,
-                    HeaderValue::from_static("*"),
-                  );
-                  Ok(resp.map(Body::from))
-                }
-                Err(err) => {
-                  log::warn!("bad rtc session request: {:?}", err);
-                  Response::builder()
-                    .status(StatusCode::BAD_REQUEST)
-                    .body(Body::from(format!("error: {:?}", err)))
-                }
-              }
-            } else {
-              Response::builder()
-                .status(StatusCode::NOT_FOUND)
-                .body(Body::from("not found"))
-            }
-          }
+          async move { http_service(req, remote_addr, &mut session_endpoint).await }
         }))
       }
     });
