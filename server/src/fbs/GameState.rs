@@ -149,18 +149,6 @@ impl<'a> PlayerRoles<'a> {
     builder.finish()
   }
 
-  pub fn unpack(&self) -> PlayerRolesT {
-    let red = self.red();
-    let blue = self.blue();
-    let green = self.green();
-    let yellow = self.yellow();
-    PlayerRolesT {
-      red,
-      blue,
-      green,
-      yellow,
-    }
-  }
 
   #[inline]
   pub fn red(&self) -> u64 {
@@ -271,41 +259,6 @@ impl core::fmt::Debug for PlayerRoles<'_> {
       ds.finish()
   }
 }
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct PlayerRolesT {
-  pub red: u64,
-  pub blue: u64,
-  pub green: u64,
-  pub yellow: u64,
-}
-impl Default for PlayerRolesT {
-  fn default() -> Self {
-    Self {
-      red: 0,
-      blue: 0,
-      green: 0,
-      yellow: 0,
-    }
-  }
-}
-impl PlayerRolesT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<PlayerRoles<'b>> {
-    let red = self.red;
-    let blue = self.blue;
-    let green = self.green;
-    let yellow = self.yellow;
-    PlayerRoles::create(_fbb, &PlayerRolesArgs{
-      red,
-      blue,
-      green,
-      yellow,
-    })
-  }
-}
 pub enum GameOffset {}
 #[derive(Copy, Clone, PartialEq)]
 
@@ -346,22 +299,6 @@ impl<'a> Game<'a> {
     builder.finish()
   }
 
-  pub fn unpack(&self) -> GameT {
-    let id = self.id();
-    let phase = self.phase();
-    let players = self.players().map(|x| {
-      Box::new(x.unpack())
-    });
-    let starttime = self.starttime();
-    let endtime = self.endtime();
-    GameT {
-      id,
-      phase,
-      players,
-      starttime,
-      endtime,
-    }
-  }
 
   #[inline]
   pub fn id(&self) -> u64 {
@@ -487,47 +424,6 @@ impl core::fmt::Debug for Game<'_> {
       ds.finish()
   }
 }
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct GameT {
-  pub id: u64,
-  pub phase: GamePhase,
-  pub players: Option<Box<PlayerRolesT>>,
-  pub starttime: u64,
-  pub endtime: u64,
-}
-impl Default for GameT {
-  fn default() -> Self {
-    Self {
-      id: 0,
-      phase: GamePhase::Lobby,
-      players: None,
-      starttime: 0,
-      endtime: 0,
-    }
-  }
-}
-impl GameT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<Game<'b>> {
-    let id = self.id;
-    let phase = self.phase;
-    let players = self.players.as_ref().map(|x|{
-      x.pack(_fbb)
-    });
-    let starttime = self.starttime;
-    let endtime = self.endtime;
-    Game::create(_fbb, &GameArgs{
-      id,
-      phase,
-      players,
-      starttime,
-      endtime,
-    })
-  }
-}
 }  // pub mod Game
 
 #[allow(unused_imports, dead_code)]
@@ -573,18 +469,6 @@ impl<'a> GameState<'a> {
     builder.finish()
   }
 
-  pub fn unpack(&self) -> GameStateT {
-    let game = self.game().map(|x| {
-      Box::new(x.unpack())
-    });
-    let players = self.players().map(|x| {
-      Box::new(x.unpack())
-    });
-    GameStateT {
-      game,
-      players,
-    }
-  }
 
   #[inline]
   pub fn game(&self) -> Option<super::game::Game<'a>> {
@@ -663,37 +547,6 @@ impl core::fmt::Debug for GameState<'_> {
       ds.field("game", &self.game());
       ds.field("players", &self.players());
       ds.finish()
-  }
-}
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct GameStateT {
-  pub game: Option<Box<super::game::GameT>>,
-  pub players: Option<Box<super::game::PlayerRolesT>>,
-}
-impl Default for GameStateT {
-  fn default() -> Self {
-    Self {
-      game: None,
-      players: None,
-    }
-  }
-}
-impl GameStateT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<GameState<'b>> {
-    let game = self.game.as_ref().map(|x|{
-      x.pack(_fbb)
-    });
-    let players = self.players.as_ref().map(|x|{
-      x.pack(_fbb)
-    });
-    GameState::create(_fbb, &GameStateArgs{
-      game,
-      players,
-    })
   }
 }
 #[inline]

@@ -149,18 +149,6 @@ impl<'a> PlayerRoles<'a> {
     builder.finish()
   }
 
-  pub fn unpack(&self) -> PlayerRolesT {
-    let red = self.red();
-    let blue = self.blue();
-    let green = self.green();
-    let yellow = self.yellow();
-    PlayerRolesT {
-      red,
-      blue,
-      green,
-      yellow,
-    }
-  }
 
   #[inline]
   pub fn red(&self) -> u64 {
@@ -271,41 +259,6 @@ impl core::fmt::Debug for PlayerRoles<'_> {
       ds.finish()
   }
 }
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct PlayerRolesT {
-  pub red: u64,
-  pub blue: u64,
-  pub green: u64,
-  pub yellow: u64,
-}
-impl Default for PlayerRolesT {
-  fn default() -> Self {
-    Self {
-      red: 0,
-      blue: 0,
-      green: 0,
-      yellow: 0,
-    }
-  }
-}
-impl PlayerRolesT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<PlayerRoles<'b>> {
-    let red = self.red;
-    let blue = self.blue;
-    let green = self.green;
-    let yellow = self.yellow;
-    PlayerRoles::create(_fbb, &PlayerRolesArgs{
-      red,
-      blue,
-      green,
-      yellow,
-    })
-  }
-}
 pub enum GameOffset {}
 #[derive(Copy, Clone, PartialEq)]
 
@@ -346,22 +299,6 @@ impl<'a> Game<'a> {
     builder.finish()
   }
 
-  pub fn unpack(&self) -> GameT {
-    let id = self.id();
-    let phase = self.phase();
-    let players = self.players().map(|x| {
-      Box::new(x.unpack())
-    });
-    let starttime = self.starttime();
-    let endtime = self.endtime();
-    GameT {
-      id,
-      phase,
-      players,
-      starttime,
-      endtime,
-    }
-  }
 
   #[inline]
   pub fn id(&self) -> u64 {
@@ -487,47 +424,6 @@ impl core::fmt::Debug for Game<'_> {
       ds.finish()
   }
 }
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct GameT {
-  pub id: u64,
-  pub phase: GamePhase,
-  pub players: Option<Box<PlayerRolesT>>,
-  pub starttime: u64,
-  pub endtime: u64,
-}
-impl Default for GameT {
-  fn default() -> Self {
-    Self {
-      id: 0,
-      phase: GamePhase::Lobby,
-      players: None,
-      starttime: 0,
-      endtime: 0,
-    }
-  }
-}
-impl GameT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<Game<'b>> {
-    let id = self.id;
-    let phase = self.phase;
-    let players = self.players.as_ref().map(|x|{
-      x.pack(_fbb)
-    });
-    let starttime = self.starttime;
-    let endtime = self.endtime;
-    Game::create(_fbb, &GameArgs{
-      id,
-      phase,
-      players,
-      starttime,
-      endtime,
-    })
-  }
-}
 }  // pub mod Game
 
 #[allow(unused_imports, dead_code)]
@@ -573,18 +469,6 @@ impl<'a> GameState<'a> {
     builder.finish()
   }
 
-  pub fn unpack(&self) -> GameStateT {
-    let game = self.game().map(|x| {
-      Box::new(x.unpack())
-    });
-    let players = self.players().map(|x| {
-      Box::new(x.unpack())
-    });
-    GameStateT {
-      game,
-      players,
-    }
-  }
 
   #[inline]
   pub fn game(&self) -> Option<super::game::Game<'a>> {
@@ -663,37 +547,6 @@ impl core::fmt::Debug for GameState<'_> {
       ds.field("game", &self.game());
       ds.field("players", &self.players());
       ds.finish()
-  }
-}
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct GameStateT {
-  pub game: Option<Box<super::game::GameT>>,
-  pub players: Option<Box<super::game::PlayerRolesT>>,
-}
-impl Default for GameStateT {
-  fn default() -> Self {
-    Self {
-      game: None,
-      players: None,
-    }
-  }
-}
-impl GameStateT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<GameState<'b>> {
-    let game = self.game.as_ref().map(|x|{
-      x.pack(_fbb)
-    });
-    let players = self.players.as_ref().map(|x|{
-      x.pack(_fbb)
-    });
-    GameState::create(_fbb, &GameStateArgs{
-      game,
-      players,
-    })
   }
 }
 }  // pub mod Gamestate
@@ -826,16 +679,6 @@ impl<'a> ChatMessage<'a> {
     builder.finish()
   }
 
-  pub fn unpack(&self) -> ChatMessageT {
-    let source = self.source();
-    let message = self.message().map(|x| {
-      x.to_string()
-    });
-    ChatMessageT {
-      source,
-      message,
-    }
-  }
 
   #[inline]
   pub fn source(&self) -> ChatSource {
@@ -914,35 +757,6 @@ impl core::fmt::Debug for ChatMessage<'_> {
       ds.field("source", &self.source());
       ds.field("message", &self.message());
       ds.finish()
-  }
-}
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct ChatMessageT {
-  pub source: ChatSource,
-  pub message: Option<String>,
-}
-impl Default for ChatMessageT {
-  fn default() -> Self {
-    Self {
-      source: ChatSource::System,
-      message: None,
-    }
-  }
-}
-impl ChatMessageT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<ChatMessage<'b>> {
-    let source = self.source;
-    let message = self.message.as_ref().map(|x|{
-      _fbb.create_string(x)
-    });
-    ChatMessage::create(_fbb, &ChatMessageArgs{
-      source,
-      message,
-    })
   }
 }
 }  // pub mod Chat
@@ -1140,125 +954,6 @@ impl<'a> flatbuffers::Verifiable for ServerMessagePayload {
 impl flatbuffers::SimpleToVerifyInSlice for ServerMessagePayload {}
 pub struct ServerMessagePayloadUnionTableOffset {}
 
-#[allow(clippy::upper_case_acronyms)]
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub enum ServerMessagePayloadT {
-  NONE,
-  NewGameResponsePayload(Box<NewGameResponsePayloadT>),
-  JoinGameResponsePayload(Box<JoinGameResponsePayloadT>),
-  LeaveGameResponsePayload(Box<LeaveGameResponsePayloadT>),
-  StatePayload(Box<StatePayloadT>),
-}
-impl Default for ServerMessagePayloadT {
-  fn default() -> Self {
-    Self::NONE
-  }
-}
-impl ServerMessagePayloadT {
-  pub fn server_message_payload_type(&self) -> ServerMessagePayload {
-    match self {
-      Self::NONE => ServerMessagePayload::NONE,
-      Self::NewGameResponsePayload(_) => ServerMessagePayload::NewGameResponsePayload,
-      Self::JoinGameResponsePayload(_) => ServerMessagePayload::JoinGameResponsePayload,
-      Self::LeaveGameResponsePayload(_) => ServerMessagePayload::LeaveGameResponsePayload,
-      Self::StatePayload(_) => ServerMessagePayload::StatePayload,
-    }
-  }
-  pub fn pack(&self, fbb: &mut flatbuffers::FlatBufferBuilder) -> Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>> {
-    match self {
-      Self::NONE => None,
-      Self::NewGameResponsePayload(v) => Some(v.pack(fbb).as_union_value()),
-      Self::JoinGameResponsePayload(v) => Some(v.pack(fbb).as_union_value()),
-      Self::LeaveGameResponsePayload(v) => Some(v.pack(fbb).as_union_value()),
-      Self::StatePayload(v) => Some(v.pack(fbb).as_union_value()),
-    }
-  }
-  /// If the union variant matches, return the owned NewGameResponsePayloadT, setting the union to NONE.
-  pub fn take_new_game_response_payload(&mut self) -> Option<Box<NewGameResponsePayloadT>> {
-    if let Self::NewGameResponsePayload(_) = self {
-      let v = core::mem::replace(self, Self::NONE);
-      if let Self::NewGameResponsePayload(w) = v {
-        Some(w)
-      } else {
-        unreachable!()
-      }
-    } else {
-      None
-    }
-  }
-  /// If the union variant matches, return a reference to the NewGameResponsePayloadT.
-  pub fn as_new_game_response_payload(&self) -> Option<&NewGameResponsePayloadT> {
-    if let Self::NewGameResponsePayload(v) = self { Some(v.as_ref()) } else { None }
-  }
-  /// If the union variant matches, return a mutable reference to the NewGameResponsePayloadT.
-  pub fn as_new_game_response_payload_mut(&mut self) -> Option<&mut NewGameResponsePayloadT> {
-    if let Self::NewGameResponsePayload(v) = self { Some(v.as_mut()) } else { None }
-  }
-  /// If the union variant matches, return the owned JoinGameResponsePayloadT, setting the union to NONE.
-  pub fn take_join_game_response_payload(&mut self) -> Option<Box<JoinGameResponsePayloadT>> {
-    if let Self::JoinGameResponsePayload(_) = self {
-      let v = core::mem::replace(self, Self::NONE);
-      if let Self::JoinGameResponsePayload(w) = v {
-        Some(w)
-      } else {
-        unreachable!()
-      }
-    } else {
-      None
-    }
-  }
-  /// If the union variant matches, return a reference to the JoinGameResponsePayloadT.
-  pub fn as_join_game_response_payload(&self) -> Option<&JoinGameResponsePayloadT> {
-    if let Self::JoinGameResponsePayload(v) = self { Some(v.as_ref()) } else { None }
-  }
-  /// If the union variant matches, return a mutable reference to the JoinGameResponsePayloadT.
-  pub fn as_join_game_response_payload_mut(&mut self) -> Option<&mut JoinGameResponsePayloadT> {
-    if let Self::JoinGameResponsePayload(v) = self { Some(v.as_mut()) } else { None }
-  }
-  /// If the union variant matches, return the owned LeaveGameResponsePayloadT, setting the union to NONE.
-  pub fn take_leave_game_response_payload(&mut self) -> Option<Box<LeaveGameResponsePayloadT>> {
-    if let Self::LeaveGameResponsePayload(_) = self {
-      let v = core::mem::replace(self, Self::NONE);
-      if let Self::LeaveGameResponsePayload(w) = v {
-        Some(w)
-      } else {
-        unreachable!()
-      }
-    } else {
-      None
-    }
-  }
-  /// If the union variant matches, return a reference to the LeaveGameResponsePayloadT.
-  pub fn as_leave_game_response_payload(&self) -> Option<&LeaveGameResponsePayloadT> {
-    if let Self::LeaveGameResponsePayload(v) = self { Some(v.as_ref()) } else { None }
-  }
-  /// If the union variant matches, return a mutable reference to the LeaveGameResponsePayloadT.
-  pub fn as_leave_game_response_payload_mut(&mut self) -> Option<&mut LeaveGameResponsePayloadT> {
-    if let Self::LeaveGameResponsePayload(v) = self { Some(v.as_mut()) } else { None }
-  }
-  /// If the union variant matches, return the owned StatePayloadT, setting the union to NONE.
-  pub fn take_state_payload(&mut self) -> Option<Box<StatePayloadT>> {
-    if let Self::StatePayload(_) = self {
-      let v = core::mem::replace(self, Self::NONE);
-      if let Self::StatePayload(w) = v {
-        Some(w)
-      } else {
-        unreachable!()
-      }
-    } else {
-      None
-    }
-  }
-  /// If the union variant matches, return a reference to the StatePayloadT.
-  pub fn as_state_payload(&self) -> Option<&StatePayloadT> {
-    if let Self::StatePayload(v) = self { Some(v.as_ref()) } else { None }
-  }
-  /// If the union variant matches, return a mutable reference to the StatePayloadT.
-  pub fn as_state_payload_mut(&mut self) -> Option<&mut StatePayloadT> {
-    if let Self::StatePayload(v) = self { Some(v.as_mut()) } else { None }
-  }
-}
 pub enum NewGameResponsePayloadOffset {}
 #[derive(Copy, Clone, PartialEq)]
 
@@ -1277,6 +972,7 @@ impl<'a> flatbuffers::Follow<'a> for NewGameResponsePayload<'a> {
 impl<'a> NewGameResponsePayload<'a> {
   pub const VT_CODE: flatbuffers::VOffsetT = 4;
   pub const VT_GAME: flatbuffers::VOffsetT = 6;
+  pub const VT_SOCKET_ADDRESS: flatbuffers::VOffsetT = 8;
 
   #[inline]
   pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
@@ -1288,21 +984,12 @@ impl<'a> NewGameResponsePayload<'a> {
     args: &'args NewGameResponsePayloadArgs<'args>
   ) -> flatbuffers::WIPOffset<NewGameResponsePayload<'bldr>> {
     let mut builder = NewGameResponsePayloadBuilder::new(_fbb);
+    if let Some(x) = args.socket_address { builder.add_socket_address(x); }
     if let Some(x) = args.game { builder.add_game(x); }
     builder.add_code(args.code);
     builder.finish()
   }
 
-  pub fn unpack(&self) -> NewGameResponsePayloadT {
-    let code = self.code();
-    let game = self.game().map(|x| {
-      Box::new(x.unpack())
-    });
-    NewGameResponsePayloadT {
-      code,
-      game,
-    }
-  }
 
   #[inline]
   pub fn code(&self) -> ResponseCode {
@@ -1318,6 +1005,13 @@ impl<'a> NewGameResponsePayload<'a> {
     // which contains a valid value in this slot
     unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<super::game::Game>>(NewGameResponsePayload::VT_GAME, None)}
   }
+  #[inline]
+  pub fn socket_address(&self) -> Option<&'a str> {
+    // Safety:
+    // Created from valid Table for this object
+    // which contains a valid value in this slot
+    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(NewGameResponsePayload::VT_SOCKET_ADDRESS, None)}
+  }
 }
 
 impl flatbuffers::Verifiable for NewGameResponsePayload<'_> {
@@ -1329,6 +1023,7 @@ impl flatbuffers::Verifiable for NewGameResponsePayload<'_> {
     v.visit_table(pos)?
      .visit_field::<ResponseCode>("code", Self::VT_CODE, false)?
      .visit_field::<flatbuffers::ForwardsUOffset<super::game::Game>>("game", Self::VT_GAME, false)?
+     .visit_field::<flatbuffers::ForwardsUOffset<&str>>("socket_address", Self::VT_SOCKET_ADDRESS, false)?
      .finish();
     Ok(())
   }
@@ -1336,6 +1031,7 @@ impl flatbuffers::Verifiable for NewGameResponsePayload<'_> {
 pub struct NewGameResponsePayloadArgs<'a> {
     pub code: ResponseCode,
     pub game: Option<flatbuffers::WIPOffset<super::game::Game<'a>>>,
+    pub socket_address: Option<flatbuffers::WIPOffset<&'a str>>,
 }
 impl<'a> Default for NewGameResponsePayloadArgs<'a> {
   #[inline]
@@ -1343,6 +1039,7 @@ impl<'a> Default for NewGameResponsePayloadArgs<'a> {
     NewGameResponsePayloadArgs {
       code: ResponseCode::OK,
       game: None,
+      socket_address: None,
     }
   }
 }
@@ -1359,6 +1056,10 @@ impl<'a: 'b, 'b> NewGameResponsePayloadBuilder<'a, 'b> {
   #[inline]
   pub fn add_game(&mut self, game: flatbuffers::WIPOffset<super::game::Game<'b >>) {
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<super::game::Game>>(NewGameResponsePayload::VT_GAME, game);
+  }
+  #[inline]
+  pub fn add_socket_address(&mut self, socket_address: flatbuffers::WIPOffset<&'b  str>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(NewGameResponsePayload::VT_SOCKET_ADDRESS, socket_address);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> NewGameResponsePayloadBuilder<'a, 'b> {
@@ -1380,36 +1081,8 @@ impl core::fmt::Debug for NewGameResponsePayload<'_> {
     let mut ds = f.debug_struct("NewGameResponsePayload");
       ds.field("code", &self.code());
       ds.field("game", &self.game());
+      ds.field("socket_address", &self.socket_address());
       ds.finish()
-  }
-}
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct NewGameResponsePayloadT {
-  pub code: ResponseCode,
-  pub game: Option<Box<super::game::GameT>>,
-}
-impl Default for NewGameResponsePayloadT {
-  fn default() -> Self {
-    Self {
-      code: ResponseCode::OK,
-      game: None,
-    }
-  }
-}
-impl NewGameResponsePayloadT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<NewGameResponsePayload<'b>> {
-    let code = self.code;
-    let game = self.game.as_ref().map(|x|{
-      x.pack(_fbb)
-    });
-    NewGameResponsePayload::create(_fbb, &NewGameResponsePayloadArgs{
-      code,
-      game,
-    })
   }
 }
 pub enum JoinGameResponsePayloadOffset {}
@@ -1446,16 +1119,6 @@ impl<'a> JoinGameResponsePayload<'a> {
     builder.finish()
   }
 
-  pub fn unpack(&self) -> JoinGameResponsePayloadT {
-    let code = self.code();
-    let game = self.game().map(|x| {
-      Box::new(x.unpack())
-    });
-    JoinGameResponsePayloadT {
-      code,
-      game,
-    }
-  }
 
   #[inline]
   pub fn code(&self) -> ResponseCode {
@@ -1536,35 +1199,6 @@ impl core::fmt::Debug for JoinGameResponsePayload<'_> {
       ds.finish()
   }
 }
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct JoinGameResponsePayloadT {
-  pub code: ResponseCode,
-  pub game: Option<Box<super::game::GameT>>,
-}
-impl Default for JoinGameResponsePayloadT {
-  fn default() -> Self {
-    Self {
-      code: ResponseCode::OK,
-      game: None,
-    }
-  }
-}
-impl JoinGameResponsePayloadT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<JoinGameResponsePayload<'b>> {
-    let code = self.code;
-    let game = self.game.as_ref().map(|x|{
-      x.pack(_fbb)
-    });
-    JoinGameResponsePayload::create(_fbb, &JoinGameResponsePayloadArgs{
-      code,
-      game,
-    })
-  }
-}
 pub enum LeaveGameResponsePayloadOffset {}
 #[derive(Copy, Clone, PartialEq)]
 
@@ -1599,16 +1233,6 @@ impl<'a> LeaveGameResponsePayload<'a> {
     builder.finish()
   }
 
-  pub fn unpack(&self) -> LeaveGameResponsePayloadT {
-    let code = self.code();
-    let game = self.game().map(|x| {
-      Box::new(x.unpack())
-    });
-    LeaveGameResponsePayloadT {
-      code,
-      game,
-    }
-  }
 
   #[inline]
   pub fn code(&self) -> ResponseCode {
@@ -1689,35 +1313,6 @@ impl core::fmt::Debug for LeaveGameResponsePayload<'_> {
       ds.finish()
   }
 }
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct LeaveGameResponsePayloadT {
-  pub code: ResponseCode,
-  pub game: Option<Box<super::game::GameT>>,
-}
-impl Default for LeaveGameResponsePayloadT {
-  fn default() -> Self {
-    Self {
-      code: ResponseCode::OK,
-      game: None,
-    }
-  }
-}
-impl LeaveGameResponsePayloadT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<LeaveGameResponsePayload<'b>> {
-    let code = self.code;
-    let game = self.game.as_ref().map(|x|{
-      x.pack(_fbb)
-    });
-    LeaveGameResponsePayload::create(_fbb, &LeaveGameResponsePayloadArgs{
-      code,
-      game,
-    })
-  }
-}
 pub enum StatePayloadOffset {}
 #[derive(Copy, Clone, PartialEq)]
 
@@ -1754,20 +1349,6 @@ impl<'a> StatePayload<'a> {
     builder.finish()
   }
 
-  pub fn unpack(&self) -> StatePayloadT {
-    let code = self.code();
-    let game_state = self.game_state().map(|x| {
-      Box::new(x.unpack())
-    });
-    let chat = self.chat().map(|x| {
-      x.iter().map(|t| t.unpack()).collect()
-    });
-    StatePayloadT {
-      code,
-      game_state,
-      chat,
-    }
-  }
 
   #[inline]
   pub fn code(&self) -> ResponseCode {
@@ -1863,41 +1444,6 @@ impl core::fmt::Debug for StatePayload<'_> {
       ds.finish()
   }
 }
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct StatePayloadT {
-  pub code: ResponseCode,
-  pub game_state: Option<Box<super::gamestate::GameStateT>>,
-  pub chat: Option<Vec<super::chat::ChatMessageT>>,
-}
-impl Default for StatePayloadT {
-  fn default() -> Self {
-    Self {
-      code: ResponseCode::OK,
-      game_state: None,
-      chat: None,
-    }
-  }
-}
-impl StatePayloadT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<StatePayload<'b>> {
-    let code = self.code;
-    let game_state = self.game_state.as_ref().map(|x|{
-      x.pack(_fbb)
-    });
-    let chat = self.chat.as_ref().map(|x|{
-      let w: Vec<_> = x.iter().map(|t| t.pack(_fbb)).collect();_fbb.create_vector(&w)
-    });
-    StatePayload::create(_fbb, &StatePayloadArgs{
-      code,
-      game_state,
-      chat,
-    })
-  }
-}
 pub enum ServerMessageOffset {}
 #[derive(Copy, Clone, PartialEq)]
 
@@ -1934,37 +1480,6 @@ impl<'a> ServerMessage<'a> {
     builder.finish()
   }
 
-  pub fn unpack(&self) -> ServerMessageT {
-    let timestamp = self.timestamp();
-    let payload = match self.payload_type() {
-      ServerMessagePayload::NONE => ServerMessagePayloadT::NONE,
-      ServerMessagePayload::NewGameResponsePayload => ServerMessagePayloadT::NewGameResponsePayload(Box::new(
-        self.payload_as_new_game_response_payload()
-            .expect("Invalid union table, expected `ServerMessagePayload::NewGameResponsePayload`.")
-            .unpack()
-      )),
-      ServerMessagePayload::JoinGameResponsePayload => ServerMessagePayloadT::JoinGameResponsePayload(Box::new(
-        self.payload_as_join_game_response_payload()
-            .expect("Invalid union table, expected `ServerMessagePayload::JoinGameResponsePayload`.")
-            .unpack()
-      )),
-      ServerMessagePayload::LeaveGameResponsePayload => ServerMessagePayloadT::LeaveGameResponsePayload(Box::new(
-        self.payload_as_leave_game_response_payload()
-            .expect("Invalid union table, expected `ServerMessagePayload::LeaveGameResponsePayload`.")
-            .unpack()
-      )),
-      ServerMessagePayload::StatePayload => ServerMessagePayloadT::StatePayload(Box::new(
-        self.payload_as_state_payload()
-            .expect("Invalid union table, expected `ServerMessagePayload::StatePayload`.")
-            .unpack()
-      )),
-      _ => ServerMessagePayloadT::NONE,
-    };
-    ServerMessageT {
-      timestamp,
-      payload,
-    }
-  }
 
   #[inline]
   pub fn timestamp(&self) -> u64 {
@@ -2158,35 +1673,6 @@ impl core::fmt::Debug for ServerMessage<'_> {
         },
       };
       ds.finish()
-  }
-}
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct ServerMessageT {
-  pub timestamp: u64,
-  pub payload: ServerMessagePayloadT,
-}
-impl Default for ServerMessageT {
-  fn default() -> Self {
-    Self {
-      timestamp: 0,
-      payload: ServerMessagePayloadT::NONE,
-    }
-  }
-}
-impl ServerMessageT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<ServerMessage<'b>> {
-    let timestamp = self.timestamp;
-    let payload_type = self.payload.server_message_payload_type();
-    let payload = self.payload.pack(_fbb);
-    ServerMessage::create(_fbb, &ServerMessageArgs{
-      timestamp,
-      payload_type,
-      payload,
-    })
   }
 }
 #[inline]

@@ -58,24 +58,6 @@ impl<'a> User<'a> {
     builder.finish()
   }
 
-  pub fn unpack(&self) -> UserT {
-    let id = self.id();
-    let username = self.username().map(|x| {
-      x.to_string()
-    });
-    let email = self.email().map(|x| {
-      x.to_string()
-    });
-    let created_at = self.created_at();
-    let updated_at = self.updated_at();
-    UserT {
-      id,
-      username,
-      email,
-      created_at,
-      updated_at,
-    }
-  }
 
   #[inline]
   pub fn id(&self) -> u64 {
@@ -199,49 +181,6 @@ impl core::fmt::Debug for User<'_> {
       ds.field("created_at", &self.created_at());
       ds.field("updated_at", &self.updated_at());
       ds.finish()
-  }
-}
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct UserT {
-  pub id: u64,
-  pub username: Option<String>,
-  pub email: Option<String>,
-  pub created_at: u64,
-  pub updated_at: u64,
-}
-impl Default for UserT {
-  fn default() -> Self {
-    Self {
-      id: 0,
-      username: None,
-      email: None,
-      created_at: 0,
-      updated_at: 0,
-    }
-  }
-}
-impl UserT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<User<'b>> {
-    let id = self.id;
-    let username = self.username.as_ref().map(|x|{
-      _fbb.create_string(x)
-    });
-    let email = self.email.as_ref().map(|x|{
-      _fbb.create_string(x)
-    });
-    let created_at = self.created_at;
-    let updated_at = self.updated_at;
-    User::create(_fbb, &UserArgs{
-      id,
-      username,
-      email,
-      created_at,
-      updated_at,
-    })
   }
 }
 }  // pub mod User
@@ -409,29 +348,6 @@ impl<'a> Vec3 {
     }
   }
 
-  pub fn unpack(&self) -> Vec3T {
-    Vec3T {
-      x: self.x(),
-      y: self.y(),
-      z: self.z(),
-    }
-  }
-}
-
-#[derive(Debug, Clone, PartialEq, Default)]
-pub struct Vec3T {
-  pub x: f32,
-  pub y: f32,
-  pub z: f32,
-}
-impl Vec3T {
-  pub fn pack(&self) -> Vec3 {
-    Vec3::new(
-      self.x,
-      self.y,
-      self.z,
-    )
-  }
 }
 
 }  // pub mod Math
@@ -489,30 +405,6 @@ impl<'a> Player<'a> {
     builder.finish()
   }
 
-  pub fn unpack(&self) -> PlayerT {
-    let position = self.position().map(|x| {
-      x.unpack()
-    });
-    let velocity = self.velocity().map(|x| {
-      x.unpack()
-    });
-    let look_direction = self.look_direction().map(|x| {
-      x.unpack()
-    });
-    let hp = self.hp();
-    let speed = self.speed();
-    let sprinting = self.sprinting();
-    let sneaking = self.sneaking();
-    PlayerT {
-      position,
-      velocity,
-      look_direction,
-      hp,
-      speed,
-      sprinting,
-      sneaking,
-    }
-  }
 
   #[inline]
   pub fn position(&self) -> Option<&'a super::math::Vec3> {
@@ -668,56 +560,6 @@ impl core::fmt::Debug for Player<'_> {
       ds.finish()
   }
 }
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct PlayerT {
-  pub position: Option<super::math::Vec3T>,
-  pub velocity: Option<super::math::Vec3T>,
-  pub look_direction: Option<super::math::Vec3T>,
-  pub hp: i8,
-  pub speed: i8,
-  pub sprinting: bool,
-  pub sneaking: bool,
-}
-impl Default for PlayerT {
-  fn default() -> Self {
-    Self {
-      position: None,
-      velocity: None,
-      look_direction: None,
-      hp: 100,
-      speed: 100,
-      sprinting: false,
-      sneaking: false,
-    }
-  }
-}
-impl PlayerT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<Player<'b>> {
-    let position_tmp = self.position.as_ref().map(|x| x.pack());
-    let position = position_tmp.as_ref();
-    let velocity_tmp = self.velocity.as_ref().map(|x| x.pack());
-    let velocity = velocity_tmp.as_ref();
-    let look_direction_tmp = self.look_direction.as_ref().map(|x| x.pack());
-    let look_direction = look_direction_tmp.as_ref();
-    let hp = self.hp;
-    let speed = self.speed;
-    let sprinting = self.sprinting;
-    let sneaking = self.sneaking;
-    Player::create(_fbb, &PlayerArgs{
-      position,
-      velocity,
-      look_direction,
-      hp,
-      speed,
-      sprinting,
-      sneaking,
-    })
-  }
-}
 }  // pub mod Player
 
 #[allow(unused_imports, dead_code)]
@@ -848,16 +690,6 @@ impl<'a> ChatMessage<'a> {
     builder.finish()
   }
 
-  pub fn unpack(&self) -> ChatMessageT {
-    let source = self.source();
-    let message = self.message().map(|x| {
-      x.to_string()
-    });
-    ChatMessageT {
-      source,
-      message,
-    }
-  }
 
   #[inline]
   pub fn source(&self) -> ChatSource {
@@ -936,35 +768,6 @@ impl core::fmt::Debug for ChatMessage<'_> {
       ds.field("source", &self.source());
       ds.field("message", &self.message());
       ds.finish()
-  }
-}
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct ChatMessageT {
-  pub source: ChatSource,
-  pub message: Option<String>,
-}
-impl Default for ChatMessageT {
-  fn default() -> Self {
-    Self {
-      source: ChatSource::System,
-      message: None,
-    }
-  }
-}
-impl ChatMessageT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<ChatMessage<'b>> {
-    let source = self.source;
-    let message = self.message.as_ref().map(|x|{
-      _fbb.create_string(x)
-    });
-    ChatMessage::create(_fbb, &ChatMessageArgs{
-      source,
-      message,
-    })
   }
 }
 }  // pub mod Chat
@@ -1085,173 +888,6 @@ impl<'a> flatbuffers::Verifiable for ClientMessagePayload {
 impl flatbuffers::SimpleToVerifyInSlice for ClientMessagePayload {}
 pub struct ClientMessagePayloadUnionTableOffset {}
 
-#[allow(clippy::upper_case_acronyms)]
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub enum ClientMessagePayloadT {
-  NONE,
-  ChatPayload(Box<ChatPayloadT>),
-  InputPayload(Box<InputPayloadT>),
-  JoinGamePayload(Box<JoinGamePayloadT>),
-  LeaveGamePayload(Box<LeaveGamePayloadT>),
-  NewGamePayload(Box<NewGamePayloadT>),
-  QueryStatePayload(Box<QueryStatePayloadT>),
-}
-impl Default for ClientMessagePayloadT {
-  fn default() -> Self {
-    Self::NONE
-  }
-}
-impl ClientMessagePayloadT {
-  pub fn client_message_payload_type(&self) -> ClientMessagePayload {
-    match self {
-      Self::NONE => ClientMessagePayload::NONE,
-      Self::ChatPayload(_) => ClientMessagePayload::ChatPayload,
-      Self::InputPayload(_) => ClientMessagePayload::InputPayload,
-      Self::JoinGamePayload(_) => ClientMessagePayload::JoinGamePayload,
-      Self::LeaveGamePayload(_) => ClientMessagePayload::LeaveGamePayload,
-      Self::NewGamePayload(_) => ClientMessagePayload::NewGamePayload,
-      Self::QueryStatePayload(_) => ClientMessagePayload::QueryStatePayload,
-    }
-  }
-  pub fn pack(&self, fbb: &mut flatbuffers::FlatBufferBuilder) -> Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>> {
-    match self {
-      Self::NONE => None,
-      Self::ChatPayload(v) => Some(v.pack(fbb).as_union_value()),
-      Self::InputPayload(v) => Some(v.pack(fbb).as_union_value()),
-      Self::JoinGamePayload(v) => Some(v.pack(fbb).as_union_value()),
-      Self::LeaveGamePayload(v) => Some(v.pack(fbb).as_union_value()),
-      Self::NewGamePayload(v) => Some(v.pack(fbb).as_union_value()),
-      Self::QueryStatePayload(v) => Some(v.pack(fbb).as_union_value()),
-    }
-  }
-  /// If the union variant matches, return the owned ChatPayloadT, setting the union to NONE.
-  pub fn take_chat_payload(&mut self) -> Option<Box<ChatPayloadT>> {
-    if let Self::ChatPayload(_) = self {
-      let v = core::mem::replace(self, Self::NONE);
-      if let Self::ChatPayload(w) = v {
-        Some(w)
-      } else {
-        unreachable!()
-      }
-    } else {
-      None
-    }
-  }
-  /// If the union variant matches, return a reference to the ChatPayloadT.
-  pub fn as_chat_payload(&self) -> Option<&ChatPayloadT> {
-    if let Self::ChatPayload(v) = self { Some(v.as_ref()) } else { None }
-  }
-  /// If the union variant matches, return a mutable reference to the ChatPayloadT.
-  pub fn as_chat_payload_mut(&mut self) -> Option<&mut ChatPayloadT> {
-    if let Self::ChatPayload(v) = self { Some(v.as_mut()) } else { None }
-  }
-  /// If the union variant matches, return the owned InputPayloadT, setting the union to NONE.
-  pub fn take_input_payload(&mut self) -> Option<Box<InputPayloadT>> {
-    if let Self::InputPayload(_) = self {
-      let v = core::mem::replace(self, Self::NONE);
-      if let Self::InputPayload(w) = v {
-        Some(w)
-      } else {
-        unreachable!()
-      }
-    } else {
-      None
-    }
-  }
-  /// If the union variant matches, return a reference to the InputPayloadT.
-  pub fn as_input_payload(&self) -> Option<&InputPayloadT> {
-    if let Self::InputPayload(v) = self { Some(v.as_ref()) } else { None }
-  }
-  /// If the union variant matches, return a mutable reference to the InputPayloadT.
-  pub fn as_input_payload_mut(&mut self) -> Option<&mut InputPayloadT> {
-    if let Self::InputPayload(v) = self { Some(v.as_mut()) } else { None }
-  }
-  /// If the union variant matches, return the owned JoinGamePayloadT, setting the union to NONE.
-  pub fn take_join_game_payload(&mut self) -> Option<Box<JoinGamePayloadT>> {
-    if let Self::JoinGamePayload(_) = self {
-      let v = core::mem::replace(self, Self::NONE);
-      if let Self::JoinGamePayload(w) = v {
-        Some(w)
-      } else {
-        unreachable!()
-      }
-    } else {
-      None
-    }
-  }
-  /// If the union variant matches, return a reference to the JoinGamePayloadT.
-  pub fn as_join_game_payload(&self) -> Option<&JoinGamePayloadT> {
-    if let Self::JoinGamePayload(v) = self { Some(v.as_ref()) } else { None }
-  }
-  /// If the union variant matches, return a mutable reference to the JoinGamePayloadT.
-  pub fn as_join_game_payload_mut(&mut self) -> Option<&mut JoinGamePayloadT> {
-    if let Self::JoinGamePayload(v) = self { Some(v.as_mut()) } else { None }
-  }
-  /// If the union variant matches, return the owned LeaveGamePayloadT, setting the union to NONE.
-  pub fn take_leave_game_payload(&mut self) -> Option<Box<LeaveGamePayloadT>> {
-    if let Self::LeaveGamePayload(_) = self {
-      let v = core::mem::replace(self, Self::NONE);
-      if let Self::LeaveGamePayload(w) = v {
-        Some(w)
-      } else {
-        unreachable!()
-      }
-    } else {
-      None
-    }
-  }
-  /// If the union variant matches, return a reference to the LeaveGamePayloadT.
-  pub fn as_leave_game_payload(&self) -> Option<&LeaveGamePayloadT> {
-    if let Self::LeaveGamePayload(v) = self { Some(v.as_ref()) } else { None }
-  }
-  /// If the union variant matches, return a mutable reference to the LeaveGamePayloadT.
-  pub fn as_leave_game_payload_mut(&mut self) -> Option<&mut LeaveGamePayloadT> {
-    if let Self::LeaveGamePayload(v) = self { Some(v.as_mut()) } else { None }
-  }
-  /// If the union variant matches, return the owned NewGamePayloadT, setting the union to NONE.
-  pub fn take_new_game_payload(&mut self) -> Option<Box<NewGamePayloadT>> {
-    if let Self::NewGamePayload(_) = self {
-      let v = core::mem::replace(self, Self::NONE);
-      if let Self::NewGamePayload(w) = v {
-        Some(w)
-      } else {
-        unreachable!()
-      }
-    } else {
-      None
-    }
-  }
-  /// If the union variant matches, return a reference to the NewGamePayloadT.
-  pub fn as_new_game_payload(&self) -> Option<&NewGamePayloadT> {
-    if let Self::NewGamePayload(v) = self { Some(v.as_ref()) } else { None }
-  }
-  /// If the union variant matches, return a mutable reference to the NewGamePayloadT.
-  pub fn as_new_game_payload_mut(&mut self) -> Option<&mut NewGamePayloadT> {
-    if let Self::NewGamePayload(v) = self { Some(v.as_mut()) } else { None }
-  }
-  /// If the union variant matches, return the owned QueryStatePayloadT, setting the union to NONE.
-  pub fn take_query_state_payload(&mut self) -> Option<Box<QueryStatePayloadT>> {
-    if let Self::QueryStatePayload(_) = self {
-      let v = core::mem::replace(self, Self::NONE);
-      if let Self::QueryStatePayload(w) = v {
-        Some(w)
-      } else {
-        unreachable!()
-      }
-    } else {
-      None
-    }
-  }
-  /// If the union variant matches, return a reference to the QueryStatePayloadT.
-  pub fn as_query_state_payload(&self) -> Option<&QueryStatePayloadT> {
-    if let Self::QueryStatePayload(v) = self { Some(v.as_ref()) } else { None }
-  }
-  /// If the union variant matches, return a mutable reference to the QueryStatePayloadT.
-  pub fn as_query_state_payload_mut(&mut self) -> Option<&mut QueryStatePayloadT> {
-    if let Self::QueryStatePayload(v) = self { Some(v.as_mut()) } else { None }
-  }
-}
 pub enum NewGamePayloadOffset {}
 #[derive(Copy, Clone, PartialEq)]
 
@@ -1284,14 +920,6 @@ impl<'a> NewGamePayload<'a> {
     builder.finish()
   }
 
-  pub fn unpack(&self) -> NewGamePayloadT {
-    let user = self.user().map(|x| {
-      Box::new(x.unpack())
-    });
-    NewGamePayloadT {
-      user,
-    }
-  }
 
   #[inline]
   pub fn user(&self) -> Option<super::user::User<'a>> {
@@ -1357,31 +985,6 @@ impl core::fmt::Debug for NewGamePayload<'_> {
       ds.finish()
   }
 }
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct NewGamePayloadT {
-  pub user: Option<Box<super::user::UserT>>,
-}
-impl Default for NewGamePayloadT {
-  fn default() -> Self {
-    Self {
-      user: None,
-    }
-  }
-}
-impl NewGamePayloadT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<NewGamePayload<'b>> {
-    let user = self.user.as_ref().map(|x|{
-      x.pack(_fbb)
-    });
-    NewGamePayload::create(_fbb, &NewGamePayloadArgs{
-      user,
-    })
-  }
-}
 pub enum JoinGamePayloadOffset {}
 #[derive(Copy, Clone, PartialEq)]
 
@@ -1416,16 +1019,6 @@ impl<'a> JoinGamePayload<'a> {
     builder.finish()
   }
 
-  pub fn unpack(&self) -> JoinGamePayloadT {
-    let user = self.user().map(|x| {
-      Box::new(x.unpack())
-    });
-    let game_id = self.game_id();
-    JoinGamePayloadT {
-      user,
-      game_id,
-    }
-  }
 
   #[inline]
   pub fn user(&self) -> Option<super::user::User<'a>> {
@@ -1506,35 +1099,6 @@ impl core::fmt::Debug for JoinGamePayload<'_> {
       ds.finish()
   }
 }
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct JoinGamePayloadT {
-  pub user: Option<Box<super::user::UserT>>,
-  pub game_id: u64,
-}
-impl Default for JoinGamePayloadT {
-  fn default() -> Self {
-    Self {
-      user: None,
-      game_id: 0,
-    }
-  }
-}
-impl JoinGamePayloadT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<JoinGamePayload<'b>> {
-    let user = self.user.as_ref().map(|x|{
-      x.pack(_fbb)
-    });
-    let game_id = self.game_id;
-    JoinGamePayload::create(_fbb, &JoinGamePayloadArgs{
-      user,
-      game_id,
-    })
-  }
-}
 pub enum LeaveGamePayloadOffset {}
 #[derive(Copy, Clone, PartialEq)]
 
@@ -1567,14 +1131,6 @@ impl<'a> LeaveGamePayload<'a> {
     builder.finish()
   }
 
-  pub fn unpack(&self) -> LeaveGamePayloadT {
-    let user = self.user().map(|x| {
-      Box::new(x.unpack())
-    });
-    LeaveGamePayloadT {
-      user,
-    }
-  }
 
   #[inline]
   pub fn user(&self) -> Option<super::user::User<'a>> {
@@ -1640,31 +1196,6 @@ impl core::fmt::Debug for LeaveGamePayload<'_> {
       ds.finish()
   }
 }
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct LeaveGamePayloadT {
-  pub user: Option<Box<super::user::UserT>>,
-}
-impl Default for LeaveGamePayloadT {
-  fn default() -> Self {
-    Self {
-      user: None,
-    }
-  }
-}
-impl LeaveGamePayloadT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<LeaveGamePayload<'b>> {
-    let user = self.user.as_ref().map(|x|{
-      x.pack(_fbb)
-    });
-    LeaveGamePayload::create(_fbb, &LeaveGamePayloadArgs{
-      user,
-    })
-  }
-}
 pub enum ChatPayloadOffset {}
 #[derive(Copy, Clone, PartialEq)]
 
@@ -1699,18 +1230,6 @@ impl<'a> ChatPayload<'a> {
     builder.finish()
   }
 
-  pub fn unpack(&self) -> ChatPayloadT {
-    let user = self.user().map(|x| {
-      Box::new(x.unpack())
-    });
-    let message = self.message().map(|x| {
-      Box::new(x.unpack())
-    });
-    ChatPayloadT {
-      user,
-      message,
-    }
-  }
 
   #[inline]
   pub fn user(&self) -> Option<super::user::User<'a>> {
@@ -1791,37 +1310,6 @@ impl core::fmt::Debug for ChatPayload<'_> {
       ds.finish()
   }
 }
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct ChatPayloadT {
-  pub user: Option<Box<super::user::UserT>>,
-  pub message: Option<Box<super::chat::ChatMessageT>>,
-}
-impl Default for ChatPayloadT {
-  fn default() -> Self {
-    Self {
-      user: None,
-      message: None,
-    }
-  }
-}
-impl ChatPayloadT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<ChatPayload<'b>> {
-    let user = self.user.as_ref().map(|x|{
-      x.pack(_fbb)
-    });
-    let message = self.message.as_ref().map(|x|{
-      x.pack(_fbb)
-    });
-    ChatPayload::create(_fbb, &ChatPayloadArgs{
-      user,
-      message,
-    })
-  }
-}
 pub enum InputPayloadOffset {}
 #[derive(Copy, Clone, PartialEq)]
 
@@ -1856,18 +1344,6 @@ impl<'a> InputPayload<'a> {
     builder.finish()
   }
 
-  pub fn unpack(&self) -> InputPayloadT {
-    let user = self.user().map(|x| {
-      Box::new(x.unpack())
-    });
-    let player = self.player().map(|x| {
-      Box::new(x.unpack())
-    });
-    InputPayloadT {
-      user,
-      player,
-    }
-  }
 
   #[inline]
   pub fn user(&self) -> Option<super::user::User<'a>> {
@@ -1948,37 +1424,6 @@ impl core::fmt::Debug for InputPayload<'_> {
       ds.finish()
   }
 }
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct InputPayloadT {
-  pub user: Option<Box<super::user::UserT>>,
-  pub player: Option<Box<super::player::PlayerT>>,
-}
-impl Default for InputPayloadT {
-  fn default() -> Self {
-    Self {
-      user: None,
-      player: None,
-    }
-  }
-}
-impl InputPayloadT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<InputPayload<'b>> {
-    let user = self.user.as_ref().map(|x|{
-      x.pack(_fbb)
-    });
-    let player = self.player.as_ref().map(|x|{
-      x.pack(_fbb)
-    });
-    InputPayload::create(_fbb, &InputPayloadArgs{
-      user,
-      player,
-    })
-  }
-}
 pub enum QueryStatePayloadOffset {}
 #[derive(Copy, Clone, PartialEq)]
 
@@ -2011,14 +1456,6 @@ impl<'a> QueryStatePayload<'a> {
     builder.finish()
   }
 
-  pub fn unpack(&self) -> QueryStatePayloadT {
-    let user = self.user().map(|x| {
-      Box::new(x.unpack())
-    });
-    QueryStatePayloadT {
-      user,
-    }
-  }
 
   #[inline]
   pub fn user(&self) -> Option<super::user::User<'a>> {
@@ -2084,31 +1521,6 @@ impl core::fmt::Debug for QueryStatePayload<'_> {
       ds.finish()
   }
 }
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct QueryStatePayloadT {
-  pub user: Option<Box<super::user::UserT>>,
-}
-impl Default for QueryStatePayloadT {
-  fn default() -> Self {
-    Self {
-      user: None,
-    }
-  }
-}
-impl QueryStatePayloadT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<QueryStatePayload<'b>> {
-    let user = self.user.as_ref().map(|x|{
-      x.pack(_fbb)
-    });
-    QueryStatePayload::create(_fbb, &QueryStatePayloadArgs{
-      user,
-    })
-  }
-}
 pub enum ClientMessageOffset {}
 #[derive(Copy, Clone, PartialEq)]
 
@@ -2145,47 +1557,6 @@ impl<'a> ClientMessage<'a> {
     builder.finish()
   }
 
-  pub fn unpack(&self) -> ClientMessageT {
-    let timestamp = self.timestamp();
-    let payload = match self.payload_type() {
-      ClientMessagePayload::NONE => ClientMessagePayloadT::NONE,
-      ClientMessagePayload::ChatPayload => ClientMessagePayloadT::ChatPayload(Box::new(
-        self.payload_as_chat_payload()
-            .expect("Invalid union table, expected `ClientMessagePayload::ChatPayload`.")
-            .unpack()
-      )),
-      ClientMessagePayload::InputPayload => ClientMessagePayloadT::InputPayload(Box::new(
-        self.payload_as_input_payload()
-            .expect("Invalid union table, expected `ClientMessagePayload::InputPayload`.")
-            .unpack()
-      )),
-      ClientMessagePayload::JoinGamePayload => ClientMessagePayloadT::JoinGamePayload(Box::new(
-        self.payload_as_join_game_payload()
-            .expect("Invalid union table, expected `ClientMessagePayload::JoinGamePayload`.")
-            .unpack()
-      )),
-      ClientMessagePayload::LeaveGamePayload => ClientMessagePayloadT::LeaveGamePayload(Box::new(
-        self.payload_as_leave_game_payload()
-            .expect("Invalid union table, expected `ClientMessagePayload::LeaveGamePayload`.")
-            .unpack()
-      )),
-      ClientMessagePayload::NewGamePayload => ClientMessagePayloadT::NewGamePayload(Box::new(
-        self.payload_as_new_game_payload()
-            .expect("Invalid union table, expected `ClientMessagePayload::NewGamePayload`.")
-            .unpack()
-      )),
-      ClientMessagePayload::QueryStatePayload => ClientMessagePayloadT::QueryStatePayload(Box::new(
-        self.payload_as_query_state_payload()
-            .expect("Invalid union table, expected `ClientMessagePayload::QueryStatePayload`.")
-            .unpack()
-      )),
-      _ => ClientMessagePayloadT::NONE,
-    };
-    ClientMessageT {
-      timestamp,
-      payload,
-    }
-  }
 
   #[inline]
   pub fn timestamp(&self) -> u64 {
@@ -2425,35 +1796,6 @@ impl core::fmt::Debug for ClientMessage<'_> {
         },
       };
       ds.finish()
-  }
-}
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct ClientMessageT {
-  pub timestamp: u64,
-  pub payload: ClientMessagePayloadT,
-}
-impl Default for ClientMessageT {
-  fn default() -> Self {
-    Self {
-      timestamp: 0,
-      payload: ClientMessagePayloadT::NONE,
-    }
-  }
-}
-impl ClientMessageT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<ClientMessage<'b>> {
-    let timestamp = self.timestamp;
-    let payload_type = self.payload.client_message_payload_type();
-    let payload = self.payload.pack(_fbb);
-    ClientMessage::create(_fbb, &ClientMessageArgs{
-      timestamp,
-      payload_type,
-      payload,
-    })
   }
 }
 #[inline]

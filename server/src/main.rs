@@ -60,14 +60,19 @@ fn main() {
       .expect("could not start RTC server");
 
     let session_endpoint = rtc_server.session_endpoint();
+
+    let local_state = state.clone();
     let make_svc = make_service_fn(move |addr_stream: &AddrStream| {
       let session_endpoint = session_endpoint.clone();
       let remote_addr = addr_stream.remote_addr();
+      let local_state = local_state.clone();
 
       async move {
+        let local_state = local_state.clone();
         Ok::<_, Error>(service_fn(move |req| {
+          let local_state = local_state.clone();
           let mut session_endpoint = session_endpoint.clone();
-          async move { http_service(req, remote_addr, &mut session_endpoint).await }
+          async move { http_service(req, remote_addr, &mut session_endpoint, local_state).await }
         }))
       }
     });
@@ -94,7 +99,8 @@ fn main() {
       };
 
       if let Some((message_type, remote_addr)) = received {
-        let res = handle_msg(&message_buf, message_type, remote_addr, &state.players).await;
+        let local_state = state.clone();
+        let res = handle_msg(&message_buf, message_type, remote_addr, local_state);
         message_buf.clear();
 
         message_buf.extend(res);

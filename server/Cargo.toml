@@ -25,6 +25,7 @@ env_logger = "0.9"
 flatbuffers = "23.1.20"
 dotenv = "0.15.0"
 chrono = "0.4.23"
+tokio-tungstenite = "0.18.0"
 
 
 [[src]]

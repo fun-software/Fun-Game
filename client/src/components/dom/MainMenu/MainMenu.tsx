@@ -1,7 +1,7 @@
 import Link from "next/link";
 import styles from "./MainMenu.module.scss";
 import { User } from "@fb/User";
-import { Game } from "@fb/Game";
+import { NewGameResponsePayloadT, ServerMessage } from "@fb/ServerMessages";
 import { ClientMessage, ClientMessagePayload, NewGamePayload } from "@fb/ClientMessages";
 import { Builder, ByteBuffer } from "flatbuffers";
 
@@ -31,9 +31,21 @@ export default function MainMenu() {
 
     let data = await res.arrayBuffer();
     let byteArr = new Uint8Array(data);
+    let dataBuffer = new ByteBuffer(byteArr);
 
-    let game = Game.getRootAsGame(new ByteBuffer(byteArr)).unpack();
-    // console.log(game);
+    let msg = ServerMessage.getRootAsServerMessage(dataBuffer).unpack();
+    // console.log(msg);
+
+    let responsePayload = msg.payload as NewGameResponsePayloadT;
+
+    let ws = new WebSocket(responsePayload.socketAddress as string);
+    ws.onopen = () => {
+      window["ws"] = ws;
+      ws.send("Hello from client");
+    };
+    ws.onmessage = e => {
+      // console.log(e.data);
+    };
   };
 
   return (
