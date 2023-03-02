@@ -33,7 +33,7 @@ export default function MainMenu() {
     let byteArr = new Uint8Array(data);
 
     let game = Game.getRootAsGame(new ByteBuffer(byteArr)).unpack();
-    console.log(game);
+    // console.log(game);
   };
 
   return (

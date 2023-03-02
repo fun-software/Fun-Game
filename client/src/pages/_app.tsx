@@ -6,11 +6,17 @@ import dynamic from "next/dynamic";
 import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs";
 import { SessionContextProvider, Session } from "@supabase/auth-helpers-react";
 
+let supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_PROJECT_URL || "localhost";
+let supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_API_KEY || "nokey";
+
 const Scene = dynamic(() => import("@/components/canvas/Scene"), { ssr: true });
 
 type Props = { Component: any; pageProps: { title: string; initialSession: Session } };
 export default function App({ Component, pageProps }: Props) {
-  const [supabaseClient] = useState(() => createBrowserSupabaseClient());
+  const [supabaseClient] = useState(() =>
+    createBrowserSupabaseClient({ supabaseKey, supabaseUrl }),
+  );
+
   const ref = useRef();
   return (
     <SessionContextProvider
