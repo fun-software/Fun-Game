@@ -1,3 +1,4 @@
+import Auth from "@/components/dom/Auth";
 import MainMenu from "@/components/dom/MainMenu";
 import dynamic from "next/dynamic";
 
@@ -9,7 +10,12 @@ const Temp = dynamic(() => import("@/components/canvas/Temp"), { ssr: false });
 
 // Dom components go here
 export default function Page() {
-  return <MainMenu />;
+  return (
+    <>
+      <Auth />
+      <MainMenu />
+    </>
+  );
 }
 
 // Canvas components go here
