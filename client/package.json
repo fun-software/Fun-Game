@@ -12,6 +12,9 @@
   "dependencies": {
     "@react-three/drei": "^9.56.5",
     "@react-three/fiber": "^8.10.1",
+    "@supabase/auth-helpers-nextjs": "^0.5.4",
+    "@supabase/auth-helpers-react": "^0.3.1",
+    "@supabase/supabase-js": "^2.8.0",
     "cz-conventional-changelog": "^3.3.0",
     "flatbuffers": "^23.1.20",
     "glsl-random": "^0.0.5",
