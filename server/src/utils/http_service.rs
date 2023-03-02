@@ -6,14 +6,23 @@ use hyper::{
   http::Error,
   Body, Method, Request, Response, StatusCode,
 };
+use tokio::net::TcpListener;
 
 use std::net::SocketAddr;
 use webrtc_unreliable::SessionEndpoint;
 
 use crate::fbs::{
   ClientMessages::clientmessages,
-  Game::game::{Game, GameArgs, GamePhase, PlayerRoles, PlayerRolesArgs},
+  ServerMessages::{
+    game::{Game, GameArgs, GamePhase, PlayerRoles, PlayerRolesArgs},
+    servermessages::{
+      NewGameResponsePayload, NewGameResponsePayloadArgs, ResponseCode, ServerMessage,
+      ServerMessageArgs, ServerMessagePayload,
+    },
+  },
 };
+
+use super::{state::ArcState, ws_service::ws_service};
 
 #[derive(Debug, Clone)]
 pub struct UserError(pub String);
@@ -22,6 +31,7 @@ pub async fn http_service(
   req: Request<Body>,
   remote_addr: SocketAddr,
   session_endpoint: &mut SessionEndpoint,
+  state: ArcState<'_>,
 ) -> Result<Response<Body>, hyper::http::Error> {
   match (req.uri().path(), req.method()) {
     // endpoint for WebRTC session requests
@@ -77,7 +87,9 @@ pub async fn http_service(
 
           let mut builder = FlatBufferBuilder::new();
 
-          log::info!("got user {:?}", user);
+          let listener = TcpListener::bind("127.0.0.1:0")
+            .await
+            .expect("failed to bind websocket listener");
 
           // create a new game with the user as the red player
           let players = PlayerRoles::create(
@@ -88,7 +100,7 @@ pub async fn http_service(
             },
           );
 
-          let offset = Game::create(
+          let game = Game::create(
             &mut builder,
             &GameArgs {
               id: 1,
@@ -99,8 +111,34 @@ pub async fn http_service(
             },
           );
 
-          builder.finish(offset, None);
+          let socket_addr =
+            builder.create_string(&format!("ws://{}", listener.local_addr().unwrap()));
+
+          let payload = NewGameResponsePayload::create(
+            &mut builder,
+            &NewGameResponsePayloadArgs {
+              game: Some(game),
+              code: ResponseCode::OK,
+              socket_address: Some(socket_addr),
+            },
+          );
+
+          let message = ServerMessage::create(
+            &mut builder,
+            &ServerMessageArgs {
+              payload_type: ServerMessagePayload::NewGameResponsePayload,
+              payload: Some(payload.as_union_value()),
+              timestamp: Utc::now().timestamp_millis() as u64,
+            },
+          );
+
+          builder.finish(message, None);
           let bytes = builder.finished_data().to_vec();
+
+          // create WS service for the game chat and system messages
+          tokio::spawn(async move {
+            ws_service(listener).await;
+          });
 
           Response::builder()
             .header(
