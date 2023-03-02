@@ -45,8 +45,15 @@ game(obj?:Game):Game|null {
   return offset ? (obj || new Game()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
 }
 
+socketAddress():string|null
+socketAddress(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
+socketAddress(optionalEncoding?:any):string|Uint8Array|null {
+  const offset = this.bb!.__offset(this.bb_pos, 8);
+  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+}
+
 static startJoinGameResponsePayload(builder:flatbuffers.Builder) {
-  builder.startObject(2);
+  builder.startObject(3);
 }
 
 static addCode(builder:flatbuffers.Builder, code:ResponseCode) {
@@ -55,6 +62,10 @@ static addCode(builder:flatbuffers.Builder, code:ResponseCode) {
 
 static addGame(builder:flatbuffers.Builder, gameOffset:flatbuffers.Offset) {
   builder.addFieldOffset(1, gameOffset, 0);
+}
+
+static addSocketAddress(builder:flatbuffers.Builder, socketAddressOffset:flatbuffers.Offset) {
+  builder.addFieldOffset(2, socketAddressOffset, 0);
 }
 
 static endJoinGameResponsePayload(builder:flatbuffers.Builder):flatbuffers.Offset {
@@ -66,7 +77,8 @@ static endJoinGameResponsePayload(builder:flatbuffers.Builder):flatbuffers.Offse
 unpack(): JoinGameResponsePayloadT {
   return new JoinGameResponsePayloadT(
     this.code(),
-    (this.game() !== null ? this.game()!.unpack() : null)
+    (this.game() !== null ? this.game()!.unpack() : null),
+    this.socketAddress()
   );
 }
 
@@ -74,22 +86,26 @@ unpack(): JoinGameResponsePayloadT {
 unpackTo(_o: JoinGameResponsePayloadT): void {
   _o.code = this.code();
   _o.game = (this.game() !== null ? this.game()!.unpack() : null);
+  _o.socketAddress = this.socketAddress();
 }
 }
 
 export class JoinGameResponsePayloadT implements flatbuffers.IGeneratedObject {
 constructor(
   public code: ResponseCode = ResponseCode.OK,
-  public game: GameT|null = null
+  public game: GameT|null = null,
+  public socketAddress: string|Uint8Array|null = null
 ){}
 
 
 pack(builder:flatbuffers.Builder): flatbuffers.Offset {
   const game = (this.game !== null ? this.game!.pack(builder) : 0);
+  const socketAddress = (this.socketAddress !== null ? builder.createString(this.socketAddress!) : 0);
 
   JoinGameResponsePayload.startJoinGameResponsePayload(builder);
   JoinGameResponsePayload.addCode(builder, this.code);
   JoinGameResponsePayload.addGame(builder, game);
+  JoinGameResponsePayload.addSocketAddress(builder, socketAddress);
 
   return JoinGameResponsePayload.endJoinGameResponsePayload(builder);
 }

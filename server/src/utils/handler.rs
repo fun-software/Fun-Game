@@ -23,7 +23,7 @@ pub fn handle_msg(
   message_buf: &Vec<u8>,
   message_type: MessageType,
   remote_addr: SocketAddr,
-  state: ArcState<'_>,
+  state: ArcState,
 ) -> Vec<u8> {
   let players = state.read().unwrap().players.clone();
 
@@ -117,6 +117,7 @@ fn handle_join(name: &str, remote_addr: SocketAddr, players: Arc<RwLock<PlayerMa
     &JoinGameResponsePayloadArgs {
       game: None,
       code: ResponseCode::OK,
+      ..Default::default()
     },
   );
 

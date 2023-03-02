@@ -72,7 +72,10 @@ fn main() {
         Ok::<_, Error>(service_fn(move |req| {
           let local_state = local_state.clone();
           let mut session_endpoint = session_endpoint.clone();
-          async move { http_service(req, remote_addr, &mut session_endpoint, local_state).await }
+          async move {
+            let local_state = local_state.clone();
+            http_service(req, remote_addr, &mut session_endpoint, local_state).await
+          }
         }))
       }
     });

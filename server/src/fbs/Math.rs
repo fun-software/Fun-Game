@@ -172,6 +172,29 @@ impl<'a> Vec3 {
     }
   }
 
+  pub fn unpack(&self) -> Vec3T {
+    Vec3T {
+      x: self.x(),
+      y: self.y(),
+      z: self.z(),
+    }
+  }
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct Vec3T {
+  pub x: f32,
+  pub y: f32,
+  pub z: f32,
+}
+impl Vec3T {
+  pub fn pack(&self) -> Vec3 {
+    Vec3::new(
+      self.x,
+      self.y,
+      self.z,
+    )
+  }
 }
 
 }  // pub mod Math

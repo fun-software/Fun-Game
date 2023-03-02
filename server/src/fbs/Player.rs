@@ -3,6 +3,7 @@
 
 // @generated
 
+use crate::fbs::Math::*;
 use core::mem;
 use core::cmp::Ordering;
 
@@ -10,175 +11,9 @@ extern crate flatbuffers;
 use self::flatbuffers::{EndianScalar, Follow};
 
 #[allow(unused_imports, dead_code)]
-pub mod math {
-
-  use core::mem;
-  use core::cmp::Ordering;
-
-  extern crate flatbuffers;
-  use self::flatbuffers::{EndianScalar, Follow};
-
-// struct Vec3, aligned to 4
-#[repr(transparent)]
-#[derive(Clone, Copy, PartialEq)]
-pub struct Vec3(pub [u8; 12]);
-impl Default for Vec3 { 
-  fn default() -> Self { 
-    Self([0; 12])
-  }
-}
-impl core::fmt::Debug for Vec3 {
-  fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
-    f.debug_struct("Vec3")
-      .field("x", &self.x())
-      .field("y", &self.y())
-      .field("z", &self.z())
-      .finish()
-  }
-}
-
-impl flatbuffers::SimpleToVerifyInSlice for Vec3 {}
-impl<'a> flatbuffers::Follow<'a> for Vec3 {
-  type Inner = &'a Vec3;
-  #[inline]
-  unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-    <&'a Vec3>::follow(buf, loc)
-  }
-}
-impl<'a> flatbuffers::Follow<'a> for &'a Vec3 {
-  type Inner = &'a Vec3;
-  #[inline]
-  unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-    flatbuffers::follow_cast_ref::<Vec3>(buf, loc)
-  }
-}
-impl<'b> flatbuffers::Push for Vec3 {
-    type Output = Vec3;
-    #[inline]
-    unsafe fn push(&self, dst: &mut [u8], _written_len: usize) {
-        let src = ::core::slice::from_raw_parts(self as *const Vec3 as *const u8, Self::size());
-        dst.copy_from_slice(src);
-    }
-}
-
-impl<'a> flatbuffers::Verifiable for Vec3 {
-  #[inline]
-  fn run_verifier(
-    v: &mut flatbuffers::Verifier, pos: usize
-  ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
-    use self::flatbuffers::Verifiable;
-    v.in_buffer::<Self>(pos)
-  }
-}
-
-impl<'a> Vec3 {
-  #[allow(clippy::too_many_arguments)]
-  pub fn new(
-    x: f32,
-    y: f32,
-    z: f32,
-  ) -> Self {
-    let mut s = Self([0; 12]);
-    s.set_x(x);
-    s.set_y(y);
-    s.set_z(z);
-    s
-  }
-
-  pub fn x(&self) -> f32 {
-    let mut mem = core::mem::MaybeUninit::<<f32 as EndianScalar>::Scalar>::uninit();
-    // Safety:
-    // Created from a valid Table for this object
-    // Which contains a valid value in this slot
-    EndianScalar::from_little_endian(unsafe {
-      core::ptr::copy_nonoverlapping(
-        self.0[0..].as_ptr(),
-        mem.as_mut_ptr() as *mut u8,
-        core::mem::size_of::<<f32 as EndianScalar>::Scalar>(),
-      );
-      mem.assume_init()
-    })
-  }
-
-  pub fn set_x(&mut self, x: f32) {
-    let x_le = x.to_little_endian();
-    // Safety:
-    // Created from a valid Table for this object
-    // Which contains a valid value in this slot
-    unsafe {
-      core::ptr::copy_nonoverlapping(
-        &x_le as *const _ as *const u8,
-        self.0[0..].as_mut_ptr(),
-        core::mem::size_of::<<f32 as EndianScalar>::Scalar>(),
-      );
-    }
-  }
-
-  pub fn y(&self) -> f32 {
-    let mut mem = core::mem::MaybeUninit::<<f32 as EndianScalar>::Scalar>::uninit();
-    // Safety:
-    // Created from a valid Table for this object
-    // Which contains a valid value in this slot
-    EndianScalar::from_little_endian(unsafe {
-      core::ptr::copy_nonoverlapping(
-        self.0[4..].as_ptr(),
-        mem.as_mut_ptr() as *mut u8,
-        core::mem::size_of::<<f32 as EndianScalar>::Scalar>(),
-      );
-      mem.assume_init()
-    })
-  }
-
-  pub fn set_y(&mut self, x: f32) {
-    let x_le = x.to_little_endian();
-    // Safety:
-    // Created from a valid Table for this object
-    // Which contains a valid value in this slot
-    unsafe {
-      core::ptr::copy_nonoverlapping(
-        &x_le as *const _ as *const u8,
-        self.0[4..].as_mut_ptr(),
-        core::mem::size_of::<<f32 as EndianScalar>::Scalar>(),
-      );
-    }
-  }
-
-  pub fn z(&self) -> f32 {
-    let mut mem = core::mem::MaybeUninit::<<f32 as EndianScalar>::Scalar>::uninit();
-    // Safety:
-    // Created from a valid Table for this object
-    // Which contains a valid value in this slot
-    EndianScalar::from_little_endian(unsafe {
-      core::ptr::copy_nonoverlapping(
-        self.0[8..].as_ptr(),
-        mem.as_mut_ptr() as *mut u8,
-        core::mem::size_of::<<f32 as EndianScalar>::Scalar>(),
-      );
-      mem.assume_init()
-    })
-  }
-
-  pub fn set_z(&mut self, x: f32) {
-    let x_le = x.to_little_endian();
-    // Safety:
-    // Created from a valid Table for this object
-    // Which contains a valid value in this slot
-    unsafe {
-      core::ptr::copy_nonoverlapping(
-        &x_le as *const _ as *const u8,
-        self.0[8..].as_mut_ptr(),
-        core::mem::size_of::<<f32 as EndianScalar>::Scalar>(),
-      );
-    }
-  }
-
-}
-
-}  // pub mod Math
-
-#[allow(unused_imports, dead_code)]
 pub mod player {
 
+  use crate::fbs::Math::*;
   use core::mem;
   use core::cmp::Ordering;
 
@@ -229,6 +64,30 @@ impl<'a> Player<'a> {
     builder.finish()
   }
 
+  pub fn unpack(&self) -> PlayerT {
+    let position = self.position().map(|x| {
+      x.unpack()
+    });
+    let velocity = self.velocity().map(|x| {
+      x.unpack()
+    });
+    let look_direction = self.look_direction().map(|x| {
+      x.unpack()
+    });
+    let hp = self.hp();
+    let speed = self.speed();
+    let sprinting = self.sprinting();
+    let sneaking = self.sneaking();
+    PlayerT {
+      position,
+      velocity,
+      look_direction,
+      hp,
+      speed,
+      sprinting,
+      sneaking,
+    }
+  }
 
   #[inline]
   pub fn position(&self) -> Option<&'a super::math::Vec3> {
@@ -382,6 +241,56 @@ impl core::fmt::Debug for Player<'_> {
       ds.field("sprinting", &self.sprinting());
       ds.field("sneaking", &self.sneaking());
       ds.finish()
+  }
+}
+#[non_exhaustive]
+#[derive(Debug, Clone, PartialEq)]
+pub struct PlayerT {
+  pub position: Option<super::math::Vec3T>,
+  pub velocity: Option<super::math::Vec3T>,
+  pub look_direction: Option<super::math::Vec3T>,
+  pub hp: i8,
+  pub speed: i8,
+  pub sprinting: bool,
+  pub sneaking: bool,
+}
+impl Default for PlayerT {
+  fn default() -> Self {
+    Self {
+      position: None,
+      velocity: None,
+      look_direction: None,
+      hp: 100,
+      speed: 100,
+      sprinting: false,
+      sneaking: false,
+    }
+  }
+}
+impl PlayerT {
+  pub fn pack<'b>(
+    &self,
+    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
+  ) -> flatbuffers::WIPOffset<Player<'b>> {
+    let position_tmp = self.position.as_ref().map(|x| x.pack());
+    let position = position_tmp.as_ref();
+    let velocity_tmp = self.velocity.as_ref().map(|x| x.pack());
+    let velocity = velocity_tmp.as_ref();
+    let look_direction_tmp = self.look_direction.as_ref().map(|x| x.pack());
+    let look_direction = look_direction_tmp.as_ref();
+    let hp = self.hp;
+    let speed = self.speed;
+    let sprinting = self.sprinting;
+    let sneaking = self.sneaking;
+    Player::create(_fbb, &PlayerArgs{
+      position,
+      velocity,
+      look_direction,
+      hp,
+      speed,
+      sprinting,
+      sneaking,
+    })
   }
 }
 #[inline]
