@@ -137,6 +137,16 @@ impl<'a> ChatMessage<'a> {
     builder.finish()
   }
 
+  pub fn unpack(&self) -> ChatMessageT {
+    let source = self.source();
+    let message = self.message().map(|x| {
+      x.to_string()
+    });
+    ChatMessageT {
+      source,
+      message,
+    }
+  }
 
   #[inline]
   pub fn source(&self) -> ChatSource {
@@ -215,6 +225,35 @@ impl core::fmt::Debug for ChatMessage<'_> {
       ds.field("source", &self.source());
       ds.field("message", &self.message());
       ds.finish()
+  }
+}
+#[non_exhaustive]
+#[derive(Debug, Clone, PartialEq)]
+pub struct ChatMessageT {
+  pub source: ChatSource,
+  pub message: Option<String>,
+}
+impl Default for ChatMessageT {
+  fn default() -> Self {
+    Self {
+      source: ChatSource::System,
+      message: None,
+    }
+  }
+}
+impl ChatMessageT {
+  pub fn pack<'b>(
+    &self,
+    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
+  ) -> flatbuffers::WIPOffset<ChatMessage<'b>> {
+    let source = self.source;
+    let message = self.message.as_ref().map(|x|{
+      _fbb.create_string(x)
+    });
+    ChatMessage::create(_fbb, &ChatMessageArgs{
+      source,
+      message,
+    })
   }
 }
 #[inline]

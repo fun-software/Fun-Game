@@ -18,6 +18,7 @@ table NewGameResponsePayload {
 table JoinGameResponsePayload {
   code: ResponseCode;
   game: Game.Game;
+  socket_address: string;
 }
 
 table LeaveGameResponsePayload {
