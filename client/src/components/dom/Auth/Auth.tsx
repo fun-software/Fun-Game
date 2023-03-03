@@ -1,34 +1,38 @@
-import * as React from "react";
-import { useSupabaseClient } from "@supabase/auth-helpers-react";
+import { useState } from "react";
 import styles from "./Auth.module.scss";
-import { SignInWithPasswordCredentials } from "@supabase/supabase-js";
+import AuthModal from "./AuthModal";
+import { useSessionContext } from "@supabase/auth-helpers-react";
+
+export enum AuthAction {
+  Login = "Login",
+  Logout = "Logout",
+  Register = "Register",
+  Idle = "Idle",
+}
 
 function Auth() {
-  const supabase = useSupabaseClient();
+  const sessionContext = useSessionContext();
+  const [authAction, setAuthAction] = useState<AuthAction>(AuthAction.Idle);
 
-  const handleRegister = React.useCallback(() => {
-    if (!supabase) return;
-
-    let creds: SignInWithPasswordCredentials = {
-      email: "myass@gmail.com",
-      password: "myass24",
-    };
-
-    supabase.auth
-      .signUp(creds)
-      .then(res => {
-        //console.log(res);
-      })
-      .catch(err => {
-        //console.warn(err)
-      });
-  }, [supabase]);
+  const session = sessionContext.session;
 
   return (
-    <nav className={styles.nav}>
-      <button>Login</button>
-      <button onClick={handleRegister}>Register</button>
-    </nav>
+    <>
+      {session === null && (
+        <nav className={styles.nav}>
+          <button onClick={() => setAuthAction(AuthAction.Register)}>Register</button>
+          <button onClick={() => setAuthAction(AuthAction.Login)}>Sign In</button>
+        </nav>
+      )}
+      {session && (
+        <nav className={styles.nav}>
+          <button onClick={() => setAuthAction(AuthAction.Logout)}>{session.user.email}</button>
+        </nav>
+      )}
+      {authAction !== AuthAction.Idle && (
+        <AuthModal authAction={authAction} setAuthAction={setAuthAction} />
+      )}
+    </>
   );
 }
 
