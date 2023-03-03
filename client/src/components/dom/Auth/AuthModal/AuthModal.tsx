@@ -161,7 +161,7 @@ export default function AuthModal(props: {
   }
 
   /*COMPONENT JSX*/
-  if (props.authAction === "Logout") {
+  if (props.authAction === AuthAction.Logout) {
     // Logout Modal
     return (
       <div className={styles.authModal} onClick={closeModal}>
