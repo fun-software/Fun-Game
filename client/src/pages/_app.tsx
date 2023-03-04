@@ -13,7 +13,6 @@ const Scene = dynamic(() => import("@/components/canvas/Scene"), { ssr: true });
 
 type Props = { Component: any; pageProps: { title: string; initialSession: Session } };
 export default function App({ Component, pageProps }: Props) {
-  const [session, setSession] = useState<Session>(pageProps.initialSession);
   const [supabaseClient] = useState(() =>
     createBrowserSupabaseClient({ supabaseKey, supabaseUrl }),
   );

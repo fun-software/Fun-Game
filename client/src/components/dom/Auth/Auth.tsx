@@ -1,36 +1,37 @@
-import { useState } from "react";
+import * as React from "react";
 import styles from "./Auth.module.scss";
 import AuthModal from "./AuthModal";
 import { useSessionContext } from "@supabase/auth-helpers-react";
 
-export enum AuthAction {
+export enum ModalState {
   Login = "Login",
-  Logout = "Logout",
   Register = "Register",
-  Idle = "Idle",
+  Hidden = "Hidden",
 }
 
 function Auth() {
   const sessionContext = useSessionContext();
-  const [authAction, setAuthAction] = useState<AuthAction>(AuthAction.Idle);
+  const [modalState, setModalState] = React.useState<ModalState>(ModalState.Hidden);
 
   const session = sessionContext.session;
+  const supabase = sessionContext.supabaseClient;
 
   return (
     <>
       {session === null && (
         <nav className={styles.nav}>
-          <button onClick={() => setAuthAction(AuthAction.Register)}>Register</button>
-          <button onClick={() => setAuthAction(AuthAction.Login)}>Sign In</button>
+          <button onClick={() => setModalState(ModalState.Register)}>Register</button>
+          <button onClick={() => setModalState(ModalState.Login)}>Sign In</button>
         </nav>
       )}
-      {session && (
+      {session !== null && (
         <nav className={styles.nav}>
-          <button onClick={() => setAuthAction(AuthAction.Logout)}>{session.user.email}</button>
+          <p>{session.user.email}</p>
+          <button onClick={() => supabase.auth.signOut()}>Sign Out</button>
         </nav>
       )}
-      {authAction !== AuthAction.Idle && (
-        <AuthModal authAction={authAction} setAuthAction={setAuthAction} />
+      {modalState !== ModalState.Hidden && (
+        <AuthModal modalState={modalState} setModalState={setModalState} />
       )}
     </>
   );
