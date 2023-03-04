@@ -139,21 +139,29 @@ impl<'a> PlayerRoles<'a> {
   #[allow(unused_mut)]
   pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
     _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
-    args: &'args PlayerRolesArgs
+    args: &'args PlayerRolesArgs<'args>
   ) -> flatbuffers::WIPOffset<PlayerRoles<'bldr>> {
     let mut builder = PlayerRolesBuilder::new(_fbb);
-    builder.add_yellow(args.yellow);
-    builder.add_green(args.green);
-    builder.add_blue(args.blue);
-    builder.add_red(args.red);
+    if let Some(x) = args.yellow { builder.add_yellow(x); }
+    if let Some(x) = args.green { builder.add_green(x); }
+    if let Some(x) = args.blue { builder.add_blue(x); }
+    if let Some(x) = args.red { builder.add_red(x); }
     builder.finish()
   }
 
   pub fn unpack(&self) -> PlayerRolesT {
-    let red = self.red();
-    let blue = self.blue();
-    let green = self.green();
-    let yellow = self.yellow();
+    let red = self.red().map(|x| {
+      x.to_string()
+    });
+    let blue = self.blue().map(|x| {
+      x.to_string()
+    });
+    let green = self.green().map(|x| {
+      x.to_string()
+    });
+    let yellow = self.yellow().map(|x| {
+      x.to_string()
+    });
     PlayerRolesT {
       red,
       blue,
@@ -163,32 +171,32 @@ impl<'a> PlayerRoles<'a> {
   }
 
   #[inline]
-  pub fn red(&self) -> u64 {
+  pub fn red(&self) -> Option<&'a str> {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<u64>(PlayerRoles::VT_RED, Some(0)).unwrap()}
+    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(PlayerRoles::VT_RED, None)}
   }
   #[inline]
-  pub fn blue(&self) -> u64 {
+  pub fn blue(&self) -> Option<&'a str> {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<u64>(PlayerRoles::VT_BLUE, Some(0)).unwrap()}
+    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(PlayerRoles::VT_BLUE, None)}
   }
   #[inline]
-  pub fn green(&self) -> u64 {
+  pub fn green(&self) -> Option<&'a str> {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<u64>(PlayerRoles::VT_GREEN, Some(0)).unwrap()}
+    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(PlayerRoles::VT_GREEN, None)}
   }
   #[inline]
-  pub fn yellow(&self) -> u64 {
+  pub fn yellow(&self) -> Option<&'a str> {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<u64>(PlayerRoles::VT_YELLOW, Some(0)).unwrap()}
+    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(PlayerRoles::VT_YELLOW, None)}
   }
 }
 
@@ -199,28 +207,28 @@ impl flatbuffers::Verifiable for PlayerRoles<'_> {
   ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
-     .visit_field::<u64>("red", Self::VT_RED, false)?
-     .visit_field::<u64>("blue", Self::VT_BLUE, false)?
-     .visit_field::<u64>("green", Self::VT_GREEN, false)?
-     .visit_field::<u64>("yellow", Self::VT_YELLOW, false)?
+     .visit_field::<flatbuffers::ForwardsUOffset<&str>>("red", Self::VT_RED, false)?
+     .visit_field::<flatbuffers::ForwardsUOffset<&str>>("blue", Self::VT_BLUE, false)?
+     .visit_field::<flatbuffers::ForwardsUOffset<&str>>("green", Self::VT_GREEN, false)?
+     .visit_field::<flatbuffers::ForwardsUOffset<&str>>("yellow", Self::VT_YELLOW, false)?
      .finish();
     Ok(())
   }
 }
-pub struct PlayerRolesArgs {
-    pub red: u64,
-    pub blue: u64,
-    pub green: u64,
-    pub yellow: u64,
+pub struct PlayerRolesArgs<'a> {
+    pub red: Option<flatbuffers::WIPOffset<&'a str>>,
+    pub blue: Option<flatbuffers::WIPOffset<&'a str>>,
+    pub green: Option<flatbuffers::WIPOffset<&'a str>>,
+    pub yellow: Option<flatbuffers::WIPOffset<&'a str>>,
 }
-impl<'a> Default for PlayerRolesArgs {
+impl<'a> Default for PlayerRolesArgs<'a> {
   #[inline]
   fn default() -> Self {
     PlayerRolesArgs {
-      red: 0,
-      blue: 0,
-      green: 0,
-      yellow: 0,
+      red: None,
+      blue: None,
+      green: None,
+      yellow: None,
     }
   }
 }
@@ -231,20 +239,20 @@ pub struct PlayerRolesBuilder<'a: 'b, 'b> {
 }
 impl<'a: 'b, 'b> PlayerRolesBuilder<'a, 'b> {
   #[inline]
-  pub fn add_red(&mut self, red: u64) {
-    self.fbb_.push_slot::<u64>(PlayerRoles::VT_RED, red, 0);
+  pub fn add_red(&mut self, red: flatbuffers::WIPOffset<&'b  str>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(PlayerRoles::VT_RED, red);
   }
   #[inline]
-  pub fn add_blue(&mut self, blue: u64) {
-    self.fbb_.push_slot::<u64>(PlayerRoles::VT_BLUE, blue, 0);
+  pub fn add_blue(&mut self, blue: flatbuffers::WIPOffset<&'b  str>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(PlayerRoles::VT_BLUE, blue);
   }
   #[inline]
-  pub fn add_green(&mut self, green: u64) {
-    self.fbb_.push_slot::<u64>(PlayerRoles::VT_GREEN, green, 0);
+  pub fn add_green(&mut self, green: flatbuffers::WIPOffset<&'b  str>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(PlayerRoles::VT_GREEN, green);
   }
   #[inline]
-  pub fn add_yellow(&mut self, yellow: u64) {
-    self.fbb_.push_slot::<u64>(PlayerRoles::VT_YELLOW, yellow, 0);
+  pub fn add_yellow(&mut self, yellow: flatbuffers::WIPOffset<&'b  str>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(PlayerRoles::VT_YELLOW, yellow);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> PlayerRolesBuilder<'a, 'b> {
@@ -274,18 +282,18 @@ impl core::fmt::Debug for PlayerRoles<'_> {
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq)]
 pub struct PlayerRolesT {
-  pub red: u64,
-  pub blue: u64,
-  pub green: u64,
-  pub yellow: u64,
+  pub red: Option<String>,
+  pub blue: Option<String>,
+  pub green: Option<String>,
+  pub yellow: Option<String>,
 }
 impl Default for PlayerRolesT {
   fn default() -> Self {
     Self {
-      red: 0,
-      blue: 0,
-      green: 0,
-      yellow: 0,
+      red: None,
+      blue: None,
+      green: None,
+      yellow: None,
     }
   }
 }
@@ -294,10 +302,18 @@ impl PlayerRolesT {
     &self,
     _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
   ) -> flatbuffers::WIPOffset<PlayerRoles<'b>> {
-    let red = self.red;
-    let blue = self.blue;
-    let green = self.green;
-    let yellow = self.yellow;
+    let red = self.red.as_ref().map(|x|{
+      _fbb.create_string(x)
+    });
+    let blue = self.blue.as_ref().map(|x|{
+      _fbb.create_string(x)
+    });
+    let green = self.green.as_ref().map(|x|{
+      _fbb.create_string(x)
+    });
+    let yellow = self.yellow.as_ref().map(|x|{
+      _fbb.create_string(x)
+    });
     PlayerRoles::create(_fbb, &PlayerRolesArgs{
       red,
       blue,
@@ -340,14 +356,16 @@ impl<'a> Game<'a> {
     let mut builder = GameBuilder::new(_fbb);
     builder.add_endtime(args.endtime);
     builder.add_starttime(args.starttime);
-    builder.add_id(args.id);
     if let Some(x) = args.players { builder.add_players(x); }
+    if let Some(x) = args.id { builder.add_id(x); }
     builder.add_phase(args.phase);
     builder.finish()
   }
 
   pub fn unpack(&self) -> GameT {
-    let id = self.id();
+    let id = self.id().map(|x| {
+      x.to_string()
+    });
     let phase = self.phase();
     let players = self.players().map(|x| {
       Box::new(x.unpack())
@@ -364,11 +382,11 @@ impl<'a> Game<'a> {
   }
 
   #[inline]
-  pub fn id(&self) -> u64 {
+  pub fn id(&self) -> Option<&'a str> {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<u64>(Game::VT_ID, Some(0)).unwrap()}
+    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(Game::VT_ID, None)}
   }
   #[inline]
   pub fn phase(&self) -> GamePhase {
@@ -407,7 +425,7 @@ impl flatbuffers::Verifiable for Game<'_> {
   ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
-     .visit_field::<u64>("id", Self::VT_ID, false)?
+     .visit_field::<flatbuffers::ForwardsUOffset<&str>>("id", Self::VT_ID, false)?
      .visit_field::<GamePhase>("phase", Self::VT_PHASE, false)?
      .visit_field::<flatbuffers::ForwardsUOffset<PlayerRoles>>("players", Self::VT_PLAYERS, false)?
      .visit_field::<u64>("starttime", Self::VT_STARTTIME, false)?
@@ -417,7 +435,7 @@ impl flatbuffers::Verifiable for Game<'_> {
   }
 }
 pub struct GameArgs<'a> {
-    pub id: u64,
+    pub id: Option<flatbuffers::WIPOffset<&'a str>>,
     pub phase: GamePhase,
     pub players: Option<flatbuffers::WIPOffset<PlayerRoles<'a>>>,
     pub starttime: u64,
@@ -427,7 +445,7 @@ impl<'a> Default for GameArgs<'a> {
   #[inline]
   fn default() -> Self {
     GameArgs {
-      id: 0,
+      id: None,
       phase: GamePhase::Lobby,
       players: None,
       starttime: 0,
@@ -442,8 +460,8 @@ pub struct GameBuilder<'a: 'b, 'b> {
 }
 impl<'a: 'b, 'b> GameBuilder<'a, 'b> {
   #[inline]
-  pub fn add_id(&mut self, id: u64) {
-    self.fbb_.push_slot::<u64>(Game::VT_ID, id, 0);
+  pub fn add_id(&mut self, id: flatbuffers::WIPOffset<&'b  str>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(Game::VT_ID, id);
   }
   #[inline]
   pub fn add_phase(&mut self, phase: GamePhase) {
@@ -490,7 +508,7 @@ impl core::fmt::Debug for Game<'_> {
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq)]
 pub struct GameT {
-  pub id: u64,
+  pub id: Option<String>,
   pub phase: GamePhase,
   pub players: Option<Box<PlayerRolesT>>,
   pub starttime: u64,
@@ -499,7 +517,7 @@ pub struct GameT {
 impl Default for GameT {
   fn default() -> Self {
     Self {
-      id: 0,
+      id: None,
       phase: GamePhase::Lobby,
       players: None,
       starttime: 0,
@@ -512,7 +530,9 @@ impl GameT {
     &self,
     _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
   ) -> flatbuffers::WIPOffset<Game<'b>> {
-    let id = self.id;
+    let id = self.id.as_ref().map(|x|{
+      _fbb.create_string(x)
+    });
     let phase = self.phase;
     let players = self.players.as_ref().map(|x|{
       x.pack(_fbb)

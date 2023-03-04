@@ -11,8 +11,7 @@ enum ResponseCode: byte {
 
 table NewGameResponsePayload {
   code: ResponseCode;
-  game: Game.Game;
-  socket_address: string;
+  game_id: string;
 }
 
 table JoinGameResponsePayload {

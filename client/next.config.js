@@ -73,7 +73,7 @@ module.exports = (_phase, { defaultConfig }) => {
   });
 
   const finalConfig = {};
-  Object.keys(wConfig).forEach((key) => {
+  Object.keys(wConfig).forEach(key => {
     if (!KEYS_TO_OMIT.includes(key)) {
       finalConfig[key] = wConfig[key];
     }

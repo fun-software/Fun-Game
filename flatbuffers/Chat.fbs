@@ -8,6 +8,7 @@ enum ChatSource: byte {
 table ChatMessage {
   source: ChatSource;
   message: string;
+  author: string;
 }
 
 root_type ChatMessage;

@@ -1,7 +1,7 @@
 namespace User;
 
 table User {
-  id: uint64;
+  id: string; // UUID string
   username: string;
   email: string;
   created_at: uint64;
