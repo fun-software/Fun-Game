@@ -344,8 +344,7 @@ impl<'a> flatbuffers::Follow<'a> for NewGameResponsePayload<'a> {
 
 impl<'a> NewGameResponsePayload<'a> {
   pub const VT_CODE: flatbuffers::VOffsetT = 4;
-  pub const VT_GAME: flatbuffers::VOffsetT = 6;
-  pub const VT_SOCKET_ADDRESS: flatbuffers::VOffsetT = 8;
+  pub const VT_GAME_ID: flatbuffers::VOffsetT = 6;
 
   #[inline]
   pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
@@ -357,24 +356,19 @@ impl<'a> NewGameResponsePayload<'a> {
     args: &'args NewGameResponsePayloadArgs<'args>
   ) -> flatbuffers::WIPOffset<NewGameResponsePayload<'bldr>> {
     let mut builder = NewGameResponsePayloadBuilder::new(_fbb);
-    if let Some(x) = args.socket_address { builder.add_socket_address(x); }
-    if let Some(x) = args.game { builder.add_game(x); }
+    if let Some(x) = args.game_id { builder.add_game_id(x); }
     builder.add_code(args.code);
     builder.finish()
   }
 
   pub fn unpack(&self) -> NewGameResponsePayloadT {
     let code = self.code();
-    let game = self.game().map(|x| {
-      Box::new(x.unpack())
-    });
-    let socket_address = self.socket_address().map(|x| {
+    let game_id = self.game_id().map(|x| {
       x.to_string()
     });
     NewGameResponsePayloadT {
       code,
-      game,
-      socket_address,
+      game_id,
     }
   }
 
@@ -386,18 +380,11 @@ impl<'a> NewGameResponsePayload<'a> {
     unsafe { self._tab.get::<ResponseCode>(NewGameResponsePayload::VT_CODE, Some(ResponseCode::OK)).unwrap()}
   }
   #[inline]
-  pub fn game(&self) -> Option<super::game::Game<'a>> {
+  pub fn game_id(&self) -> Option<&'a str> {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<super::game::Game>>(NewGameResponsePayload::VT_GAME, None)}
-  }
-  #[inline]
-  pub fn socket_address(&self) -> Option<&'a str> {
-    // Safety:
-    // Created from valid Table for this object
-    // which contains a valid value in this slot
-    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(NewGameResponsePayload::VT_SOCKET_ADDRESS, None)}
+    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(NewGameResponsePayload::VT_GAME_ID, None)}
   }
 }
 
@@ -409,24 +396,21 @@ impl flatbuffers::Verifiable for NewGameResponsePayload<'_> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
      .visit_field::<ResponseCode>("code", Self::VT_CODE, false)?
-     .visit_field::<flatbuffers::ForwardsUOffset<super::game::Game>>("game", Self::VT_GAME, false)?
-     .visit_field::<flatbuffers::ForwardsUOffset<&str>>("socket_address", Self::VT_SOCKET_ADDRESS, false)?
+     .visit_field::<flatbuffers::ForwardsUOffset<&str>>("game_id", Self::VT_GAME_ID, false)?
      .finish();
     Ok(())
   }
 }
 pub struct NewGameResponsePayloadArgs<'a> {
     pub code: ResponseCode,
-    pub game: Option<flatbuffers::WIPOffset<super::game::Game<'a>>>,
-    pub socket_address: Option<flatbuffers::WIPOffset<&'a str>>,
+    pub game_id: Option<flatbuffers::WIPOffset<&'a str>>,
 }
 impl<'a> Default for NewGameResponsePayloadArgs<'a> {
   #[inline]
   fn default() -> Self {
     NewGameResponsePayloadArgs {
       code: ResponseCode::OK,
-      game: None,
-      socket_address: None,
+      game_id: None,
     }
   }
 }
@@ -441,12 +425,8 @@ impl<'a: 'b, 'b> NewGameResponsePayloadBuilder<'a, 'b> {
     self.fbb_.push_slot::<ResponseCode>(NewGameResponsePayload::VT_CODE, code, ResponseCode::OK);
   }
   #[inline]
-  pub fn add_game(&mut self, game: flatbuffers::WIPOffset<super::game::Game<'b >>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<super::game::Game>>(NewGameResponsePayload::VT_GAME, game);
-  }
-  #[inline]
-  pub fn add_socket_address(&mut self, socket_address: flatbuffers::WIPOffset<&'b  str>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(NewGameResponsePayload::VT_SOCKET_ADDRESS, socket_address);
+  pub fn add_game_id(&mut self, game_id: flatbuffers::WIPOffset<&'b  str>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(NewGameResponsePayload::VT_GAME_ID, game_id);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> NewGameResponsePayloadBuilder<'a, 'b> {
@@ -467,8 +447,7 @@ impl core::fmt::Debug for NewGameResponsePayload<'_> {
   fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
     let mut ds = f.debug_struct("NewGameResponsePayload");
       ds.field("code", &self.code());
-      ds.field("game", &self.game());
-      ds.field("socket_address", &self.socket_address());
+      ds.field("game_id", &self.game_id());
       ds.finish()
   }
 }
@@ -476,15 +455,13 @@ impl core::fmt::Debug for NewGameResponsePayload<'_> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct NewGameResponsePayloadT {
   pub code: ResponseCode,
-  pub game: Option<Box<super::game::GameT>>,
-  pub socket_address: Option<String>,
+  pub game_id: Option<String>,
 }
 impl Default for NewGameResponsePayloadT {
   fn default() -> Self {
     Self {
       code: ResponseCode::OK,
-      game: None,
-      socket_address: None,
+      game_id: None,
     }
   }
 }
@@ -494,16 +471,12 @@ impl NewGameResponsePayloadT {
     _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
   ) -> flatbuffers::WIPOffset<NewGameResponsePayload<'b>> {
     let code = self.code;
-    let game = self.game.as_ref().map(|x|{
-      x.pack(_fbb)
-    });
-    let socket_address = self.socket_address.as_ref().map(|x|{
+    let game_id = self.game_id.as_ref().map(|x|{
       _fbb.create_string(x)
     });
     NewGameResponsePayload::create(_fbb, &NewGameResponsePayloadArgs{
       code,
-      game,
-      socket_address,
+      game_id,
     })
   }
 }

@@ -121,6 +121,7 @@ impl<'a> flatbuffers::Follow<'a> for ChatMessage<'a> {
 impl<'a> ChatMessage<'a> {
   pub const VT_SOURCE: flatbuffers::VOffsetT = 4;
   pub const VT_MESSAGE: flatbuffers::VOffsetT = 6;
+  pub const VT_AUTHOR: flatbuffers::VOffsetT = 8;
 
   #[inline]
   pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
@@ -132,6 +133,7 @@ impl<'a> ChatMessage<'a> {
     args: &'args ChatMessageArgs<'args>
   ) -> flatbuffers::WIPOffset<ChatMessage<'bldr>> {
     let mut builder = ChatMessageBuilder::new(_fbb);
+    if let Some(x) = args.author { builder.add_author(x); }
     if let Some(x) = args.message { builder.add_message(x); }
     builder.add_source(args.source);
     builder.finish()
@@ -142,9 +144,13 @@ impl<'a> ChatMessage<'a> {
     let message = self.message().map(|x| {
       x.to_string()
     });
+    let author = self.author().map(|x| {
+      x.to_string()
+    });
     ChatMessageT {
       source,
       message,
+      author,
     }
   }
 
@@ -162,6 +168,13 @@ impl<'a> ChatMessage<'a> {
     // which contains a valid value in this slot
     unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(ChatMessage::VT_MESSAGE, None)}
   }
+  #[inline]
+  pub fn author(&self) -> Option<&'a str> {
+    // Safety:
+    // Created from valid Table for this object
+    // which contains a valid value in this slot
+    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(ChatMessage::VT_AUTHOR, None)}
+  }
 }
 
 impl flatbuffers::Verifiable for ChatMessage<'_> {
@@ -173,6 +186,7 @@ impl flatbuffers::Verifiable for ChatMessage<'_> {
     v.visit_table(pos)?
      .visit_field::<ChatSource>("source", Self::VT_SOURCE, false)?
      .visit_field::<flatbuffers::ForwardsUOffset<&str>>("message", Self::VT_MESSAGE, false)?
+     .visit_field::<flatbuffers::ForwardsUOffset<&str>>("author", Self::VT_AUTHOR, false)?
      .finish();
     Ok(())
   }
@@ -180,6 +194,7 @@ impl flatbuffers::Verifiable for ChatMessage<'_> {
 pub struct ChatMessageArgs<'a> {
     pub source: ChatSource,
     pub message: Option<flatbuffers::WIPOffset<&'a str>>,
+    pub author: Option<flatbuffers::WIPOffset<&'a str>>,
 }
 impl<'a> Default for ChatMessageArgs<'a> {
   #[inline]
@@ -187,6 +202,7 @@ impl<'a> Default for ChatMessageArgs<'a> {
     ChatMessageArgs {
       source: ChatSource::System,
       message: None,
+      author: None,
     }
   }
 }
@@ -203,6 +219,10 @@ impl<'a: 'b, 'b> ChatMessageBuilder<'a, 'b> {
   #[inline]
   pub fn add_message(&mut self, message: flatbuffers::WIPOffset<&'b  str>) {
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(ChatMessage::VT_MESSAGE, message);
+  }
+  #[inline]
+  pub fn add_author(&mut self, author: flatbuffers::WIPOffset<&'b  str>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(ChatMessage::VT_AUTHOR, author);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> ChatMessageBuilder<'a, 'b> {
@@ -224,6 +244,7 @@ impl core::fmt::Debug for ChatMessage<'_> {
     let mut ds = f.debug_struct("ChatMessage");
       ds.field("source", &self.source());
       ds.field("message", &self.message());
+      ds.field("author", &self.author());
       ds.finish()
   }
 }
@@ -232,12 +253,14 @@ impl core::fmt::Debug for ChatMessage<'_> {
 pub struct ChatMessageT {
   pub source: ChatSource,
   pub message: Option<String>,
+  pub author: Option<String>,
 }
 impl Default for ChatMessageT {
   fn default() -> Self {
     Self {
       source: ChatSource::System,
       message: None,
+      author: None,
     }
   }
 }
@@ -250,9 +273,13 @@ impl ChatMessageT {
     let message = self.message.as_ref().map(|x|{
       _fbb.create_string(x)
     });
+    let author = self.author.as_ref().map(|x|{
+      _fbb.create_string(x)
+    });
     ChatMessage::create(_fbb, &ChatMessageArgs{
       source,
       message,
+      author,
     })
   }
 }

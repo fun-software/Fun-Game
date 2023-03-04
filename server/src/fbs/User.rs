@@ -52,14 +52,16 @@ impl<'a> User<'a> {
     let mut builder = UserBuilder::new(_fbb);
     builder.add_updated_at(args.updated_at);
     builder.add_created_at(args.created_at);
-    builder.add_id(args.id);
     if let Some(x) = args.email { builder.add_email(x); }
     if let Some(x) = args.username { builder.add_username(x); }
+    if let Some(x) = args.id { builder.add_id(x); }
     builder.finish()
   }
 
   pub fn unpack(&self) -> UserT {
-    let id = self.id();
+    let id = self.id().map(|x| {
+      x.to_string()
+    });
     let username = self.username().map(|x| {
       x.to_string()
     });
@@ -78,11 +80,11 @@ impl<'a> User<'a> {
   }
 
   #[inline]
-  pub fn id(&self) -> u64 {
+  pub fn id(&self) -> Option<&'a str> {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<u64>(User::VT_ID, Some(0)).unwrap()}
+    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(User::VT_ID, None)}
   }
   #[inline]
   pub fn username(&self) -> Option<&'a str> {
@@ -121,7 +123,7 @@ impl flatbuffers::Verifiable for User<'_> {
   ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
-     .visit_field::<u64>("id", Self::VT_ID, false)?
+     .visit_field::<flatbuffers::ForwardsUOffset<&str>>("id", Self::VT_ID, false)?
      .visit_field::<flatbuffers::ForwardsUOffset<&str>>("username", Self::VT_USERNAME, false)?
      .visit_field::<flatbuffers::ForwardsUOffset<&str>>("email", Self::VT_EMAIL, false)?
      .visit_field::<u64>("created_at", Self::VT_CREATED_AT, false)?
@@ -131,7 +133,7 @@ impl flatbuffers::Verifiable for User<'_> {
   }
 }
 pub struct UserArgs<'a> {
-    pub id: u64,
+    pub id: Option<flatbuffers::WIPOffset<&'a str>>,
     pub username: Option<flatbuffers::WIPOffset<&'a str>>,
     pub email: Option<flatbuffers::WIPOffset<&'a str>>,
     pub created_at: u64,
@@ -141,7 +143,7 @@ impl<'a> Default for UserArgs<'a> {
   #[inline]
   fn default() -> Self {
     UserArgs {
-      id: 0,
+      id: None,
       username: None,
       email: None,
       created_at: 0,
@@ -156,8 +158,8 @@ pub struct UserBuilder<'a: 'b, 'b> {
 }
 impl<'a: 'b, 'b> UserBuilder<'a, 'b> {
   #[inline]
-  pub fn add_id(&mut self, id: u64) {
-    self.fbb_.push_slot::<u64>(User::VT_ID, id, 0);
+  pub fn add_id(&mut self, id: flatbuffers::WIPOffset<&'b  str>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(User::VT_ID, id);
   }
   #[inline]
   pub fn add_username(&mut self, username: flatbuffers::WIPOffset<&'b  str>) {
@@ -204,7 +206,7 @@ impl core::fmt::Debug for User<'_> {
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq)]
 pub struct UserT {
-  pub id: u64,
+  pub id: Option<String>,
   pub username: Option<String>,
   pub email: Option<String>,
   pub created_at: u64,
@@ -213,7 +215,7 @@ pub struct UserT {
 impl Default for UserT {
   fn default() -> Self {
     Self {
-      id: 0,
+      id: None,
       username: None,
       email: None,
       created_at: 0,
@@ -226,7 +228,9 @@ impl UserT {
     &self,
     _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
   ) -> flatbuffers::WIPOffset<User<'b>> {
-    let id = self.id;
+    let id = self.id.as_ref().map(|x|{
+      _fbb.create_string(x)
+    });
     let username = self.username.as_ref().map(|x|{
       _fbb.create_string(x)
     });

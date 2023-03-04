@@ -8,14 +8,14 @@ enum GamePhase: byte {
 }
 
 table PlayerRoles {
-  red: uint64;
-  blue: uint64;
-  green: uint64;
-  yellow: uint64;
+  red: string; // UUID string
+  blue: string;
+  green: string;
+  yellow: string;
 }
 
 table Game {
-  id: uint64;
+  id: string; // UUID string
   phase: GamePhase;
   players: PlayerRoles;
   starttime: uint64;

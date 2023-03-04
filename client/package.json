@@ -28,7 +28,6 @@
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^13.1.6",
-    "@types/node": "^18.11.19",
     "@types/react": "^18.0.27",
     "autoprefixer": "^10.4.12",
     "eslint": "^8.33.0",
@@ -45,12 +44,13 @@
   },
   "scripts": {
     "commit": "cz",
-    "lint": "yarn prettier && yarn eslint",
+    "lint": "npm run format:check && npm run eslint:check",
     "eslint": "next lint --fix --dir src",
+    "eslint:check": "next lint --dir src",
     "format": "prettier -w \"./**/*.{ts,tsx,md,js,css,html,json}\"",
     "format:check": "prettier --list-different \"./**/*.{ts,tsx,md,js,css,html,json}\"",
     "dev": "next dev",
-    "flatbuffers": "rm -rf ./flatbuffers && flatc --ts --ts-no-import-ext --gen-all --filename-suffix '' --gen-object-api --gen-mutable -o ./flatbuffers/ $(find ../flatbuffers -name '*.fbs')",
+    "flatbuffers": "rm -rf ./flatbuffers && flatc --ts --ts-no-import-ext --filename-suffix '' --gen-object-api -o ./flatbuffers/ $(find ../flatbuffers -name '*.fbs')",
     "build": "npm run flatbuffers && next build",
     "export": "EXPORT=true next build && EXPORT=true next export",
     "analyze": "ANALYZE=true next build",

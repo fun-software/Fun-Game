@@ -16,7 +16,7 @@ use webrtc_unreliable::Server;
 
 use dotenv::dotenv;
 
-use utils::{handler::handle_msg, http_service::http_service};
+use utils::http_service::http_service;
 
 #[allow(non_snake_case)]
 fn main() {
@@ -30,7 +30,7 @@ fn main() {
 
   let TICK_RATE: u64 = std::env::var("TICK_RATE").unwrap().parse::<u64>().unwrap();
 
-  env_logger::init_from_env(env_logger::Env::new().default_filter_or("debug"));
+  env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
 
   let rt = runtime::Builder::new_multi_thread()
     .enable_all()
@@ -101,23 +101,23 @@ fn main() {
         }
       };
 
-      if let Some((message_type, remote_addr)) = received {
-        let local_state = state.clone();
-        let res = handle_msg(&message_buf, message_type, remote_addr, local_state);
-        message_buf.clear();
+      // if let Some((message_type, remote_addr)) = received {
+      // let local_state = state.clone();
+      // let res = handle_msg(&message_buf, message_type, remote_addr, local_state);
+      // message_buf.clear();
 
-        message_buf.extend(res);
+      // message_buf.extend(res);
 
-        match rtc_server
-          .send(&message_buf, message_type, &remote_addr)
-          .await
-        {
-          Ok(_) => {}
-          Err(err) => {
-            log::warn!("could not send RTC message: {:?}", err);
-          }
-        }
-      }
+      // match rtc_server
+      //   .send(&message_buf, message_type, &remote_addr)
+      //   .await
+      // {
+      //   Ok(_) => {}
+      //   Err(err) => {
+      //     log::warn!("could not send RTC message: {:?}", err);
+      //   }
+      // }
+      // }
     }
   });
 }
