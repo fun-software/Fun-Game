@@ -16,7 +16,6 @@ export default function MainMenu() {
       e.preventDefault();
 
       requestNewGame(session).then(game_id => {
-        console.log("got game id: ", game_id);
         router.push(`/lobby?id=${game_id}`);
       });
     },
