@@ -1,35 +1,33 @@
 import * as React from "react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 import styles from "../AuthModal.module.scss";
-import { ModalState } from "../../Auth";
+import { ModalState } from "../Auth";
 
 type FormDetails = {
   email: string;
   password: string;
-  confirm: string;
 };
 type FormErrors = {
   email: string;
   password: string;
-  confirm: string;
 };
 
-export default function RegisterModal(props: {
+export default function LoginModal(props: {
   modalState: ModalState;
-  setModalState: (action: ModalState) => void;
+  setModalState: (state: ModalState) => void;
 }) {
   const supabase = useSupabaseClient();
+
   /*COMPONENT STATE*/
   const [formDetails, setFormDetails] = React.useState<FormDetails>({
     email: "",
     password: "",
-    confirm: "",
   });
   const [formErrors, setFormErrors] = React.useState<FormErrors>({
     email: "",
     password: "",
-    confirm: "",
   });
+
   /*COMPONENT FUNCTIONS*/
 
   function handleInputChange(e: any) {
@@ -37,11 +35,10 @@ export default function RegisterModal(props: {
   }
 
   function resetForm() {
-    setFormDetails({ email: "", password: "", confirm: "" });
+    setFormDetails({ email: "", password: "" });
   }
-
   function resetErrors() {
-    setFormErrors({ email: "", password: "", confirm: "" });
+    setFormErrors({ email: "", password: "" });
   }
 
   function closeModal(e: any) {
@@ -55,58 +52,45 @@ export default function RegisterModal(props: {
   function switchActions() {
     resetForm();
     resetErrors();
-    props.setModalState(ModalState.Login);
+    props.setModalState(ModalState.Register);
   }
 
-  function verifyRegisterInputs() {
+  function verifyLoginInputs() {
     let isValid = true;
     resetErrors();
 
-    // Check password length
-    if (formDetails.password.length < 6) {
-      isValid = false;
-      setFormErrors(prev => ({ ...prev, password: "Password must be at least 6 characters" }));
-    }
-    // Check if passwords match
-    if (formDetails.password !== formDetails.confirm) {
-      isValid = false;
-      setFormErrors(prev => ({ ...prev, confirm: "Passwords do not match" }));
-    }
     // Check if email is valid
     if (!formDetails.email.includes("@")) {
       isValid = false;
       setFormErrors(prev => ({ ...prev, email: "Invalid email" }));
     }
-    // Check if any fields are empty
-    for (const key in formDetails) {
-      if (formDetails[key] === "") {
-        isValid = false;
-        setFormErrors(prev => ({ ...prev, [key]: "Required" }));
-      }
+    if (formDetails.password === "") {
+      isValid = false;
+      setFormErrors(prev => ({ ...prev, password: "Required" }));
     }
     return isValid;
   }
 
-  async function handleRegister() {
+  async function handleLogin() {
     // Check if inputs are valid
-    if (!verifyRegisterInputs()) return;
+    if (!verifyLoginInputs()) return;
 
     // Send request to supabase
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signInWithPassword({
       email: formDetails.email,
       password: formDetails.password,
     });
     // Check for api errors
     if (error) {
       // console.log(error);
+
+      setFormErrors(prev => ({
+        ...prev,
+        email: "Invalid email or password",
+        password: "Invalid email or password",
+      }));
       return;
     }
-    // Check if account already exists
-    if (!data.user.identities.length) {
-      setFormErrors(prev => ({ ...prev, email: "Account already exists" }));
-      return;
-    }
-    // Account created, needs email verification
     resetForm();
     resetErrors();
     props.setModalState(ModalState.Hidden);
@@ -115,7 +99,7 @@ export default function RegisterModal(props: {
   return (
     <div className={styles.authModal} onClick={closeModal}>
       <div className={styles.content}>
-        <h1>Register</h1>
+        <h1>Login</h1>
         <div className={styles.inputSection}>
           <label htmlFor="email">Email</label>
           <input
@@ -130,6 +114,9 @@ export default function RegisterModal(props: {
         <div className={styles.inputSection}>
           <div className={styles.passwordLabels}>
             <label htmlFor="password">Password</label>
+            <a href="#" className="forgotPassword">
+              Forgot Password
+            </a>
           </div>
           <input
             type="password"
@@ -140,26 +127,15 @@ export default function RegisterModal(props: {
           />
           {formErrors.password && <p className={styles.error}>{formErrors.password}</p>}
         </div>
-        <div className={styles.inputSection}>
-          <label htmlFor="confirm">Confirm Password</label>
-          <input
-            type="password"
-            name="confirm"
-            id="confirm"
-            value={formDetails.confirm}
-            onChange={handleInputChange}
-          />
-          {formErrors.confirm && <p className={styles.error}>{formErrors.confirm}</p>}
-        </div>
         <div className={styles.buttonWrapper}>
           <button onClick={closeModal}>Cancel</button>
-          <button className={styles.actionButton} onClick={handleRegister}>
-            Sign Up
+          <button className={styles.actionButton} onClick={handleLogin}>
+            Sign in
           </button>
         </div>
         {/* Option to switch between login and register */}
         <button onClick={switchActions} className={styles.switchActions}>
-          Already have an account?
+          Don't have an account?
         </button>
       </div>
     </div>
