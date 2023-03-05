@@ -4,7 +4,7 @@ import RegisterModal from "./RegisterModal";
 
 export default function AuthModal(props: {
   modalState: ModalState;
-  setModalState: (action: ModalState) => void;
+  setModalState: (state: ModalState) => void;
 }) {
   /*COMPONENT FUNCTIONS*/
 
