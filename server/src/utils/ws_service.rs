@@ -25,10 +25,10 @@ pub async fn ws_service(listener: TcpListener, state: ArcState, game_id: String)
 
   if state
     .read()
-    .unwrap()
+    .await
     .lobbies
     .read()
-    .unwrap()
+    .await
     .contains_key(&game_id)
   {
     log::error!(
@@ -39,7 +39,7 @@ pub async fn ws_service(listener: TcpListener, state: ArcState, game_id: String)
   }
 
   // add the game to the state
-  state.read().unwrap().lobbies.write().unwrap().insert(
+  state.read().await.lobbies.write().await.insert(
     game_id,
     Lobby {
       addr: listener.local_addr().unwrap(),

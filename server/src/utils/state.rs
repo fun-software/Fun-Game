@@ -1,17 +1,9 @@
-use std::{
-  collections::HashMap,
-  net::SocketAddr,
-  sync::{Arc, RwLock},
-};
-
-use crate::fbs::Game::game::GameT;
+use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 
 use super::ws_service::PeerMap;
-
-// for testing/POC only, will need to map users to
-// permanent identifiers (UUIDs, likely) once DB is up
-// type PlayerMap = HashMap<SocketAddr, String>;
-// pub type Players = Arc<RwLock<PlayerMap>>;
+use crate::fbs::Game::game::GameT;
+use tokio::sync::RwLock;
+use webrtc_unreliable::SessionEndpoint;
 
 // map Player IDs to their current game's ID
 type PlayerGameMap = HashMap<String, String>;
@@ -30,12 +22,17 @@ pub struct Lobby {
 type LobbyMap = HashMap<String, Lobby>;
 pub type Lobbies = Arc<RwLock<LobbyMap>>;
 
+// map game IDs to WebRTC server addresses
+type WebRTCSessionMap = HashMap<String, SessionEndpoint>;
+pub type WebRTCSessions = Arc<RwLock<WebRTCSessionMap>>;
+
 pub type ArcState = Arc<RwLock<State>>;
 #[derive(Clone)]
 pub struct State {
   pub games: Games,
   pub lobbies: Lobbies,
   pub player_games: PlayerGames,
+  pub web_rtc_sessions: WebRTCSessions,
 }
 
 pub fn new_state() -> ArcState {
@@ -43,5 +40,6 @@ pub fn new_state() -> ArcState {
     games: Arc::new(RwLock::new(HashMap::new())),
     lobbies: Arc::new(RwLock::new(HashMap::new())),
     player_games: Arc::new(RwLock::new(HashMap::new())),
+    web_rtc_sessions: Arc::new(RwLock::new(HashMap::new())),
   }))
 }

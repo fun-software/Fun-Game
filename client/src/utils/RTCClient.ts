@@ -1,7 +1,9 @@
 class RTCClient {
+  private game_id: string;
   public channel: RTCDataChannel;
 
-  constructor() {
+  constructor(game_id: string) {
+    this.game_id = game_id;
     let peer = new RTCPeerConnection();
 
     let channel = peer.createDataChannel("data", {
@@ -51,7 +53,9 @@ class RTCClient {
               });
           }
         };
-        req.send(peer.localDescription.sdp);
+
+        const body = JSON.stringify({ sdp: peer.localDescription.sdp, game_id: this.game_id });
+        req.send(body);
       })
       .catch(err => {
         console.warn("create offer error:", err);
