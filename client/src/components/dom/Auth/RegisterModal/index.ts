@@ -1,3 +1,1 @@
-import RegisterModal from "./RegisterModal";
-
-export default RegisterModal;
+export {RegisterModal} from "./RegisterModal";

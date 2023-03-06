@@ -11,25 +11,17 @@ export enum ModalState {
   Hidden = "Hidden",
 }
 
-function Auth() {
+export function Auth() {
   const [modalState, setModalState] = React.useState<ModalState>(ModalState.Hidden);
 
   return (
     <>
       <Nav modalState={modalState} setModalState={setModalState} />
 
-      {modalState === ModalState.Login && (
-        <LoginModal modalState={modalState} setModalState={setModalState} />
-      )}
-      {modalState === ModalState.Register && (
-        <RegisterModal modalState={modalState} setModalState={setModalState} />
-      )}
-      {modalState === ModalState.Confirm && (
-        <ConfirmModal modalState={modalState} setModalState={setModalState} />
-      )}
+      {modalState === ModalState.Login && <LoginModal setModalState={setModalState} />}
+      {modalState === ModalState.Register && <RegisterModal setModalState={setModalState} />}
+      {modalState === ModalState.Confirm && <ConfirmModal setModalState={setModalState} />}
       {modalState === ModalState.Hidden && <></>}
     </>
   );
 }
-
-export default Auth;
