@@ -6,20 +6,24 @@ use hyper::{
   http::Error,
   Body, Method, Request, Response, StatusCode,
 };
+
+use serde_derive::Deserialize;
 use tokio::net::TcpListener;
 use uuid::Uuid;
 
 use std::net::SocketAddr;
-use webrtc_unreliable::SessionEndpoint;
 
-use crate::fbs::{
-  ClientMessages::clientmessages::root_as_client_message,
-  Game::game::{GamePhase, GameT, PlayerRolesT},
-  ServerMessages::servermessages::{
-    JoinGameResponsePayload, JoinGameResponsePayloadArgs, NewGameResponsePayload,
-    NewGameResponsePayloadArgs, ResponseCode, ServerMessage, ServerMessageArgs,
-    ServerMessagePayload,
+use crate::{
+  fbs::{
+    ClientMessages::clientmessages::root_as_client_message,
+    Game::game::{GamePhase, GameT, PlayerRolesT},
+    ServerMessages::servermessages::{
+      JoinGameResponsePayload, JoinGameResponsePayloadArgs, NewGameResponsePayload,
+      NewGameResponsePayloadArgs, ResponseCode, ServerMessage, ServerMessageArgs,
+      ServerMessagePayload,
+    },
   },
+  utils::web_rtc_service::web_rtc_service,
 };
 
 use super::{state::ArcState, ws_service::ws_service};
@@ -27,17 +31,37 @@ use super::{state::ArcState, ws_service::ws_service};
 #[derive(Debug, Clone)]
 pub struct UserError(pub String);
 
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct SDPOffer {
+  sdp: String,
+  game_id: String,
+}
+
 pub async fn http_service(
   req: Request<Body>,
   remote_addr: SocketAddr,
-  session_endpoint: &mut SessionEndpoint,
   state: ArcState,
 ) -> Result<Response<Body>, hyper::http::Error> {
   match (req.uri().path(), req.method()) {
     // endpoint for WebRTC session requests
     ("/offer", &Method::POST) => {
       log::info!("WebRTC session request from {}", remote_addr);
-      match session_endpoint.http_session_request(req.into_body()).await {
+
+      let body = hyper::body::to_bytes(req.into_body()).await.unwrap();
+      let offer: SDPOffer = serde_json::from_slice(&body).unwrap();
+
+      let state = state.clone();
+      let state = state.read().await;
+      let web_rtc_servers = state.web_rtc_sessions.read().await;
+      let session_endpoint = web_rtc_servers
+        .get(&offer.game_id)
+        .expect("no WebRTC server found for game");
+
+      let mut session_endpoint = session_endpoint.clone();
+      let sdp_req = Body::from(offer.sdp.clone());
+
+      match session_endpoint.http_session_request(sdp_req).await {
         Ok(mut resp) => {
           resp.headers_mut().insert(
             // TODO: make stricter CORS policy
@@ -84,12 +108,12 @@ pub async fn http_service(
           let user = payload.user().expect("failed to parse user");
           let user_id = user.id().expect("failed to parse user id");
 
-          if let Some(_) = player_in_game(user_id, state.clone()) {
+          if let Some(_) = player_in_game(user_id, state.clone()).await {
             return make_error_res(format!("user {} is already in a game", user_id));
           }
 
           // construct server message bytes
-          let (response, game_id) = create_game(state.clone());
+          let (response, game_id) = create_game(state.clone()).await;
 
           // get some available port for the websocket listener
           let listener = TcpListener::bind("127.0.0.1:0")
@@ -97,8 +121,17 @@ pub async fn http_service(
             .expect("failed to bind websocket listener");
 
           // create WS service for the game chat and system messages
+          let ws_state = state.clone();
+          let ws_game_id = game_id.clone();
           tokio::spawn(async move {
-            ws_service(listener, state, game_id).await;
+            // let state = state.clone();
+            ws_service(listener, ws_state, ws_game_id).await;
+          });
+
+          let web_rtc_state = state.clone();
+          // create webRTC session endpoint for the game
+          tokio::spawn(async move {
+            web_rtc_service(web_rtc_state, game_id).await;
           });
 
           Response::builder()
@@ -133,16 +166,16 @@ pub async fn http_service(
             .expect("failed to parse game id")
             .to_string();
 
-          let local_state = state.read().unwrap();
-          let lobbies = local_state.lobbies.read().unwrap();
+          let local_state = state.read().await;
+          let lobbies = local_state.lobbies.read().await;
 
           let state = state.clone();
-          if let Some(cur_game_id) = player_in_game(&user_id, state.clone()) {
+          if let Some(cur_game_id) = player_in_game(&user_id, state.clone()).await {
             log::debug!("user {} is already in a game", user_id);
-            return return_player_to_game(cur_game_id, state);
+            return return_player_to_game(cur_game_id, state).await;
           }
 
-          let mut games = local_state.games.write().unwrap();
+          let mut games = local_state.games.write().await;
           let game = games.get_mut(&game_id).expect("failed to get game");
           let lobby = lobbies.get(&game_id).expect("failed to get lobby");
 
@@ -167,10 +200,10 @@ pub async fn http_service(
 
           state
             .read()
-            .expect("could not write to state")
+            .await
             .player_games
             .write()
-            .expect("could not write to player_games")
+            .await
             .insert(user_id.clone(), game_id);
 
           Response::builder()
@@ -197,7 +230,7 @@ fn make_error_res<T: std::fmt::Debug>(err: T) -> Result<Response<Body>, Error> {
     .body(Body::from(format!("error: {:?}", err)));
 }
 
-fn create_game(state: ArcState) -> (Vec<u8>, String) {
+async fn create_game(state: ArcState) -> (Vec<u8>, String) {
   // TODO: get ID from DB
   let game_id = Uuid::new_v4().to_string();
   let mut builder = FlatBufferBuilder::new();
@@ -236,10 +269,10 @@ fn create_game(state: ArcState) -> (Vec<u8>, String) {
 
   state
     .read()
-    .unwrap()
+    .await
     .games
     .write()
-    .unwrap()
+    .await
     .insert(game_id.clone(), game);
 
   return (bytes.to_vec(), game_id);
@@ -273,24 +306,24 @@ fn join_game(game: &mut GameT, socket_addr: String) -> Vec<u8> {
   return builder.finished_data().to_vec();
 }
 
-fn player_in_game(user_id: &str, state: ArcState) -> Option<String> {
+async fn player_in_game(user_id: &str, state: ArcState) -> Option<String> {
   state
     .read()
-    .unwrap()
+    .await
     .player_games
     .read()
-    .unwrap()
+    .await
     .get(user_id)
     .cloned()
 }
 
-fn return_player_to_game(
+async fn return_player_to_game(
   game_id: String,
   state: ArcState,
 ) -> Result<Response<Body>, hyper::http::Error> {
-  let inner_state = state.read().unwrap();
-  let lobbies = inner_state.lobbies.read().unwrap();
-  let mut games = inner_state.games.write().unwrap();
+  let inner_state = state.read().await;
+  let lobbies = inner_state.lobbies.read().await;
+  let mut games = inner_state.games.write().await;
   let cur_lobby = lobbies.get(&game_id).expect("failed to get lobby");
   let cur_game = games.get_mut(&game_id).expect("failed to get game");
   let response = join_game(cur_game, cur_lobby.addr.to_string());
