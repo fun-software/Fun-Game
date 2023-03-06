@@ -1,4 +1,4 @@
-import Auth from "@/components/dom/Auth";
+import { Auth } from "@/components/dom/Auth";
 import MainMenu from "@/components/dom/MainMenu";
 import dynamic from "next/dynamic";
 

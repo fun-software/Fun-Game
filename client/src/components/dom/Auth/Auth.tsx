@@ -1,8 +1,8 @@
 import * as React from "react";
-import LoginModal from "./LoginModal";
-import RegisterModal from "./RegisterModal";
-import ConfirmModal from "./ConfirmModal";
-import Nav from "./Nav";
+import { LoginModal } from "./LoginModal";
+import { RegisterModal } from "./RegisterModal";
+import { ConfirmModal } from "./ConfirmModal";
+import { Nav } from "./Nav";
 
 export enum ModalState {
   Login = "Login",
