@@ -3,10 +3,7 @@ import { useSessionContext, useSupabaseClient } from "@supabase/auth-helpers-rea
 import styles from "./Nav.module.scss";
 import { ModalState } from "../Auth";
 
-export default function Nav(props: {
-  modalState: ModalState;
-  setModalState: (state: ModalState) => void;
-}) {
+export function Nav(props: { modalState: ModalState; setModalState: (state: ModalState) => void }) {
   const sessionContext = useSessionContext();
   const session = sessionContext.session;
   const supabase = sessionContext.supabaseClient;

@@ -1,21 +1,20 @@
 import * as React from "react";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
-import styles from "../AuthModal.module.scss";
+import styles from "../Auth.module.scss";
 import { ModalState } from "../Auth";
+import { requestLogin } from "./utils";
 
-type FormDetails = {
+export type FormDetails = {
   email: string;
   password: string;
 };
-type FormErrors = {
+export type FormErrors = {
   email: string;
   password: string;
 };
 
-export default function LoginModal(props: {
-  modalState: ModalState;
-  setModalState: (state: ModalState) => void;
-}) {
+export function LoginModal(props: { setModalState: (state: ModalState) => void }) {
+  const { setModalState } = props;
   const supabase = useSupabaseClient();
 
   /*COMPONENT STATE*/
@@ -28,76 +27,34 @@ export default function LoginModal(props: {
     password: "",
   });
 
+  React.useEffect(() => {
+    setFormDetails({ email: "", password: "" });
+    setFormErrors({ email: "", password: "" });
+  }, []);
+
   /*COMPONENT FUNCTIONS*/
 
-  function handleInputChange(e: any) {
-    setFormDetails({ ...formDetails, [e.target.name]: e.target.value });
-  }
-
-  function resetForm() {
-    setFormDetails({ email: "", password: "" });
-  }
-  function resetErrors() {
-    setFormErrors({ email: "", password: "" });
-  }
-
-  function closeModal(e: any) {
-    if (e.target === e.currentTarget) {
-      resetForm();
-      resetErrors();
-      props.setModalState(ModalState.Hidden);
-    }
-  }
-
-  function switchActions() {
-    resetForm();
-    resetErrors();
-    props.setModalState(ModalState.Register);
-  }
-
-  function verifyLoginInputs() {
-    let isValid = true;
-    resetErrors();
-
-    // Check if email is valid
-    if (!formDetails.email.includes("@")) {
-      isValid = false;
-      setFormErrors(prev => ({ ...prev, email: "Invalid email" }));
-    }
-    if (formDetails.password === "") {
-      isValid = false;
-      setFormErrors(prev => ({ ...prev, password: "Required" }));
-    }
-    return isValid;
-  }
-
-  async function handleLogin() {
-    // Check if inputs are valid
-    if (!verifyLoginInputs()) return;
-
-    // Send request to supabase
-    const { error } = await supabase.auth.signInWithPassword({
-      email: formDetails.email,
-      password: formDetails.password,
-    });
-    // Check for api errors
-    if (error) {
-      // console.log(error);
-
-      setFormErrors(prev => ({
-        ...prev,
-        email: "Invalid email or password",
-        password: "Invalid email or password",
-      }));
+  const handleLogin = React.useCallback(async () => {
+    let errors = await requestLogin(formDetails, supabase);
+    if (errors) {
+      setFormErrors(prev => ({ ...prev, ...errors }));
       return;
     }
-    resetForm();
-    resetErrors();
-    props.setModalState(ModalState.Hidden);
-  }
+    setModalState(ModalState.Hidden);
+  }, [formDetails, supabase, setModalState]);
+
+  const closeModal = React.useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      if (e.target === e.currentTarget) {
+        setModalState(ModalState.Hidden);
+      }
+    },
+    [setModalState],
+  );
+
   /*COMPONENT JSX*/
   return (
-    <div className={styles.authModal} onClick={closeModal}>
+    <div className={styles.modalBackdrop} onClick={closeModal}>
       <div className={styles.content}>
         <h1>Login</h1>
         <div className={styles.inputSection}>
@@ -107,23 +64,25 @@ export default function LoginModal(props: {
             name="email"
             id="email"
             value={formDetails.email}
-            onChange={handleInputChange}
+            onChange={e => {
+              setFormDetails(prev => ({ ...prev, email: e.target.value }));
+            }}
           />
           {formErrors.email && <p className={styles.error}>{formErrors.email}</p>}
         </div>
         <div className={styles.inputSection}>
           <div className={styles.passwordLabels}>
             <label htmlFor="password">Password</label>
-            <a href="#" className="forgotPassword">
-              Forgot Password
-            </a>
+            <a href="#">Forgot Password</a>
           </div>
           <input
             type="password"
             name="password"
             id="password"
             value={formDetails.password}
-            onChange={handleInputChange}
+            onChange={e => {
+              setFormDetails(prev => ({ ...prev, password: e.target.value }));
+            }}
           />
           {formErrors.password && <p className={styles.error}>{formErrors.password}</p>}
         </div>
@@ -134,8 +93,13 @@ export default function LoginModal(props: {
           </button>
         </div>
         {/* Option to switch between login and register */}
-        <button onClick={switchActions} className={styles.switchActions}>
-          Don't have an account?
+        <button
+          onClick={() => {
+            setModalState(ModalState.Register);
+          }}
+          className={styles.switchActions}
+        >
+          {"Don't have an account?"}
         </button>
       </div>
     </div>
