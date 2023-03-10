@@ -4,5 +4,5 @@ export enum GamePhase {
   Lobby = 0,
   InGame = 1,
   Post = 2,
-  Ended = 3,
+  Ended = 3
 }

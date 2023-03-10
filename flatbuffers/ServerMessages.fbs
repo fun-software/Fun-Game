@@ -10,19 +10,12 @@ enum ResponseCode: byte {
 }
 
 table NewGameResponsePayload {
-  code: ResponseCode;
   game_id: string;
 }
 
 table JoinGameResponsePayload {
-  code: ResponseCode;
   game: Game.Game;
   socket_address: string;
-}
-
-table LeaveGameResponsePayload {
-  code: ResponseCode;
-  game: Game.Game;
 }
 
 table StatePayload {
@@ -34,7 +27,6 @@ table StatePayload {
 union ServerMessagePayload {
   NewGameResponsePayload,
   JoinGameResponsePayload,
-  LeaveGameResponsePayload,
   StatePayload,
 }
 

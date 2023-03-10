@@ -1,34 +1,33 @@
-use dotenv::dotenv;
+use dotenv::var;
 use std::net::SocketAddr;
-use tokio::time::{self, Duration};
+use tokio::{
+  net::TcpListener,
+  time::{self, Duration},
+};
 use webrtc_unreliable::Server;
 
-use super::state::ArcState;
+use super::state::AsyncState;
 
-pub async fn web_rtc_service(state: ArcState, game_id: String) {
-  dotenv().ok();
+pub async fn web_rtc_service(listener: TcpListener, state: AsyncState, game_id: String) {
+  let tick_rate: u64 = var("TICK_RATE")
+    .unwrap_or("16".to_string())
+    .parse()
+    .unwrap();
 
-  let public_port: String = std::env::var("PUBLIC_PORT").expect("PUBLIC_PORT must be set.");
-  let webrtc_port: String = std::env::var("WEBRTC_PORT").expect("WEBRTC_PORT must be set.");
-  let server_url: String = std::env::var("SERVER_URL").expect("SERVER_URL must be set.");
-  let tick_rate: u64 = std::env::var("TICK_RATE").unwrap().parse::<u64>().unwrap();
-
-  let public_webrtc_addr: SocketAddr = format!("{server_url}:{public_port}").parse().unwrap();
-  let webrtc_listen_addr: SocketAddr = format!("{server_url}:{webrtc_port}").parse().unwrap();
-
-  let mut rtc_server = Server::new(webrtc_listen_addr, public_webrtc_addr)
+  // host the WebRTC server on same address both publicly and locally
+  let webrtc_host: SocketAddr = listener.local_addr().unwrap();
+  let mut rtc_server = Server::new(webrtc_host, webrtc_host)
     .await
     .expect("could not start RTC server");
 
   let session_endpoint = rtc_server.session_endpoint();
 
-  state
-    .read()
-    .await
+  let mut inner_state = state.write().await;
+  inner_state
     .web_rtc_sessions
-    .write()
-    .await
     .insert(game_id, session_endpoint);
+
+  drop(inner_state);
 
   tokio::spawn(async move {
     let mut interval = time::interval(Duration::from_millis(tick_rate));
@@ -61,7 +60,7 @@ pub async fn web_rtc_service(state: ArcState, game_id: String) {
         .await
       {
         Ok(_) => {
-          // echo the message back to the client
+          // echoed the message back to the client
           message_buf.clear();
         }
         Err(err) => {

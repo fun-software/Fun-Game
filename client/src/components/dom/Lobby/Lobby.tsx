@@ -1,13 +1,15 @@
+import * as React from "react";
 import { useChatConnection } from "@/hooks/useChatConnection";
-import { serializeChatMessage } from "@/utils/messaging";
-
+import styles from "./Lobby.module.scss";
 import { ChatSource } from "@fb/Chat";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import * as React from "react";
+import { requestLeaveGame } from "@/utils/requests";
+import { useSession } from "@supabase/auth-helpers-react";
 
 export function Lobby() {
   const router = useRouter();
+  const session = useSession();
   const game_id = React.useMemo(() => router.query.id as string, [router]);
   const [chatMessages, sendMessage] = useChatConnection(game_id);
   const [message, setMessage] = React.useState<string>("");
@@ -17,9 +19,18 @@ export function Lobby() {
     setMessage("");
   };
 
+  const handleLeave = React.useCallback(
+    e => {
+      e.preventDefault();
+      requestLeaveGame(session);
+      router.push("/");
+    },
+    [session, router],
+  );
+
   return (
-    <div>
-      <Link href={"/"}>Home</Link>
+    <div className={styles.lobby}>
+      <button onClick={handleLeave}>Home</button>
       <h1>Lobby</h1>
 
       <input
@@ -33,11 +44,12 @@ export function Lobby() {
       />
       <button onClick={handleSend}>Send</button>
 
-      <div className="chat">
+      <div className={styles.chat}>
         {chatMessages.map((msg, i) => (
-          <p key={i} className={msg.source === ChatSource.System ? "system" : ""}>
-            {msg.message}
-          </p>
+          <div key={i} className={msg.source === ChatSource.System ? styles.system : styles.player}>
+            <strong>{msg.author}</strong>
+            <p>: {msg.message}</p>
+          </div>
         ))}
       </div>
     </div>

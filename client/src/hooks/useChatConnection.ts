@@ -11,8 +11,7 @@ export function useChatConnection(game_id: string) {
   const [chatMessages, setChatMessages] = React.useState<ChatMessageT[]>([]);
 
   React.useEffect(() => {
-    if (!game_id) return;
-
+    if (!game_id || !session) return;
     requestJoinGame(session, game_id).then(address => {
       setAddr(address);
     });
@@ -41,10 +40,11 @@ export function useChatConnection(game_id: string) {
     (message: string) => {
       if (!socket || !message) return;
 
-      let msg = serializeChatMessage(message, "jeff", ChatSource.Player);
+      let author = session?.user?.email || "anonymous";
+      let msg = serializeChatMessage(message, author, ChatSource.Player);
       socket.send(msg);
     },
-    [socket],
+    [socket, session],
   );
 
   return [chatMessages, sendChatMessage] as const;

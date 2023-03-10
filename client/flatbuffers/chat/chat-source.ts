@@ -2,5 +2,5 @@
 
 export enum ChatSource {
   System = 0,
-  Player = 1,
+  Player = 1
 }

@@ -2,6 +2,7 @@ import {
   ClientMessage,
   ClientMessagePayload,
   JoinGamePayload,
+  LeaveGamePayload,
   NewGamePayload,
 } from "@fb/ClientMessages";
 import {
@@ -15,9 +16,9 @@ import { Builder, ByteBuffer } from "flatbuffers";
 
 const API_HOST = process.env.NEXT_PUBLIC_API_HOST || "http://127.0.0.1:8080";
 
-export async function requestNewGame(session: Session): Promise<string> {
+function normalizeSession(session: Session): Session {
   if (!session) {
-    session = {
+    return {
       user: {
         id: window["uid"] || "1",
         email: "anonymous1@gmail.com",
@@ -26,20 +27,23 @@ export async function requestNewGame(session: Session): Promise<string> {
       },
     } as Session;
   }
+
+  return session;
+}
+
+export async function requestNewGame(_session: Session): Promise<string> {
+  const session = normalizeSession(_session);
   const builder = new Builder();
 
   // const username = builder.createString("TODO");
   const id = builder.createString(session.user.id);
   const email = builder.createString(session.user.email);
 
-  const user = User.createUser(
-    builder,
-    id,
-    email,
-    email,
-    BigInt(session.user.confirmed_at),
-    BigInt(session.user.updated_at),
-  );
+  User.startUser(builder);
+  User.addId(builder, id);
+  User.addEmail(builder, email);
+  User.addUsername(builder, email);
+  const user = User.endUser(builder);
   const payload = NewGamePayload.createNewGamePayload(builder, user);
   const message = ClientMessage.createClientMessage(
     builder,
@@ -67,17 +71,8 @@ export async function requestNewGame(session: Session): Promise<string> {
   return responsePayload.gameId as string;
 }
 
-export async function requestJoinGame(session: Session, gameId: string): Promise<string> {
-  if (!session) {
-    session = {
-      user: {
-        id: window["uid"] || "2",
-        email: "anonymous2@gmail.com",
-        confirmed_at: "2",
-        updated_at: "2",
-      },
-    } as Session;
-  }
+export async function requestJoinGame(_session: Session, gameId: string): Promise<string> {
+  const session = normalizeSession(_session);
   const builder = new Builder();
 
   // const username = builder.createString("TODO");
@@ -85,14 +80,11 @@ export async function requestJoinGame(session: Session, gameId: string): Promise
   const email = builder.createString(session.user.email);
   const gid = builder.createString(gameId);
 
-  const user = User.createUser(
-    builder,
-    id,
-    email,
-    email,
-    BigInt(session.user.confirmed_at),
-    BigInt(session.user.updated_at),
-  );
+  User.startUser(builder);
+  User.addId(builder, id);
+  User.addEmail(builder, email);
+  User.addUsername(builder, email);
+  const user = User.endUser(builder);
   const payload = JoinGamePayload.createJoinGamePayload(builder, user, gid);
   const message = ClientMessage.createClientMessage(
     builder,
@@ -118,4 +110,40 @@ export async function requestJoinGame(session: Session, gameId: string): Promise
   let responsePayload = msg.payload as JoinGameResponsePayloadT;
 
   return responsePayload.socketAddress as string;
+}
+
+export async function requestLeaveGame(_session: Session) {
+  const session = normalizeSession(_session);
+  const builder = new Builder();
+
+  // const username = builder.createString("TODO");
+  const id = builder.createString(session.user.id);
+  const email = builder.createString(session.user.email);
+
+  User.startUser(builder);
+  User.addId(builder, id);
+  User.addEmail(builder, email);
+  User.addUsername(builder, email);
+  const user = User.endUser(builder);
+  const payload = LeaveGamePayload.createLeaveGamePayload(builder, user);
+  const message = ClientMessage.createClientMessage(
+    builder,
+    BigInt(Date.now()),
+    ClientMessagePayload.LeaveGamePayload,
+    payload,
+  );
+
+  builder.finish(message);
+  const bytes = builder.asUint8Array();
+
+  let res = await fetch(`${API_HOST}/leave_game`, {
+    method: "POST",
+    body: bytes,
+  });
+
+  if (res.status !== 200) {
+    throw new Error("Failed to leave game");
+  }
+
+  return;
 }

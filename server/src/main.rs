@@ -1,37 +1,37 @@
 mod fbs;
 mod utils;
 
+use dotenv::{dotenv, var};
 use std::net::SocketAddr;
+use tokio::runtime;
 
 use hyper::{
   server::conn::AddrStream,
   service::{make_service_fn, service_fn},
   Error,
 };
-use tokio::runtime;
 
-use dotenv::dotenv;
-
-use utils::http_service::http_service;
+use utils::{
+  http_service::http_service,
+  state::{AsyncState, State},
+};
 
 #[allow(non_snake_case)]
 fn main() {
   dotenv().ok();
-
-  let listen_port: String = std::env::var("LISTEN_PORT").expect("LISTEN_PORT must be set.");
-  let server_url: String = std::env::var("SERVER_URL").expect("SERVER_URL must be set.");
-
-  env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
+  let api_port = var("LISTEN_PORT").unwrap_or("8080".to_string());
+  let api_url = var("SERVER_URL").unwrap_or("127.0.0.1".to_string());
+  env_logger::init_from_env(env_logger::Env::new().default_filter_or("debug"));
 
   let rt = runtime::Builder::new_multi_thread()
     .enable_all()
     .build()
     .expect("could not create tokio runtime");
 
-  let http_api_address: SocketAddr = format!("{server_url}:{listen_port}").parse().unwrap();
+  let http_api_address: SocketAddr = format!("{api_url}:{api_port}").parse().unwrap();
 
   rt.block_on(async {
-    let state = utils::state::new_state();
+    let state: AsyncState = State::new();
 
     // define the http service
     let local_state = state.clone();
@@ -52,9 +52,12 @@ fn main() {
     });
 
     // start the http service
-    hyper::server::Server::bind(&http_api_address)
+    let server = hyper::server::Server::bind(&http_api_address)
       .serve(make_svc)
-      .await
-      .expect("HTTP session server has died");
+      .await;
+
+    if let Err(err) = server {
+      log::error!("server error: {}", err);
+    }
   });
 }

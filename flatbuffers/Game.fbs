@@ -17,9 +17,10 @@ table PlayerRoles {
 table Game {
   id: string; // UUID string
   phase: GamePhase;
-  players: PlayerRoles;
-  starttime: uint64;
-  endtime: uint64;
+  players: [string];
+  player_roles: PlayerRoles;
+  start_time: uint64;
+  end_time: uint64;
 }
 
 root_type Game;

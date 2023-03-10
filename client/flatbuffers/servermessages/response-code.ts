@@ -2,5 +2,5 @@
 
 export enum ResponseCode {
   OK = 0,
-  ERROR = 1,
+  ERROR = 1
 }

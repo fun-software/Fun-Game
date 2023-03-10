@@ -341,8 +341,9 @@ impl<'a> Game<'a> {
   pub const VT_ID: flatbuffers::VOffsetT = 4;
   pub const VT_PHASE: flatbuffers::VOffsetT = 6;
   pub const VT_PLAYERS: flatbuffers::VOffsetT = 8;
-  pub const VT_STARTTIME: flatbuffers::VOffsetT = 10;
-  pub const VT_ENDTIME: flatbuffers::VOffsetT = 12;
+  pub const VT_PLAYER_ROLES: flatbuffers::VOffsetT = 10;
+  pub const VT_START_TIME: flatbuffers::VOffsetT = 12;
+  pub const VT_END_TIME: flatbuffers::VOffsetT = 14;
 
   #[inline]
   pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
@@ -354,8 +355,9 @@ impl<'a> Game<'a> {
     args: &'args GameArgs<'args>
   ) -> flatbuffers::WIPOffset<Game<'bldr>> {
     let mut builder = GameBuilder::new(_fbb);
-    builder.add_endtime(args.endtime);
-    builder.add_starttime(args.starttime);
+    builder.add_end_time(args.end_time);
+    builder.add_start_time(args.start_time);
+    if let Some(x) = args.player_roles { builder.add_player_roles(x); }
     if let Some(x) = args.players { builder.add_players(x); }
     if let Some(x) = args.id { builder.add_id(x); }
     builder.add_phase(args.phase);
@@ -368,16 +370,20 @@ impl<'a> Game<'a> {
     });
     let phase = self.phase();
     let players = self.players().map(|x| {
+      x.iter().map(|s| s.to_string()).collect()
+    });
+    let player_roles = self.player_roles().map(|x| {
       Box::new(x.unpack())
     });
-    let starttime = self.starttime();
-    let endtime = self.endtime();
+    let start_time = self.start_time();
+    let end_time = self.end_time();
     GameT {
       id,
       phase,
       players,
-      starttime,
-      endtime,
+      player_roles,
+      start_time,
+      end_time,
     }
   }
 
@@ -396,25 +402,32 @@ impl<'a> Game<'a> {
     unsafe { self._tab.get::<GamePhase>(Game::VT_PHASE, Some(GamePhase::Lobby)).unwrap()}
   }
   #[inline]
-  pub fn players(&self) -> Option<PlayerRoles<'a>> {
+  pub fn players(&self) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>> {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<PlayerRoles>>(Game::VT_PLAYERS, None)}
+    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>>>(Game::VT_PLAYERS, None)}
   }
   #[inline]
-  pub fn starttime(&self) -> u64 {
+  pub fn player_roles(&self) -> Option<PlayerRoles<'a>> {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<u64>(Game::VT_STARTTIME, Some(0)).unwrap()}
+    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<PlayerRoles>>(Game::VT_PLAYER_ROLES, None)}
   }
   #[inline]
-  pub fn endtime(&self) -> u64 {
+  pub fn start_time(&self) -> u64 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<u64>(Game::VT_ENDTIME, Some(0)).unwrap()}
+    unsafe { self._tab.get::<u64>(Game::VT_START_TIME, Some(0)).unwrap()}
+  }
+  #[inline]
+  pub fn end_time(&self) -> u64 {
+    // Safety:
+    // Created from valid Table for this object
+    // which contains a valid value in this slot
+    unsafe { self._tab.get::<u64>(Game::VT_END_TIME, Some(0)).unwrap()}
   }
 }
 
@@ -427,9 +440,10 @@ impl flatbuffers::Verifiable for Game<'_> {
     v.visit_table(pos)?
      .visit_field::<flatbuffers::ForwardsUOffset<&str>>("id", Self::VT_ID, false)?
      .visit_field::<GamePhase>("phase", Self::VT_PHASE, false)?
-     .visit_field::<flatbuffers::ForwardsUOffset<PlayerRoles>>("players", Self::VT_PLAYERS, false)?
-     .visit_field::<u64>("starttime", Self::VT_STARTTIME, false)?
-     .visit_field::<u64>("endtime", Self::VT_ENDTIME, false)?
+     .visit_field::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<&'_ str>>>>("players", Self::VT_PLAYERS, false)?
+     .visit_field::<flatbuffers::ForwardsUOffset<PlayerRoles>>("player_roles", Self::VT_PLAYER_ROLES, false)?
+     .visit_field::<u64>("start_time", Self::VT_START_TIME, false)?
+     .visit_field::<u64>("end_time", Self::VT_END_TIME, false)?
      .finish();
     Ok(())
   }
@@ -437,9 +451,10 @@ impl flatbuffers::Verifiable for Game<'_> {
 pub struct GameArgs<'a> {
     pub id: Option<flatbuffers::WIPOffset<&'a str>>,
     pub phase: GamePhase,
-    pub players: Option<flatbuffers::WIPOffset<PlayerRoles<'a>>>,
-    pub starttime: u64,
-    pub endtime: u64,
+    pub players: Option<flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>>>,
+    pub player_roles: Option<flatbuffers::WIPOffset<PlayerRoles<'a>>>,
+    pub start_time: u64,
+    pub end_time: u64,
 }
 impl<'a> Default for GameArgs<'a> {
   #[inline]
@@ -448,8 +463,9 @@ impl<'a> Default for GameArgs<'a> {
       id: None,
       phase: GamePhase::Lobby,
       players: None,
-      starttime: 0,
-      endtime: 0,
+      player_roles: None,
+      start_time: 0,
+      end_time: 0,
     }
   }
 }
@@ -468,16 +484,20 @@ impl<'a: 'b, 'b> GameBuilder<'a, 'b> {
     self.fbb_.push_slot::<GamePhase>(Game::VT_PHASE, phase, GamePhase::Lobby);
   }
   #[inline]
-  pub fn add_players(&mut self, players: flatbuffers::WIPOffset<PlayerRoles<'b >>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<PlayerRoles>>(Game::VT_PLAYERS, players);
+  pub fn add_players(&mut self, players: flatbuffers::WIPOffset<flatbuffers::Vector<'b , flatbuffers::ForwardsUOffset<&'b  str>>>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(Game::VT_PLAYERS, players);
   }
   #[inline]
-  pub fn add_starttime(&mut self, starttime: u64) {
-    self.fbb_.push_slot::<u64>(Game::VT_STARTTIME, starttime, 0);
+  pub fn add_player_roles(&mut self, player_roles: flatbuffers::WIPOffset<PlayerRoles<'b >>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<PlayerRoles>>(Game::VT_PLAYER_ROLES, player_roles);
   }
   #[inline]
-  pub fn add_endtime(&mut self, endtime: u64) {
-    self.fbb_.push_slot::<u64>(Game::VT_ENDTIME, endtime, 0);
+  pub fn add_start_time(&mut self, start_time: u64) {
+    self.fbb_.push_slot::<u64>(Game::VT_START_TIME, start_time, 0);
+  }
+  #[inline]
+  pub fn add_end_time(&mut self, end_time: u64) {
+    self.fbb_.push_slot::<u64>(Game::VT_END_TIME, end_time, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> GameBuilder<'a, 'b> {
@@ -500,8 +520,9 @@ impl core::fmt::Debug for Game<'_> {
       ds.field("id", &self.id());
       ds.field("phase", &self.phase());
       ds.field("players", &self.players());
-      ds.field("starttime", &self.starttime());
-      ds.field("endtime", &self.endtime());
+      ds.field("player_roles", &self.player_roles());
+      ds.field("start_time", &self.start_time());
+      ds.field("end_time", &self.end_time());
       ds.finish()
   }
 }
@@ -510,9 +531,10 @@ impl core::fmt::Debug for Game<'_> {
 pub struct GameT {
   pub id: Option<String>,
   pub phase: GamePhase,
-  pub players: Option<Box<PlayerRolesT>>,
-  pub starttime: u64,
-  pub endtime: u64,
+  pub players: Option<Vec<String>>,
+  pub player_roles: Option<Box<PlayerRolesT>>,
+  pub start_time: u64,
+  pub end_time: u64,
 }
 impl Default for GameT {
   fn default() -> Self {
@@ -520,8 +542,9 @@ impl Default for GameT {
       id: None,
       phase: GamePhase::Lobby,
       players: None,
-      starttime: 0,
-      endtime: 0,
+      player_roles: None,
+      start_time: 0,
+      end_time: 0,
     }
   }
 }
@@ -535,16 +558,20 @@ impl GameT {
     });
     let phase = self.phase;
     let players = self.players.as_ref().map(|x|{
+      let w: Vec<_> = x.iter().map(|s| _fbb.create_string(s)).collect();_fbb.create_vector(&w)
+    });
+    let player_roles = self.player_roles.as_ref().map(|x|{
       x.pack(_fbb)
     });
-    let starttime = self.starttime;
-    let endtime = self.endtime;
+    let start_time = self.start_time;
+    let end_time = self.end_time;
     Game::create(_fbb, &GameArgs{
       id,
       phase,
       players,
-      starttime,
-      endtime,
+      player_roles,
+      start_time,
+      end_time,
     })
   }
 }

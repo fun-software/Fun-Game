@@ -10,56 +10,40 @@ use futures_util::future;
 use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::tungstenite::Message;
 
-use crate::{
-  fbs::Chat::chat::{self, ChatMessageT, ChatSource},
-  utils::state::Lobby,
-};
+use crate::fbs::Chat::chat::{self, ChatMessageT, ChatSource};
 
-use super::state::ArcState;
+use super::state::AsyncState;
 
 type Tx = UnboundedSender<Message>;
 pub type PeerMap = Arc<RwLock<HashMap<SocketAddr, Tx>>>;
 
-pub async fn ws_service(listener: TcpListener, state: ArcState, game_id: String) {
+pub async fn ws_service(listener: TcpListener, state: AsyncState, game_id: String) {
   let peers = PeerMap::new(RwLock::new(HashMap::new()));
 
-  if state
-    .read()
-    .await
-    .lobbies
-    .read()
-    .await
-    .contains_key(&game_id)
-  {
-    log::error!(
+  if state.read().await.lobbies.contains_key(&game_id) {
+    log::debug!(
       "Lobby for game {} already exists, not creating new one",
       game_id
     );
     return;
   }
 
-  // add the game to the state
-  state.read().await.lobbies.write().await.insert(
-    game_id,
-    Lobby {
-      addr: listener.local_addr().unwrap(),
-      peers: peers.clone(),
-    },
+  log::info!(
+    "WebSocket server listening on {}",
+    listener.local_addr().unwrap()
   );
-
-  log::debug!("Listening on {}", listener.local_addr().unwrap());
 
   while let Ok((stream, addr)) = listener.accept().await {
     let peers = peers.clone();
     log::debug!("New connection from {}", addr);
     tokio::spawn(async move { handle_connection(stream, addr, peers).await });
   }
+
+  log::info!("Shutting down websocket service for game {}", game_id);
 }
 
 async fn handle_connection(stream: TcpStream, addr: SocketAddr, peers: PeerMap) {
-  let ws_stream = tokio_tungstenite::accept_async(stream)
-    .await
-    .expect("Websocket handshake failed");
+  let ws_stream = tokio_tungstenite::accept_async(stream).await.unwrap();
 
   let (channel_out, channel_in) = mpsc::unbounded::<Message>();
   peers.write().unwrap().insert(addr, channel_out);
@@ -76,7 +60,7 @@ async fn handle_connection(stream: TcpStream, addr: SocketAddr, peers: PeerMap) 
         _ => " chat",
       };
 
-      log::info!(
+      log::debug!(
         "Received{} message from {}: {:?}",
         source_details,
         addr,
@@ -101,17 +85,17 @@ async fn handle_connection(stream: TcpStream, addr: SocketAddr, peers: PeerMap) 
   match future::select(incoming_msg, rcv_from_channel).await {
     future::Either::Left((incoming_msg, _)) => {
       if let Err(e) = incoming_msg {
-        log::error!("Error while receiving message from {}: {}", addr, e);
+        log::warn!("Error while receiving message from {}: {}", addr, e);
       }
     }
     future::Either::Right((rcv_from_channel, _)) => {
       if let Err(e) = rcv_from_channel {
-        log::error!("Error while sending message to {}: {}", addr, e);
+        log::warn!("Error while sending message to {}: {}", addr, e);
       }
     }
   }
 
-  log::info!("{} disconnected", addr);
+  log::debug!("{} disconnected from chat", addr);
   peers.write().unwrap().remove(&addr);
 }
 
@@ -124,6 +108,11 @@ fn deserialize_message(msg: Vec<u8>) -> ChatMessageT {
 
   match chat {
     Ok(chat) => chat.unpack(),
-    _ => panic!("failed to parse message"),
+
+    _ => ChatMessageT {
+      // fail silently
+      message: Some("".to_string()),
+      ..Default::default()
+    },
   }
 }
