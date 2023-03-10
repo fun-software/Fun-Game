@@ -3,7 +3,6 @@
 import * as flatbuffers from 'flatbuffers';
 
 import { JoinGameResponsePayload, JoinGameResponsePayloadT } from '../servermessages/join-game-response-payload';
-import { LeaveGameResponsePayload, LeaveGameResponsePayloadT } from '../servermessages/leave-game-response-payload';
 import { NewGameResponsePayload, NewGameResponsePayloadT } from '../servermessages/new-game-response-payload';
 import { ServerMessagePayload, unionToServerMessagePayload, unionListToServerMessagePayload } from '../servermessages/server-message-payload';
 import { StatePayload, StatePayloadT } from '../servermessages/state-payload';
@@ -107,7 +106,7 @@ export class ServerMessageT implements flatbuffers.IGeneratedObject {
 constructor(
   public timestamp: bigint = BigInt('0'),
   public payloadType: ServerMessagePayload = ServerMessagePayload.NONE,
-  public payload: JoinGameResponsePayloadT|LeaveGameResponsePayloadT|NewGameResponsePayloadT|StatePayloadT|null = null
+  public payload: JoinGameResponsePayloadT|NewGameResponsePayloadT|StatePayloadT|null = null
 ){}
 
 

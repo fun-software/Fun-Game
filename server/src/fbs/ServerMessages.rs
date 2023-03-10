@@ -112,14 +112,13 @@ impl flatbuffers::SimpleToVerifyInSlice for ResponseCode {}
 #[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
 pub const ENUM_MIN_SERVER_MESSAGE_PAYLOAD: u8 = 0;
 #[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
-pub const ENUM_MAX_SERVER_MESSAGE_PAYLOAD: u8 = 4;
+pub const ENUM_MAX_SERVER_MESSAGE_PAYLOAD: u8 = 3;
 #[deprecated(since = "2.0.0", note = "Use associated constants instead. This will no longer be generated in 2021.")]
 #[allow(non_camel_case_types)]
-pub const ENUM_VALUES_SERVER_MESSAGE_PAYLOAD: [ServerMessagePayload; 5] = [
+pub const ENUM_VALUES_SERVER_MESSAGE_PAYLOAD: [ServerMessagePayload; 4] = [
   ServerMessagePayload::NONE,
   ServerMessagePayload::NewGameResponsePayload,
   ServerMessagePayload::JoinGameResponsePayload,
-  ServerMessagePayload::LeaveGameResponsePayload,
   ServerMessagePayload::StatePayload,
 ];
 
@@ -131,16 +130,14 @@ impl ServerMessagePayload {
   pub const NONE: Self = Self(0);
   pub const NewGameResponsePayload: Self = Self(1);
   pub const JoinGameResponsePayload: Self = Self(2);
-  pub const LeaveGameResponsePayload: Self = Self(3);
-  pub const StatePayload: Self = Self(4);
+  pub const StatePayload: Self = Self(3);
 
   pub const ENUM_MIN: u8 = 0;
-  pub const ENUM_MAX: u8 = 4;
+  pub const ENUM_MAX: u8 = 3;
   pub const ENUM_VALUES: &'static [Self] = &[
     Self::NONE,
     Self::NewGameResponsePayload,
     Self::JoinGameResponsePayload,
-    Self::LeaveGameResponsePayload,
     Self::StatePayload,
   ];
   /// Returns the variant's name or "" if unknown.
@@ -149,7 +146,6 @@ impl ServerMessagePayload {
       Self::NONE => Some("NONE"),
       Self::NewGameResponsePayload => Some("NewGameResponsePayload"),
       Self::JoinGameResponsePayload => Some("JoinGameResponsePayload"),
-      Self::LeaveGameResponsePayload => Some("LeaveGameResponsePayload"),
       Self::StatePayload => Some("StatePayload"),
       _ => None,
     }
@@ -215,7 +211,6 @@ pub enum ServerMessagePayloadT {
   NONE,
   NewGameResponsePayload(Box<NewGameResponsePayloadT>),
   JoinGameResponsePayload(Box<JoinGameResponsePayloadT>),
-  LeaveGameResponsePayload(Box<LeaveGameResponsePayloadT>),
   StatePayload(Box<StatePayloadT>),
 }
 impl Default for ServerMessagePayloadT {
@@ -229,7 +224,6 @@ impl ServerMessagePayloadT {
       Self::NONE => ServerMessagePayload::NONE,
       Self::NewGameResponsePayload(_) => ServerMessagePayload::NewGameResponsePayload,
       Self::JoinGameResponsePayload(_) => ServerMessagePayload::JoinGameResponsePayload,
-      Self::LeaveGameResponsePayload(_) => ServerMessagePayload::LeaveGameResponsePayload,
       Self::StatePayload(_) => ServerMessagePayload::StatePayload,
     }
   }
@@ -238,7 +232,6 @@ impl ServerMessagePayloadT {
       Self::NONE => None,
       Self::NewGameResponsePayload(v) => Some(v.pack(fbb).as_union_value()),
       Self::JoinGameResponsePayload(v) => Some(v.pack(fbb).as_union_value()),
-      Self::LeaveGameResponsePayload(v) => Some(v.pack(fbb).as_union_value()),
       Self::StatePayload(v) => Some(v.pack(fbb).as_union_value()),
     }
   }
@@ -283,27 +276,6 @@ impl ServerMessagePayloadT {
   /// If the union variant matches, return a mutable reference to the JoinGameResponsePayloadT.
   pub fn as_join_game_response_payload_mut(&mut self) -> Option<&mut JoinGameResponsePayloadT> {
     if let Self::JoinGameResponsePayload(v) = self { Some(v.as_mut()) } else { None }
-  }
-  /// If the union variant matches, return the owned LeaveGameResponsePayloadT, setting the union to NONE.
-  pub fn take_leave_game_response_payload(&mut self) -> Option<Box<LeaveGameResponsePayloadT>> {
-    if let Self::LeaveGameResponsePayload(_) = self {
-      let v = core::mem::replace(self, Self::NONE);
-      if let Self::LeaveGameResponsePayload(w) = v {
-        Some(w)
-      } else {
-        unreachable!()
-      }
-    } else {
-      None
-    }
-  }
-  /// If the union variant matches, return a reference to the LeaveGameResponsePayloadT.
-  pub fn as_leave_game_response_payload(&self) -> Option<&LeaveGameResponsePayloadT> {
-    if let Self::LeaveGameResponsePayload(v) = self { Some(v.as_ref()) } else { None }
-  }
-  /// If the union variant matches, return a mutable reference to the LeaveGameResponsePayloadT.
-  pub fn as_leave_game_response_payload_mut(&mut self) -> Option<&mut LeaveGameResponsePayloadT> {
-    if let Self::LeaveGameResponsePayload(v) = self { Some(v.as_mut()) } else { None }
   }
   /// If the union variant matches, return the owned StatePayloadT, setting the union to NONE.
   pub fn take_state_payload(&mut self) -> Option<Box<StatePayloadT>> {
@@ -614,136 +586,6 @@ impl JoinGameResponsePayloadT {
     })
   }
 }
-pub enum LeaveGameResponsePayloadOffset {}
-#[derive(Copy, Clone, PartialEq)]
-
-pub struct LeaveGameResponsePayload<'a> {
-  pub _tab: flatbuffers::Table<'a>,
-}
-
-impl<'a> flatbuffers::Follow<'a> for LeaveGameResponsePayload<'a> {
-  type Inner = LeaveGameResponsePayload<'a>;
-  #[inline]
-  unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-    Self { _tab: flatbuffers::Table::new(buf, loc) }
-  }
-}
-
-impl<'a> LeaveGameResponsePayload<'a> {
-  pub const VT_GAME: flatbuffers::VOffsetT = 4;
-
-  #[inline]
-  pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
-    LeaveGameResponsePayload { _tab: table }
-  }
-  #[allow(unused_mut)]
-  pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-    _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
-    args: &'args LeaveGameResponsePayloadArgs<'args>
-  ) -> flatbuffers::WIPOffset<LeaveGameResponsePayload<'bldr>> {
-    let mut builder = LeaveGameResponsePayloadBuilder::new(_fbb);
-    if let Some(x) = args.game { builder.add_game(x); }
-    builder.finish()
-  }
-
-  pub fn unpack(&self) -> LeaveGameResponsePayloadT {
-    let game = self.game().map(|x| {
-      Box::new(x.unpack())
-    });
-    LeaveGameResponsePayloadT {
-      game,
-    }
-  }
-
-  #[inline]
-  pub fn game(&self) -> Option<super::game::Game<'a>> {
-    // Safety:
-    // Created from valid Table for this object
-    // which contains a valid value in this slot
-    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<super::game::Game>>(LeaveGameResponsePayload::VT_GAME, None)}
-  }
-}
-
-impl flatbuffers::Verifiable for LeaveGameResponsePayload<'_> {
-  #[inline]
-  fn run_verifier(
-    v: &mut flatbuffers::Verifier, pos: usize
-  ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
-    use self::flatbuffers::Verifiable;
-    v.visit_table(pos)?
-     .visit_field::<flatbuffers::ForwardsUOffset<super::game::Game>>("game", Self::VT_GAME, false)?
-     .finish();
-    Ok(())
-  }
-}
-pub struct LeaveGameResponsePayloadArgs<'a> {
-    pub game: Option<flatbuffers::WIPOffset<super::game::Game<'a>>>,
-}
-impl<'a> Default for LeaveGameResponsePayloadArgs<'a> {
-  #[inline]
-  fn default() -> Self {
-    LeaveGameResponsePayloadArgs {
-      game: None,
-    }
-  }
-}
-
-pub struct LeaveGameResponsePayloadBuilder<'a: 'b, 'b> {
-  fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-  start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
-}
-impl<'a: 'b, 'b> LeaveGameResponsePayloadBuilder<'a, 'b> {
-  #[inline]
-  pub fn add_game(&mut self, game: flatbuffers::WIPOffset<super::game::Game<'b >>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<super::game::Game>>(LeaveGameResponsePayload::VT_GAME, game);
-  }
-  #[inline]
-  pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> LeaveGameResponsePayloadBuilder<'a, 'b> {
-    let start = _fbb.start_table();
-    LeaveGameResponsePayloadBuilder {
-      fbb_: _fbb,
-      start_: start,
-    }
-  }
-  #[inline]
-  pub fn finish(self) -> flatbuffers::WIPOffset<LeaveGameResponsePayload<'a>> {
-    let o = self.fbb_.end_table(self.start_);
-    flatbuffers::WIPOffset::new(o.value())
-  }
-}
-
-impl core::fmt::Debug for LeaveGameResponsePayload<'_> {
-  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-    let mut ds = f.debug_struct("LeaveGameResponsePayload");
-      ds.field("game", &self.game());
-      ds.finish()
-  }
-}
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct LeaveGameResponsePayloadT {
-  pub game: Option<Box<super::game::GameT>>,
-}
-impl Default for LeaveGameResponsePayloadT {
-  fn default() -> Self {
-    Self {
-      game: None,
-    }
-  }
-}
-impl LeaveGameResponsePayloadT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<LeaveGameResponsePayload<'b>> {
-    let game = self.game.as_ref().map(|x|{
-      x.pack(_fbb)
-    });
-    LeaveGameResponsePayload::create(_fbb, &LeaveGameResponsePayloadArgs{
-      game,
-    })
-  }
-}
 pub enum StatePayloadOffset {}
 #[derive(Copy, Clone, PartialEq)]
 
@@ -974,11 +816,6 @@ impl<'a> ServerMessage<'a> {
             .expect("Invalid union table, expected `ServerMessagePayload::JoinGameResponsePayload`.")
             .unpack()
       )),
-      ServerMessagePayload::LeaveGameResponsePayload => ServerMessagePayloadT::LeaveGameResponsePayload(Box::new(
-        self.payload_as_leave_game_response_payload()
-            .expect("Invalid union table, expected `ServerMessagePayload::LeaveGameResponsePayload`.")
-            .unpack()
-      )),
       ServerMessagePayload::StatePayload => ServerMessagePayloadT::StatePayload(Box::new(
         self.payload_as_state_payload()
             .expect("Invalid union table, expected `ServerMessagePayload::StatePayload`.")
@@ -1045,21 +882,6 @@ impl<'a> ServerMessage<'a> {
 
   #[inline]
   #[allow(non_snake_case)]
-  pub fn payload_as_leave_game_response_payload(&self) -> Option<LeaveGameResponsePayload<'a>> {
-    if self.payload_type() == ServerMessagePayload::LeaveGameResponsePayload {
-      self.payload().map(|t| {
-       // Safety:
-       // Created from a valid Table for this object
-       // Which contains a valid union in this slot
-       unsafe { LeaveGameResponsePayload::init_from_table(t) }
-     })
-    } else {
-      None
-    }
-  }
-
-  #[inline]
-  #[allow(non_snake_case)]
   pub fn payload_as_state_payload(&self) -> Option<StatePayload<'a>> {
     if self.payload_type() == ServerMessagePayload::StatePayload {
       self.payload().map(|t| {
@@ -1087,7 +909,6 @@ impl flatbuffers::Verifiable for ServerMessage<'_> {
         match key {
           ServerMessagePayload::NewGameResponsePayload => v.verify_union_variant::<flatbuffers::ForwardsUOffset<NewGameResponsePayload>>("ServerMessagePayload::NewGameResponsePayload", pos),
           ServerMessagePayload::JoinGameResponsePayload => v.verify_union_variant::<flatbuffers::ForwardsUOffset<JoinGameResponsePayload>>("ServerMessagePayload::JoinGameResponsePayload", pos),
-          ServerMessagePayload::LeaveGameResponsePayload => v.verify_union_variant::<flatbuffers::ForwardsUOffset<LeaveGameResponsePayload>>("ServerMessagePayload::LeaveGameResponsePayload", pos),
           ServerMessagePayload::StatePayload => v.verify_union_variant::<flatbuffers::ForwardsUOffset<StatePayload>>("ServerMessagePayload::StatePayload", pos),
           _ => Ok(()),
         }
@@ -1159,13 +980,6 @@ impl core::fmt::Debug for ServerMessage<'_> {
         },
         ServerMessagePayload::JoinGameResponsePayload => {
           if let Some(x) = self.payload_as_join_game_response_payload() {
-            ds.field("payload", &x)
-          } else {
-            ds.field("payload", &"InvalidFlatbuffer: Union discriminant does not match value.")
-          }
-        },
-        ServerMessagePayload::LeaveGameResponsePayload => {
-          if let Some(x) = self.payload_as_leave_game_response_payload() {
             ds.field("payload", &x)
           } else {
             ds.field("payload", &"InvalidFlatbuffer: Union discriminant does not match value.")

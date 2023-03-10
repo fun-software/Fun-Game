@@ -4,7 +4,6 @@ export { ChatMessage, ChatMessageT } from './chat/chat-message';
 export { Game, GameT } from './game/game';
 export { GameState, GameStateT } from './gamestate/game-state';
 export { JoinGameResponsePayload, JoinGameResponsePayloadT } from './servermessages/join-game-response-payload';
-export { LeaveGameResponsePayload, LeaveGameResponsePayloadT } from './servermessages/leave-game-response-payload';
 export { NewGameResponsePayload, NewGameResponsePayloadT } from './servermessages/new-game-response-payload';
 export { ResponseCode } from './servermessages/response-code';
 export { ServerMessage, ServerMessageT } from './servermessages/server-message';
