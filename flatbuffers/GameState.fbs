@@ -1,0 +1,11 @@
+include "Game.fbs";
+
+namespace Gamestate;
+
+table GameState {
+  game: Game.Game;
+  players: Game.PlayerRoles;
+  // TODO: attacks, etc.
+}
+
+root_type GameState;

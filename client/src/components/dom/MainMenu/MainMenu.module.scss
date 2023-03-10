@@ -20,8 +20,11 @@
     justify-content: center;
     gap: 1em;
 
-    a {
+    a,
+    button {
       color: white;
+      background-color: rgba(0, 0, 0, 0);
+      border: none;
       text-decoration: none;
       font-size: 2em;
       font-family: sans-serif;

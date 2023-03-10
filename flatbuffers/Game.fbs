@@ -1,0 +1,26 @@
+namespace Game;
+
+enum GamePhase: byte {
+  Lobby,
+  InGame,
+  Post,
+  Ended,
+}
+
+table PlayerRoles {
+  red: string; // UUID string
+  blue: string;
+  green: string;
+  yellow: string;
+}
+
+table Game {
+  id: string; // UUID string
+  phase: GamePhase;
+  players: [string];
+  player_roles: PlayerRoles;
+  start_time: uint64;
+  end_time: uint64;
+}
+
+root_type Game;
