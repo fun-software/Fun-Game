@@ -51,7 +51,7 @@
     "format:check": "prettier --list-different \"./src/**/*.{ts,tsx,md,js,css,html,json}\"",
     "dev": "next dev",
     "flatbuffers": "rm -rf ./flatbuffers && flatc --ts --ts-no-import-ext --filename-suffix '' --gen-object-api -o ./flatbuffers/ $(find ../flatbuffers -name '*.fbs')",
-    "build": "npm run flatbuffers && next build",
+    "build": "npm run lint && next build",
     "export": "EXPORT=true next build && EXPORT=true next export",
     "analyze": "ANALYZE=true next build",
     "start": "next start",
