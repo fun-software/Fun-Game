@@ -3,7 +3,7 @@ import { SupabaseClient } from "@supabase/supabase-js";
 
 function verifyLoginInputs(formDetails: FormDetails) {
   let hasErrors = false;
-  let errors: FormErrors = {email: "", password: ""}
+  let errors: FormErrors = { email: "", password: "" };
 
   // Check if email is valid
   if (!formDetails.email.includes("@")) {
@@ -23,7 +23,10 @@ function verifyLoginInputs(formDetails: FormDetails) {
   return undefined;
 }
 
-export async function requestLogin(formDetails: FormDetails, supabase:SupabaseClient): Promise<FormErrors> {
+export async function requestLogin(
+  formDetails: FormDetails,
+  supabase: SupabaseClient,
+): Promise<FormErrors> {
   // Check if inputs are valid
   let formErrors = verifyLoginInputs(formDetails);
   if (formErrors) return formErrors;
@@ -37,7 +40,7 @@ export async function requestLogin(formDetails: FormDetails, supabase:SupabaseCl
   if (error) {
     // console.log(error);
 
-    formErrors = {email: "Invalid email or password", password: "Invalid email or password"}
+    formErrors = { email: "Invalid email or password", password: "Invalid email or password" };
     return formErrors;
   }
   return undefined;

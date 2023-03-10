@@ -29,7 +29,7 @@ export default function Page() {
 
   const gainNode = React.useMemo(() => {
     if (context) {
-      console.log(context);
+      // console.log(context);
       return context.createGain();
     } else return null;
   }, [context]);
@@ -46,7 +46,7 @@ export default function Page() {
     track.connect(addNoiseNode);
     addNoiseNode.connect(gainNode);
     gainNode.connect(context.destination);
-  }, [context, gainNode, addNoiseNode]);
+  }, [context, gainNode, addNoiseNode, track]);
 
   const playButtonClickHandler = React.useCallback(() => {
     // Check if context is in suspended state (autoplay policy)

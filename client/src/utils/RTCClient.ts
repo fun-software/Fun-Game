@@ -13,14 +13,14 @@ class RTCClient {
     channel.binaryType = "arraybuffer";
 
     channel.onerror = e => {
-      console.warn("data channel error:", e);
+      // console.warn("data channel error:", e);
     };
 
     peer.onicecandidate = e => {
       if (e.candidate) {
-        console.log("ice candidate:", e.candidate);
+        // console.log("ice candidate:", e.candidate);
       } else {
-        console.log("ice candidate complete");
+        // console.log("ice candidate complete");
       }
     };
 
@@ -42,14 +42,14 @@ class RTCClient {
                 peer
                   .addIceCandidate(candidate)
                   .then(() => {
-                    console.log("add ice candidate success");
+                    // console.log("add ice candidate success");
                   })
                   .catch(function (err) {
-                    console.log("error during 'addIceCandidate':", err);
+                    // console.log("error during 'addIceCandidate':", err);
                   });
               })
               .catch(function (e) {
-                console.log("error during 'setRemoteDescription':", e);
+                // console.log("error during 'setRemoteDescription':", e);
               });
           }
         };
@@ -58,7 +58,7 @@ class RTCClient {
         req.send(body);
       })
       .catch(err => {
-        console.warn("create offer error:", err);
+        // console.warn("create offer error:", err);
       });
 
     this.channel = channel;

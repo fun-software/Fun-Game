@@ -1,1 +1,1 @@
-export {RegisterModal} from "./RegisterModal";
+export { RegisterModal } from "./RegisterModal";
