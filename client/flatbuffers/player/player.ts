@@ -2,10 +2,10 @@
 
 import * as flatbuffers from 'flatbuffers';
 
-import { Vec3 } from '../math/vec3.js';
+import { Vec3, Vec3T } from '../math/vec3';
 
 
-export class Player {
+export class Player implements flatbuffers.IUnpackableObject<PlayerT> {
   bb: flatbuffers.ByteBuffer|null = null;
   bb_pos = 0;
   __init(i:number, bb:flatbuffers.ByteBuffer):Player {
@@ -23,53 +23,71 @@ static getSizePrefixedRootAsPlayer(bb:flatbuffers.ByteBuffer, obj?:Player):Playe
   return (obj || new Player()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
 }
 
-pos(obj?:Vec3):Vec3|null {
+position(obj?:Vec3):Vec3|null {
   const offset = this.bb!.__offset(this.bb_pos, 4);
   return offset ? (obj || new Vec3()).__init(this.bb_pos + offset, this.bb!) : null;
 }
 
-hp():number {
+velocity(obj?:Vec3):Vec3|null {
   const offset = this.bb!.__offset(this.bb_pos, 6);
+  return offset ? (obj || new Vec3()).__init(this.bb_pos + offset, this.bb!) : null;
+}
+
+lookDirection(obj?:Vec3):Vec3|null {
+  const offset = this.bb!.__offset(this.bb_pos, 8);
+  return offset ? (obj || new Vec3()).__init(this.bb_pos + offset, this.bb!) : null;
+}
+
+hp():number {
+  const offset = this.bb!.__offset(this.bb_pos, 10);
   return offset ? this.bb!.readInt8(this.bb_pos + offset) : 100;
 }
 
 speed():number {
-  const offset = this.bb!.__offset(this.bb_pos, 8);
+  const offset = this.bb!.__offset(this.bb_pos, 12);
   return offset ? this.bb!.readInt8(this.bb_pos + offset) : 100;
 }
 
 sprinting():boolean {
-  const offset = this.bb!.__offset(this.bb_pos, 10);
+  const offset = this.bb!.__offset(this.bb_pos, 14);
   return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
 }
 
 sneaking():boolean {
-  const offset = this.bb!.__offset(this.bb_pos, 12);
+  const offset = this.bb!.__offset(this.bb_pos, 16);
   return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
 }
 
 static startPlayer(builder:flatbuffers.Builder) {
-  builder.startObject(5);
+  builder.startObject(7);
 }
 
-static addPos(builder:flatbuffers.Builder, posOffset:flatbuffers.Offset) {
-  builder.addFieldStruct(0, posOffset, 0);
+static addPosition(builder:flatbuffers.Builder, positionOffset:flatbuffers.Offset) {
+  builder.addFieldStruct(0, positionOffset, 0);
+}
+
+static addVelocity(builder:flatbuffers.Builder, velocityOffset:flatbuffers.Offset) {
+  builder.addFieldStruct(1, velocityOffset, 0);
+}
+
+static addLookDirection(builder:flatbuffers.Builder, lookDirectionOffset:flatbuffers.Offset) {
+  builder.addFieldStruct(2, lookDirectionOffset, 0);
 }
 
 static addHp(builder:flatbuffers.Builder, hp:number) {
-  builder.addFieldInt8(1, hp, 100);
+  builder.addFieldInt8(3, hp, 100);
 }
 
 static addSpeed(builder:flatbuffers.Builder, speed:number) {
-  builder.addFieldInt8(2, speed, 100);
+  builder.addFieldInt8(4, speed, 100);
 }
 
 static addSprinting(builder:flatbuffers.Builder, sprinting:boolean) {
-  builder.addFieldInt8(3, +sprinting, +false);
+  builder.addFieldInt8(5, +sprinting, +false);
 }
 
 static addSneaking(builder:flatbuffers.Builder, sneaking:boolean) {
-  builder.addFieldInt8(4, +sneaking, +false);
+  builder.addFieldInt8(6, +sneaking, +false);
 }
 
 static endPlayer(builder:flatbuffers.Builder):flatbuffers.Offset {
@@ -85,13 +103,53 @@ static finishSizePrefixedPlayerBuffer(builder:flatbuffers.Builder, offset:flatbu
   builder.finish(offset, undefined, true);
 }
 
-static createPlayer(builder:flatbuffers.Builder, posOffset:flatbuffers.Offset, hp:number, speed:number, sprinting:boolean, sneaking:boolean):flatbuffers.Offset {
+
+unpack(): PlayerT {
+  return new PlayerT(
+    (this.position() !== null ? this.position()!.unpack() : null),
+    (this.velocity() !== null ? this.velocity()!.unpack() : null),
+    (this.lookDirection() !== null ? this.lookDirection()!.unpack() : null),
+    this.hp(),
+    this.speed(),
+    this.sprinting(),
+    this.sneaking()
+  );
+}
+
+
+unpackTo(_o: PlayerT): void {
+  _o.position = (this.position() !== null ? this.position()!.unpack() : null);
+  _o.velocity = (this.velocity() !== null ? this.velocity()!.unpack() : null);
+  _o.lookDirection = (this.lookDirection() !== null ? this.lookDirection()!.unpack() : null);
+  _o.hp = this.hp();
+  _o.speed = this.speed();
+  _o.sprinting = this.sprinting();
+  _o.sneaking = this.sneaking();
+}
+}
+
+export class PlayerT implements flatbuffers.IGeneratedObject {
+constructor(
+  public position: Vec3T|null = null,
+  public velocity: Vec3T|null = null,
+  public lookDirection: Vec3T|null = null,
+  public hp: number = 100,
+  public speed: number = 100,
+  public sprinting: boolean = false,
+  public sneaking: boolean = false
+){}
+
+
+pack(builder:flatbuffers.Builder): flatbuffers.Offset {
   Player.startPlayer(builder);
-  Player.addPos(builder, posOffset);
-  Player.addHp(builder, hp);
-  Player.addSpeed(builder, speed);
-  Player.addSprinting(builder, sprinting);
-  Player.addSneaking(builder, sneaking);
+  Player.addPosition(builder, (this.position !== null ? this.position!.pack(builder) : 0));
+  Player.addVelocity(builder, (this.velocity !== null ? this.velocity!.pack(builder) : 0));
+  Player.addLookDirection(builder, (this.lookDirection !== null ? this.lookDirection!.pack(builder) : 0));
+  Player.addHp(builder, this.hp);
+  Player.addSpeed(builder, this.speed);
+  Player.addSprinting(builder, this.sprinting);
+  Player.addSneaking(builder, this.sneaking);
+
   return Player.endPlayer(builder);
 }
 }

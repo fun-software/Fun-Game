@@ -1,0 +1,38 @@
+include "Game.fbs";
+include "GameState.fbs";
+include "Chat.fbs";
+
+namespace Servermessages;
+
+enum ResponseCode: byte {
+  OK,
+  ERROR,
+}
+
+table NewGameResponsePayload {
+  game_id: string;
+}
+
+table JoinGameResponsePayload {
+  game: Game.Game;
+  socket_address: string;
+}
+
+table StatePayload {
+  code: ResponseCode;
+  game_state: Gamestate.GameState;
+  chat: [Chat.ChatMessage];
+}
+
+union ServerMessagePayload {
+  NewGameResponsePayload,
+  JoinGameResponsePayload,
+  StatePayload,
+}
+
+table ServerMessage {
+  timestamp: uint64;
+  payload: ServerMessagePayload;
+}
+
+root_type ServerMessage;

@@ -1,0 +1,49 @@
+include "User.fbs";
+include "Player.fbs";
+include "Chat.fbs";
+
+namespace Clientmessages;
+
+table NewGamePayload {
+  user: User.User;
+}
+
+table JoinGamePayload {
+  user: User.User;
+  game_id: string;
+}
+
+table LeaveGamePayload {
+  user: User.User;
+}
+
+table ChatPayload {
+  user: User.User;
+  message: Chat.ChatMessage;
+}
+
+table InputPayload {
+  user: User.User;
+  player: Player.Player;
+  // TODO: add input data
+}
+
+table QueryStatePayload {
+  user: User.User;
+}
+
+union ClientMessagePayload {
+  ChatPayload,
+  InputPayload,
+  JoinGamePayload,
+  LeaveGamePayload,
+  NewGamePayload,
+  QueryStatePayload,
+}
+
+table ClientMessage {
+  timestamp: uint64;
+  payload: ClientMessagePayload;
+}
+
+root_type ClientMessage;

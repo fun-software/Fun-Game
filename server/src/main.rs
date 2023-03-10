@@ -1,187 +1,63 @@
-extern crate futures;
-extern crate tokio;
-extern crate websocket;
+mod fbs;
+mod utils;
 
-pub mod types;
+use dotenv::{dotenv, var};
+use std::net::SocketAddr;
+use tokio::runtime;
 
-use tokio::{
-    net::UdpSocket,
-    runtime,
-    sync::{
-        broadcast::{self, Receiver},
-        RwLock,
-    },
-    time::{self, Duration},
-};
-use types::Entities;
-
-use std::{
-    collections::HashMap,
-    hash::{Hash, Hasher},
-    net::SocketAddr,
-    sync::Arc,
+use hyper::{
+  server::conn::AddrStream,
+  service::{make_service_fn, service_fn},
+  Error,
 };
 
-// Maps player_id -> receiver for broadcasts
-type PlayerReceiverMap = HashMap<u64, Receiver<(Vec<u8>, Option<SocketAddr>)>>;
+use utils::{
+  http_service::http_service,
+  state::{AsyncState, State},
+};
 
+#[allow(non_snake_case)]
 fn main() {
-    let entities = Arc::new(RwLock::new(types::Entities::new()));
-    let client_receivers = Arc::new(RwLock::new(PlayerReceiverMap::new()));
+  dotenv().ok();
+  let api_port = var("LISTEN_PORT").unwrap_or("8080".to_string());
+  let api_url = var("SERVER_URL").unwrap_or("127.0.0.1".to_string());
+  env_logger::init_from_env(env_logger::Env::new().default_filter_or("debug"));
 
-    let (sender_channel, mut receiver_channel) =
-        broadcast::channel::<(Vec<u8>, Option<SocketAddr>)>(16);
+  let rt = runtime::Builder::new_multi_thread()
+    .enable_all()
+    .build()
+    .expect("could not create tokio runtime");
 
-    // spawn a new task to notify on msgs sent to the channel receiver
-    tokio::spawn(async move {
-        loop {
-            match receiver_channel.recv().await {
-                Ok((msg, player_addr)) => match player_addr {
-                    Some(addr) => match sender_socket.send_to(&msg, addr).await {
-                        Ok(len) => {
-                            println!("Sent {} bytes to {}", len, addr);
-                        }
-                        Err(e) => {
-                            println!("Error sending to socket: {}", e);
-                        }
-                    },
-                    None => (),
-                },
-                Err(e) => {
-                    println!("Error receiving from channel: {}", e);
-                }
-            }
-        }
+  let http_api_address: SocketAddr = format!("{api_url}:{api_port}").parse().unwrap();
+
+  rt.block_on(async {
+    let state: AsyncState = State::new();
+
+    // define the http service
+    let local_state = state.clone();
+    let make_svc = make_service_fn(move |addr_stream: &AddrStream| {
+      let remote_addr = addr_stream.remote_addr();
+      let local_state = local_state.clone();
+
+      async move {
+        let local_state = local_state.clone();
+        Ok::<_, Error>(service_fn(move |req| {
+          let local_state = local_state.clone();
+          async move {
+            let local_state = local_state.clone();
+            http_service(req, remote_addr, local_state).await
+          }
+        }))
+      }
     });
 
-    let broadcast_entities = entities.read().await.clone();
-    let broadcast_sender = sender_channel.clone();
-    tokio::spawn(async move {
-        let mut interval = time::interval(Duration::from_millis(1000));
+    // start the http service
+    let server = hyper::server::Server::bind(&http_api_address)
+      .serve(make_svc)
+      .await;
 
-        loop {
-            interval.tick().await;
-
-            let msg = broadcast_entities
-                .iter()
-                .fold(String::new(), |acc, (_, v)| {
-                    return acc + &format!("{}: {}", v.id, v.pos.to_json());
-                });
-
-            match broadcast_sender.send((msg.as_bytes().to_vec(), None)) {
-                Ok(_) => println!("Sent broadcast: {}", msg),
-                Err(e) => {
-                    println!("Error sending to channel: {}", e);
-                }
-            }
-        }
-    });
-
-    let mut buf = [0u8; 1024];
-    loop {
-        let (len, addr) = match receiver_socket.recv_from(&mut buf).await {
-            Ok((len, addr)) => (len, addr),
-            Err(e) => {
-                println!("Error receiving from socket: {}", e);
-                continue;
-            }
-        };
-
-        // identify sender
-        let mut hasher = std::collections::hash_map::DefaultHasher::new();
-        addr.hash(&mut hasher);
-        let id = hasher.finish();
-        let is_playing = entities.read().await.contains_key(&id);
-
-        let msg = &buf[..len];
-
-        match msg {
-            b"play\n" => match is_playing {
-                true => {
-                    println!("Player {} is already playing", id);
-                    continue;
-                }
-                false => {
-                    register_player(
-                        id,
-                        sender_channel.subscribe(),
-                        &client_receivers,
-                        &entities,
-                    )
-                    .await;
-                    println!("Registered player {} with address {}\n", id, addr)
-                }
-            },
-            b"quit\n" => match is_playing {
-                true => {
-                    unregister_player(id, &client_receivers, &entities).await;
-                    println!("Unregistered player {} with address {}\n", id, addr)
-                }
-                false => {
-                    println!("Player {} is not playing", id);
-                    continue;
-                }
-            },
-            b"w\n" | b"s\n" | b"a\n" | b"d\n" => match is_playing {
-                false => {
-                    continue;
-                }
-                true => process_move(msg[0] as char, id, &entities).await,
-            },
-            _ => println!("Unknown command: {}", String::from_utf8_lossy(msg)),
-        };
+    if let Err(err) = server {
+      log::error!("server error: {}", err);
     }
-
-    runtime
-        .block_on_all(connection_handler.select(send_handler))
-        .map_err(|_| println!("Error conn-send loop"))
-        .unwrap();
+  });
 }
-
-async fn register_player(
-    id: u64,
-    receiver: Receiver<(Vec<u8>, Option<SocketAddr>)>,
-    client_receivers: &Arc<RwLock<PlayerReceiverMap>>,
-    entities: &Arc<RwLock<Entities>>,
-) {
-    entities.write().await.insert(
-        id,
-        types::Entity {
-            id,
-            pos: types::Position {
-                x: 0.0,
-                y: 0.0,
-                z: 0.0,
-            },
-        },
-    );
-
-    client_receivers.write().await.insert(id, receiver);
-}
-
-async fn unregister_player(
-    id: u64,
-    client_receivers: &Arc<RwLock<PlayerReceiverMap>>,
-    entities: &Arc<RwLock<Entities>>,
-) {
-    entities.write().await.remove(&id);
-
-    client_receivers.write().await.remove(&id);
-}
-
-async fn process_move(dir: char, id: u64, entities: &Arc<RwLock<Entities>>) {
-    entities
-        .write()
-        .await
-        .entry(id)
-        .and_modify(|player| match dir {
-            'w' => player.pos.z += 1.0,
-            's' => player.pos.z -= 1.0,
-            'a' => player.pos.x -= 1.0,
-            'd' => player.pos.x += 1.0,
-            _ => (),
-        });
-
-    println!("Player {} moved {}", id, dir);
-}
->>>>>>> e0fa536 (why server broadcasts wont work)

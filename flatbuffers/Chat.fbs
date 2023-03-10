@@ -1,0 +1,14 @@
+namespace Chat;
+
+enum ChatSource: byte {
+  System,
+  Player,
+}
+
+table ChatMessage {
+  source: ChatSource;
+  message: string;
+  author: string;
+}
+
+root_type ChatMessage;
