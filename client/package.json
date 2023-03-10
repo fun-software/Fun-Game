@@ -46,7 +46,7 @@
     "eslint": "next lint --fix --dir src",
     "eslint:check": "next lint --dir src",
     "format": "prettier -w \"./**/*.{ts,tsx,md,js,css,html,json}\"",
-    "format:check": "prettier --list-different \"./**/*.{ts,tsx,md,js,css,html,json}\"",
+    "format:check": "prettier --list-different \"./src/**/*.{ts,tsx,md,js,css,html,json}\"",
     "dev": "next dev",
     "flatbuffers": "rm -rf ./flatbuffers && flatc --ts -o ./flatbuffers/ ../flatbuffers/*",
     "build": "npm run lint && next build",
