@@ -231,8 +231,15 @@ async fn create_game(state: AsyncState) -> Vec<u8> {
   let webrtc_listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
 
   // create WS service for the game chat and system messages
-  let ws_state = state.clone();
   let ws_game_id = game_id.clone();
+
+  if state.read().await.lobbies.contains_key(&game_id) {
+    log::debug!(
+      "Lobby for game {} already exists, not creating new one",
+      game_id
+    );
+    return "Lobby already exists".as_bytes().to_vec();
+  }
 
   // add the game to the state, do here rather than
   // in the ws_service thread so that there
@@ -250,7 +257,7 @@ async fn create_game(state: AsyncState) -> Vec<u8> {
   drop(inner_state);
 
   tokio::spawn(async move {
-    ws_service(ws_listener, ws_state, ws_game_id).await;
+    ws_service(ws_listener, ws_game_id).await;
   });
 
   // create webRTC session endpoint for the game

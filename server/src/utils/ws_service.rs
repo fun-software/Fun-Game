@@ -12,21 +12,11 @@ use tokio_tungstenite::tungstenite::Message;
 
 use crate::fbs::Chat::chat::{self, ChatMessageT, ChatSource};
 
-use super::state::AsyncState;
-
 type Tx = UnboundedSender<Message>;
 pub type PeerMap = Arc<RwLock<HashMap<SocketAddr, Tx>>>;
 
-pub async fn ws_service(listener: TcpListener, state: AsyncState, game_id: String) {
+pub async fn ws_service(listener: TcpListener, game_id: String) {
   let peers = PeerMap::new(RwLock::new(HashMap::new()));
-
-  if state.read().await.lobbies.contains_key(&game_id) {
-    log::debug!(
-      "Lobby for game {} already exists, not creating new one",
-      game_id
-    );
-    return;
-  }
 
   log::info!(
     "WebSocket server listening on {}",
