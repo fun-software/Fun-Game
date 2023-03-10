@@ -1,0 +1,11 @@
+namespace User;
+
+table User {
+  id: string; // UUID string
+  username: string;
+  email: string;
+  created_at: uint64;
+  updated_at: uint64;
+}
+
+root_type User;

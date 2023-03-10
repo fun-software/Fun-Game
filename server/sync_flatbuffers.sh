@@ -10,7 +10,8 @@ fi
 
 cd "${0%/*}"
 
-rm -rf ./flatbuffers
-flatc --rust -o ./flatbuffers/ $(find ../flatbuffers -name "*.fbs")
+rm -rf ./src/flatbuffers
+flatc --rust --filename-suffix '' --gen-object-api --gen-compare --include-prefix 'fbs' \
+    -o ./src/fbs/ $(find ../flatbuffers -name "*.fbs")
 
 echo -e "\nDone!\n"
