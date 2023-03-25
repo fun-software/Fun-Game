@@ -8,6 +8,7 @@ export type FormDetails = {
   email: string;
   password: string;
 };
+
 export type FormErrors = {
   email: string;
   password: string;
@@ -22,6 +23,7 @@ export function LoginModal(props: { setModalState: (state: ModalState) => void }
     email: "",
     password: "",
   });
+
   const [formErrors, setFormErrors] = React.useState<FormErrors>({
     email: "",
     password: "",
@@ -52,6 +54,17 @@ export function LoginModal(props: { setModalState: (state: ModalState) => void }
     [setModalState],
   );
 
+  const handleKeyPressed = React.useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter") handleLogin();
+    },
+    [handleLogin],
+  );
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setFormDetails(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  }
+
   /*COMPONENT JSX*/
   return (
     <div className={styles.modalBackdrop} onClick={closeModal}>
@@ -64,9 +77,8 @@ export function LoginModal(props: { setModalState: (state: ModalState) => void }
             name="email"
             id="email"
             value={formDetails.email}
-            onChange={e => {
-              setFormDetails(prev => ({ ...prev, email: e.target.value }));
-            }}
+            onChange={handleChange}
+            onKeyDown={handleKeyPressed}
           />
           {formErrors.email && <p className={styles.error}>{formErrors.email}</p>}
         </div>
@@ -80,9 +92,8 @@ export function LoginModal(props: { setModalState: (state: ModalState) => void }
             name="password"
             id="password"
             value={formDetails.password}
-            onChange={e => {
-              setFormDetails(prev => ({ ...prev, password: e.target.value }));
-            }}
+            onChange={handleChange}
+            onKeyDown={handleKeyPressed}
           />
           {formErrors.password && <p className={styles.error}>{formErrors.password}</p>}
         </div>
