@@ -70,6 +70,9 @@ export function RegisterModal(props: { setModalState: (state: ModalState) => voi
             onChange={e => {
               setFormDetails(prev => ({ ...prev, email: e.target.value }));
             }}
+            onKeyDown={e => {
+              if (e.key === "Enter") handleRegister();
+            }}
           />
           {formErrors.email && <p className={styles.error}>{formErrors.email}</p>}
         </div>
@@ -85,6 +88,9 @@ export function RegisterModal(props: { setModalState: (state: ModalState) => voi
             onChange={e => {
               setFormDetails(prev => ({ ...prev, password: e.target.value }));
             }}
+            onKeyDown={e => {
+              if (e.key === "Enter") handleRegister();
+            }}
           />
           {formErrors.password && <p className={styles.error}>{formErrors.password}</p>}
         </div>
@@ -97,6 +103,9 @@ export function RegisterModal(props: { setModalState: (state: ModalState) => voi
             value={formDetails.confirm}
             onChange={e => {
               setFormDetails(prev => ({ ...prev, confirm: e.target.value }));
+            }}
+            onKeyDown={e => {
+              if (e.key === "Enter") handleRegister();
             }}
           />
           {formErrors.confirm && <p className={styles.error}>{formErrors.confirm}</p>}
