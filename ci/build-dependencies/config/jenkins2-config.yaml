@@ -1,0 +1,12 @@
+jenkins:
+  disableRememberMe: false
+  globalNodeProperties:
+  - envVars:
+      env:
+        - key: "DONOVAN_TEST"
+          value: "${DONOVAN_TEST}"
+  mode: NORMAL
+  projectNamingStrategy: "standard"
+  quietPeriod: 5
+  scmCheckoutRetryCount: 0
+  slaveAgentPort: 50000
