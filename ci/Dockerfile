@@ -3,7 +3,7 @@ FROM jenkins/jenkins:2.387.1-lts
 USER root
 
 RUN apt-get update &&\
-	apt-get install curl git less vim -y
+	apt-get install curl git less npm vim -y
 
 ARG JENKINS_HOME CONTAINER_HOME
 ARG COPY_REFERENCE_LOG_FILE_PATH

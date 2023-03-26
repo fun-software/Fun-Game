@@ -13,3 +13,6 @@ mv $USERS_PATH $JENKINS_REF/users
 
 echo "Configuring jcasc"
 mv $CONFIG_PATH $JENKINS_REF/config
+
+echo "Configuring jobs"
+mv $JOBS_PATH $JENKINS_REF/jobs

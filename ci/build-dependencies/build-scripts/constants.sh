@@ -11,3 +11,4 @@ readonly FG_PATH=$SRC/Fun-Game
 readonly USERS_PATH=$CONTAINER_HOME/users
 readonly PLUGINS_PATH=$CONTAINER_HOME/plugins
 readonly CONFIG_PATH=$CONTAINER_HOME/config
+readonly JOBS_PATH=$CONTAINER_HOME/job-configs

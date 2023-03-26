@@ -1,4 +1,10 @@
 jenkins:
+  agentProtocols:
+  - "JNLP4-connect"
+  - "Ping"
+  crumbIssuer:
+    standard:
+      excludeClientIPFromCrumb: false
   disableRememberMe: false
   globalNodeProperties:
   - envVars:
@@ -6,6 +12,7 @@ jenkins:
         - key: "DONOVAN_TEST"
           value: "${DONOVAN_TEST}"
   mode: NORMAL
+  numExecutors: 5
   projectNamingStrategy: "standard"
   quietPeriod: 5
   scmCheckoutRetryCount: 0
