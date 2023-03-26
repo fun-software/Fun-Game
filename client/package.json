@@ -7,7 +7,7 @@
   "license": "MIT",
   "private": true,
   "engines": {
-    "node": ">=14"
+    "node": ">=16.17.0"
   },
   "dependencies": {
     "@react-three/drei": "^9.56.5",
