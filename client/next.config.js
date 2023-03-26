@@ -13,7 +13,7 @@ const nextConfig = {
   //   styledComponents: true,
   // },
   experimental: {
-    runtime: "edge",
+    runtime: "experimental-edge",
   },
   images: {},
   reactStrictMode: true, // Recommended for the `pages` directory, default in `app`.
