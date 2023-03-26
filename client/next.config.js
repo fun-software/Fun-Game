@@ -12,7 +12,9 @@ const nextConfig = {
   // compiler: {
   //   styledComponents: true,
   // },
-  experimental: {},
+  experimental: {
+    runtime: "edge",
+  },
   images: {},
   reactStrictMode: true, // Recommended for the `pages` directory, default in `app`.
   webpack(config, { isServer }) {
