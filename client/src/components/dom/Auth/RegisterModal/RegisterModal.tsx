@@ -55,6 +55,17 @@ export function RegisterModal(props: { setModalState: (state: ModalState) => voi
     [setModalState],
   );
 
+  const handleKeyPressed = React.useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter") handleRegister();
+    },
+    [handleRegister],
+  );
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setFormDetails(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  }
+
   /*COMPONENT JSX*/
   return (
     <div className={styles.modalBackdrop} onClick={closeModal}>
@@ -67,12 +78,8 @@ export function RegisterModal(props: { setModalState: (state: ModalState) => voi
             name="email"
             id="email"
             value={formDetails.email}
-            onChange={e => {
-              setFormDetails(prev => ({ ...prev, email: e.target.value }));
-            }}
-            onKeyDown={e => {
-              if (e.key === "Enter") handleRegister();
-            }}
+            onChange={handleChange}
+            onKeyDown={handleKeyPressed}
           />
           {formErrors.email && <p className={styles.error}>{formErrors.email}</p>}
         </div>
@@ -85,12 +92,8 @@ export function RegisterModal(props: { setModalState: (state: ModalState) => voi
             name="password"
             id="password"
             value={formDetails.password}
-            onChange={e => {
-              setFormDetails(prev => ({ ...prev, password: e.target.value }));
-            }}
-            onKeyDown={e => {
-              if (e.key === "Enter") handleRegister();
-            }}
+            onChange={handleChange}
+            onKeyDown={handleKeyPressed}
           />
           {formErrors.password && <p className={styles.error}>{formErrors.password}</p>}
         </div>
@@ -101,12 +104,8 @@ export function RegisterModal(props: { setModalState: (state: ModalState) => voi
             name="confirm"
             id="confirm"
             value={formDetails.confirm}
-            onChange={e => {
-              setFormDetails(prev => ({ ...prev, confirm: e.target.value }));
-            }}
-            onKeyDown={e => {
-              if (e.key === "Enter") handleRegister();
-            }}
+            onChange={handleChange}
+            onKeyDown={handleKeyPressed}
           />
           {formErrors.confirm && <p className={styles.error}>{formErrors.confirm}</p>}
         </div>
