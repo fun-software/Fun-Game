@@ -281,7 +281,6 @@ async fn join_game(user_id: String, game_id: String, state: AsyncState) -> Vec<u
     .to_string();
 
   let mut inner_state = state.write().await;
-  log::debug!("JOIN 2");
   inner_state
     .games
     .get_mut(&game_id)
