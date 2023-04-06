@@ -15,7 +15,7 @@ table NewGameResponsePayload {
 
 table JoinGameResponsePayload {
   game: Game.Game;
-  socket_address: string;
+  ws_port: uint16;
 }
 
 table StatePayload {

@@ -4,23 +4,26 @@ import { ChatMessageT, ChatSource } from "@fb/Chat";
 import { useSession } from "@supabase/auth-helpers-react";
 import * as React from "react";
 
+const API_HOST = process.env.NEXT_PUBLIC_API_HOST || "127.0.0.1";
+
 export function useChatConnection(game_id: string) {
   const session = useSession();
-  let [addr, setAddr] = React.useState<string>(undefined);
+  let [port, setPort] = React.useState<number>(undefined);
   let [socket, setSocket] = React.useState<WebSocket>(undefined);
   const [chatMessages, setChatMessages] = React.useState<ChatMessageT[]>([]);
 
   React.useEffect(() => {
     if (!game_id || !session) return;
     requestJoinGame(session, game_id).then(address => {
-      setAddr(address);
+      setPort(address);
     });
   }, [game_id, session]);
 
   React.useEffect(() => {
-    if (!addr) return;
+    if (!port) return;
 
-    let ws = new WebSocket(addr);
+    let protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    let ws = new WebSocket(`${protocol}://${API_HOST}:${port}`);
     ws.onmessage = e => {
       let blob: Blob = e.data;
       blob.arrayBuffer().then(buf => {
@@ -34,7 +37,7 @@ export function useChatConnection(game_id: string) {
     return () => {
       ws.close();
     };
-  }, [addr]);
+  }, [port]);
 
   let sendChatMessage = React.useCallback(
     (message: string) => {

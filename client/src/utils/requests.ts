@@ -14,7 +14,10 @@ import { User } from "@fb/User";
 import { Session } from "@supabase/supabase-js";
 import { Builder, ByteBuffer } from "flatbuffers";
 
-const API_HOST = process.env.NEXT_PUBLIC_API_HOST || "http://127.0.0.1:8080";
+const API_HOST = process.env.NEXT_PUBLIC_API_HOST || "http://127.0.0.1";
+const API_PORT = process.env.NEXT_PUBLIC_API_PORT || "8080";
+const PROTOCOL = process.env.NODE_ENV === "development" ? "http" : "https";
+const API_URL = `${PROTOCOL}://${API_HOST}:${API_PORT}`;
 
 function normalizeSession(session: Session): Session {
   if (!session) {
@@ -55,7 +58,7 @@ export async function requestNewGame(_session: Session): Promise<string> {
   builder.finish(message);
   const bytes = builder.asUint8Array();
 
-  let res = await fetch(`${API_HOST}/new_game`, {
+  let res = await fetch(`${API_URL}/new_game`, {
     method: "POST",
     body: bytes,
   });
@@ -71,7 +74,7 @@ export async function requestNewGame(_session: Session): Promise<string> {
   return responsePayload.gameId as string;
 }
 
-export async function requestJoinGame(_session: Session, gameId: string): Promise<string> {
+export async function requestJoinGame(_session: Session, gameId: string): Promise<number> {
   const session = normalizeSession(_session);
   const builder = new Builder();
 
@@ -96,7 +99,7 @@ export async function requestJoinGame(_session: Session, gameId: string): Promis
   builder.finish(message);
   const bytes = builder.asUint8Array();
 
-  let res = await fetch(`${API_HOST}/join_game`, {
+  let res = await fetch(`${API_URL}/join_game`, {
     method: "POST",
     body: bytes,
   });
@@ -109,7 +112,7 @@ export async function requestJoinGame(_session: Session, gameId: string): Promis
 
   let responsePayload = msg.payload as JoinGameResponsePayloadT;
 
-  return responsePayload.socketAddress as string;
+  return responsePayload.wsPort;
 }
 
 export async function requestLeaveGame(_session: Session) {
@@ -136,7 +139,7 @@ export async function requestLeaveGame(_session: Session) {
   builder.finish(message);
   const bytes = builder.asUint8Array();
 
-  let res = await fetch(`${API_HOST}/leave_game`, {
+  let res = await fetch(`${API_URL}/leave_game`, {
     method: "POST",
     body: bytes,
   });
