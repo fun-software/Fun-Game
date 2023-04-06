@@ -28,11 +28,9 @@ game(obj?:Game):Game|null {
   return offset ? (obj || new Game()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
 }
 
-socketAddress():string|null
-socketAddress(optionalEncoding:flatbuffers.Encoding):string|Uint8Array|null
-socketAddress(optionalEncoding?:any):string|Uint8Array|null {
+wsPort():number {
   const offset = this.bb!.__offset(this.bb_pos, 6);
-  return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+  return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0;
 }
 
 static startJoinGameResponsePayload(builder:flatbuffers.Builder) {
@@ -43,8 +41,8 @@ static addGame(builder:flatbuffers.Builder, gameOffset:flatbuffers.Offset) {
   builder.addFieldOffset(0, gameOffset, 0);
 }
 
-static addSocketAddress(builder:flatbuffers.Builder, socketAddressOffset:flatbuffers.Offset) {
-  builder.addFieldOffset(1, socketAddressOffset, 0);
+static addWsPort(builder:flatbuffers.Builder, wsPort:number) {
+  builder.addFieldInt16(1, wsPort, 0);
 }
 
 static endJoinGameResponsePayload(builder:flatbuffers.Builder):flatbuffers.Offset {
@@ -52,41 +50,40 @@ static endJoinGameResponsePayload(builder:flatbuffers.Builder):flatbuffers.Offse
   return offset;
 }
 
-static createJoinGameResponsePayload(builder:flatbuffers.Builder, gameOffset:flatbuffers.Offset, socketAddressOffset:flatbuffers.Offset):flatbuffers.Offset {
+static createJoinGameResponsePayload(builder:flatbuffers.Builder, gameOffset:flatbuffers.Offset, wsPort:number):flatbuffers.Offset {
   JoinGameResponsePayload.startJoinGameResponsePayload(builder);
   JoinGameResponsePayload.addGame(builder, gameOffset);
-  JoinGameResponsePayload.addSocketAddress(builder, socketAddressOffset);
+  JoinGameResponsePayload.addWsPort(builder, wsPort);
   return JoinGameResponsePayload.endJoinGameResponsePayload(builder);
 }
 
 unpack(): JoinGameResponsePayloadT {
   return new JoinGameResponsePayloadT(
     (this.game() !== null ? this.game()!.unpack() : null),
-    this.socketAddress()
+    this.wsPort()
   );
 }
 
 
 unpackTo(_o: JoinGameResponsePayloadT): void {
   _o.game = (this.game() !== null ? this.game()!.unpack() : null);
-  _o.socketAddress = this.socketAddress();
+  _o.wsPort = this.wsPort();
 }
 }
 
 export class JoinGameResponsePayloadT implements flatbuffers.IGeneratedObject {
 constructor(
   public game: GameT|null = null,
-  public socketAddress: string|Uint8Array|null = null
+  public wsPort: number = 0
 ){}
 
 
 pack(builder:flatbuffers.Builder): flatbuffers.Offset {
   const game = (this.game !== null ? this.game!.pack(builder) : 0);
-  const socketAddress = (this.socketAddress !== null ? builder.createString(this.socketAddress!) : 0);
 
   return JoinGameResponsePayload.createJoinGameResponsePayload(builder,
     game,
-    socketAddress
+    this.wsPort
   );
 }
 }
