@@ -446,7 +446,7 @@ impl<'a> flatbuffers::Follow<'a> for JoinGameResponsePayload<'a> {
 
 impl<'a> JoinGameResponsePayload<'a> {
   pub const VT_GAME: flatbuffers::VOffsetT = 4;
-  pub const VT_SOCKET_ADDRESS: flatbuffers::VOffsetT = 6;
+  pub const VT_WS_PORT: flatbuffers::VOffsetT = 6;
 
   #[inline]
   pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
@@ -458,8 +458,8 @@ impl<'a> JoinGameResponsePayload<'a> {
     args: &'args JoinGameResponsePayloadArgs<'args>
   ) -> flatbuffers::WIPOffset<JoinGameResponsePayload<'bldr>> {
     let mut builder = JoinGameResponsePayloadBuilder::new(_fbb);
-    if let Some(x) = args.socket_address { builder.add_socket_address(x); }
     if let Some(x) = args.game { builder.add_game(x); }
+    builder.add_ws_port(args.ws_port);
     builder.finish()
   }
 
@@ -467,12 +467,10 @@ impl<'a> JoinGameResponsePayload<'a> {
     let game = self.game().map(|x| {
       Box::new(x.unpack())
     });
-    let socket_address = self.socket_address().map(|x| {
-      x.to_string()
-    });
+    let ws_port = self.ws_port();
     JoinGameResponsePayloadT {
       game,
-      socket_address,
+      ws_port,
     }
   }
 
@@ -484,11 +482,11 @@ impl<'a> JoinGameResponsePayload<'a> {
     unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<super::game::Game>>(JoinGameResponsePayload::VT_GAME, None)}
   }
   #[inline]
-  pub fn socket_address(&self) -> Option<&'a str> {
+  pub fn ws_port(&self) -> u16 {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(JoinGameResponsePayload::VT_SOCKET_ADDRESS, None)}
+    unsafe { self._tab.get::<u16>(JoinGameResponsePayload::VT_WS_PORT, Some(0)).unwrap()}
   }
 }
 
@@ -500,21 +498,21 @@ impl flatbuffers::Verifiable for JoinGameResponsePayload<'_> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
      .visit_field::<flatbuffers::ForwardsUOffset<super::game::Game>>("game", Self::VT_GAME, false)?
-     .visit_field::<flatbuffers::ForwardsUOffset<&str>>("socket_address", Self::VT_SOCKET_ADDRESS, false)?
+     .visit_field::<u16>("ws_port", Self::VT_WS_PORT, false)?
      .finish();
     Ok(())
   }
 }
 pub struct JoinGameResponsePayloadArgs<'a> {
     pub game: Option<flatbuffers::WIPOffset<super::game::Game<'a>>>,
-    pub socket_address: Option<flatbuffers::WIPOffset<&'a str>>,
+    pub ws_port: u16,
 }
 impl<'a> Default for JoinGameResponsePayloadArgs<'a> {
   #[inline]
   fn default() -> Self {
     JoinGameResponsePayloadArgs {
       game: None,
-      socket_address: None,
+      ws_port: 0,
     }
   }
 }
@@ -529,8 +527,8 @@ impl<'a: 'b, 'b> JoinGameResponsePayloadBuilder<'a, 'b> {
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<super::game::Game>>(JoinGameResponsePayload::VT_GAME, game);
   }
   #[inline]
-  pub fn add_socket_address(&mut self, socket_address: flatbuffers::WIPOffset<&'b  str>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(JoinGameResponsePayload::VT_SOCKET_ADDRESS, socket_address);
+  pub fn add_ws_port(&mut self, ws_port: u16) {
+    self.fbb_.push_slot::<u16>(JoinGameResponsePayload::VT_WS_PORT, ws_port, 0);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> JoinGameResponsePayloadBuilder<'a, 'b> {
@@ -551,7 +549,7 @@ impl core::fmt::Debug for JoinGameResponsePayload<'_> {
   fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
     let mut ds = f.debug_struct("JoinGameResponsePayload");
       ds.field("game", &self.game());
-      ds.field("socket_address", &self.socket_address());
+      ds.field("ws_port", &self.ws_port());
       ds.finish()
   }
 }
@@ -559,13 +557,13 @@ impl core::fmt::Debug for JoinGameResponsePayload<'_> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct JoinGameResponsePayloadT {
   pub game: Option<Box<super::game::GameT>>,
-  pub socket_address: Option<String>,
+  pub ws_port: u16,
 }
 impl Default for JoinGameResponsePayloadT {
   fn default() -> Self {
     Self {
       game: None,
-      socket_address: None,
+      ws_port: 0,
     }
   }
 }
@@ -577,12 +575,10 @@ impl JoinGameResponsePayloadT {
     let game = self.game.as_ref().map(|x|{
       x.pack(_fbb)
     });
-    let socket_address = self.socket_address.as_ref().map(|x|{
-      _fbb.create_string(x)
-    });
+    let ws_port = self.ws_port;
     JoinGameResponsePayload::create(_fbb, &JoinGameResponsePayloadArgs{
       game,
-      socket_address,
+      ws_port,
     })
   }
 }

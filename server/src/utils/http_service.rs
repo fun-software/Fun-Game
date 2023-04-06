@@ -271,14 +271,14 @@ async fn create_game(state: AsyncState) -> Vec<u8> {
 }
 
 async fn join_game(user_id: String, game_id: String, state: AsyncState) -> Vec<u8> {
-  let addr = state
+  let ws_port = state
     .read()
     .await
     .lobbies
     .get(&game_id)
     .unwrap()
     .addr
-    .to_string();
+    .port();
 
   let mut inner_state = state.write().await;
   inner_state
@@ -297,7 +297,6 @@ async fn join_game(user_id: String, game_id: String, state: AsyncState) -> Vec<u
   let game = inner_state.games.get_mut(&game_id).unwrap();
   let mut builder = FlatBufferBuilder::new();
 
-  let socket_addr = builder.create_string(&format!("ws://{}", addr));
   let game = game.pack(&mut builder);
 
   // drop the write lock
@@ -307,7 +306,7 @@ async fn join_game(user_id: String, game_id: String, state: AsyncState) -> Vec<u
     &mut builder,
     &JoinGameResponsePayloadArgs {
       game: Some(game),
-      socket_address: Some(socket_addr),
+      ws_port,
     },
   );
 
@@ -350,19 +349,16 @@ async fn return_player_to_game(game_id: String, state: AsyncState) -> Vec<u8> {
   let cur_lobby = lobbies.get(&game_id).unwrap();
   let cur_game = games.get(&game_id).unwrap().clone();
 
-  let socket = cur_lobby.addr;
-  let addr = format!("ws://{}", socket.to_string());
+  let ws_port = cur_lobby.addr.port();
 
   let mut builder = FlatBufferBuilder::new();
-
-  let socket_offset = builder.create_string(&addr);
 
   let game_offset = cur_game.pack(&mut builder);
   let payload_offset = JoinGameResponsePayload::create(
     &mut builder,
     &JoinGameResponsePayloadArgs {
       game: Some(game_offset),
-      socket_address: Some(socket_offset),
+      ws_port,
     },
   );
 
