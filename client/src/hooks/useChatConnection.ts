@@ -23,7 +23,7 @@ export function useChatConnection(game_id: string) {
     if (!port) return;
 
     let protocol = window.location.protocol === "https:" ? "wss" : "ws";
-    let ws = new WebSocket(`${protocol}://${API_HOST}:${port}`);
+    let ws = new WebSocket(`${protocol}://${API_HOST}/?socket=${port}`);
     ws.onmessage = e => {
       let blob: Blob = e.data;
       blob.arrayBuffer().then(buf => {
@@ -38,6 +38,17 @@ export function useChatConnection(game_id: string) {
       ws.close();
     };
   }, [port]);
+
+  React.useEffect(() => {
+    if (!socket) return;
+    let heartbeat = setInterval(() => {
+      socket.send("ping");
+    }, 1000);
+
+    return () => {
+      clearInterval(heartbeat);
+    };
+  }, [socket]);
 
   let sendChatMessage = React.useCallback(
     (message: string) => {
