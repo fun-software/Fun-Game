@@ -30,7 +30,7 @@ jobs:
               ~/.cargo/registry/cache/
               ~/.cargo/git/db/
               server/target/
-            key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+            key: ${{ runner.os }}-cargo-${{ hashFiles('server/Cargo.lock') }}
 
     - name: Build
       if: steps.cache-build.outputs.cache-hit != true
