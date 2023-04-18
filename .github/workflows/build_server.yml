@@ -19,12 +19,19 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build
-      run: cargo build --verbose
-    - name: Cache
+    - name: Cache build
+      id: cache-build
       uses: actions/cache@v2.1.8
       with:
         # A list of files, directories, and wildcard patterns to cache and restore
-        path: /server/target
-        # An explicit key for restoring and saving the cache
-        key: "server-cache"
+            path: |
+              ~/.cargo/bin/
+              ~/.cargo/registry/index/
+              ~/.cargo/registry/cache/
+              ~/.cargo/git/db/
+              server/target/
+            key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Build
+      if: steps.cache-build.outputs.cache-hit != true
+      run: cargo build --verbose
