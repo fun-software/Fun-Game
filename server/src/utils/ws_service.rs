@@ -51,7 +51,7 @@ async fn handle_connection(stream: TcpStream, addr: SocketAddr, peers: PeerMap) 
       };
 
       log::debug!(
-        "Received{} message from {}: {:?}",
+        "Received {} message from {}: {:?}",
         source_details,
         addr,
         msg

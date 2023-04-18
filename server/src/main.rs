@@ -19,7 +19,7 @@ use utils::{
 #[allow(non_snake_case)]
 fn main() {
   dotenv().ok();
-  let api_port = var("LISTEN_PORT").unwrap_or("8080".to_string());
+  let api_port = var("LISTEN_PORT").unwrap_or("5000".to_string());
   let api_url = var("SERVER_URL").unwrap_or("127.0.0.1".to_string());
   env_logger::init_from_env(env_logger::Env::new().default_filter_or("debug"));
 
