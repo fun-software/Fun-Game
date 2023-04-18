@@ -1,0 +1,20 @@
+stage-api-fun-game.volcaus.com/ping {
+	respond "Pong!"
+}
+
+stage-api-fun-game.volcaus.com {
+	@ws {
+		header Connection *Upgrade*
+		header Upgrade    websocket
+		query socket=*
+	}
+
+	log {
+		output stdout
+		level INFO
+	}
+
+	reverse_proxy @ws 127.0.0.1:{http.request.uri.query.socket}
+
+	reverse_proxy * 127.0.0.1:5000
+}
