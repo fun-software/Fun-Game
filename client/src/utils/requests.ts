@@ -14,7 +14,7 @@ import { User } from "@fb/User";
 import { Session } from "@supabase/supabase-js";
 import { Builder, ByteBuffer } from "flatbuffers";
 
-const API_HOST = process.env.NEXT_PUBLIC_API_HOST || "http://127.0.0.1";
+const API_HOST = process.env.NEXT_PUBLIC_API_HOST || "127.0.0.1";
 const API_PORT = process.env.NEXT_PUBLIC_API_PORT || "8080";
 const PROTOCOL = process.env.NODE_ENV === "development" ? "http" : "https";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || `${PROTOCOL}://${API_HOST}:${API_PORT}`;
