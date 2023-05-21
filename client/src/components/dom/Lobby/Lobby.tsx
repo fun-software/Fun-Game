@@ -1,4 +1,3 @@
-import * as React from "react";
 import { useChatConnection } from "@/hooks/useChatConnection";
 import styles from "./Lobby.module.scss";
 import { ChatSource } from "@fb/Chat";
@@ -6,21 +5,26 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { requestLeaveGame } from "@/utils/requests";
 import { useSession } from "@supabase/auth-helpers-react";
+import { MouseEvent, useCallback, useMemo, useState } from "react";
 
 export function Lobby() {
   const router = useRouter();
   const session = useSession();
-  const game_id = React.useMemo(() => router.query.id as string, [router]);
+  const game_id = useMemo(() => router.query.id as string, [router]);
   const [chatMessages, sendMessage] = useChatConnection(game_id);
-  const [message, setMessage] = React.useState<string>("");
+  const [message, setMessage] = useState<string>("");
 
   const handleSend = () => {
     sendMessage(message);
     setMessage("");
   };
 
-  const handleLeave = React.useCallback(
-    e => {
+  const handleStartGame = () => {
+    router.push(`/game/${game_id}`);
+  };
+
+  const handleLeave = useCallback(
+    (e: MouseEvent) => {
       e.preventDefault();
       requestLeaveGame(session);
       router.push("/");
@@ -43,6 +47,7 @@ export function Lobby() {
         }}
       />
       <button onClick={handleSend}>Send</button>
+      <button onClick={handleStartGame}>Start Game</button>
 
       <div className={styles.chat}>
         {chatMessages.map((msg, i) => (
