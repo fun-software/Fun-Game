@@ -13,22 +13,17 @@ use uuid::Uuid;
 
 use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 
-use crate::{
-  fbs::{
-    ClientMessages::clientmessages::root_as_client_message,
-    Game::game::{GamePhase, GameT},
-    ServerMessages::servermessages::{
-      JoinGameResponsePayload, JoinGameResponsePayloadArgs, NewGameResponsePayload,
-      NewGameResponsePayloadArgs, ServerMessage, ServerMessageArgs, ServerMessagePayload,
-    },
+use crate::fbs::{
+  ClientMessages::clientmessages::root_as_client_message,
+  Game::game::{GamePhase, GameT},
+  ServerMessages::servermessages::{
+    JoinGameResponsePayload, JoinGameResponsePayloadArgs, NewGameResponsePayload,
+    NewGameResponsePayloadArgs, ServerMessage, ServerMessageArgs, ServerMessagePayload,
   },
-  utils::web_rtc_service::web_rtc_service,
 };
 
-use super::{
-  state::{AsyncState, Lobby},
-  ws_service::ws_service,
-};
+use super::{chat_service::ws_service, web_rtc_service::web_rtc_service};
+use crate::utils::state::{AsyncState, Lobby};
 
 #[derive(Debug, Clone)]
 pub struct UserError(pub String);

@@ -1,4 +1,5 @@
 mod fbs;
+mod services;
 mod utils;
 
 use dotenv::{dotenv, var};
@@ -11,10 +12,8 @@ use hyper::{
   Error,
 };
 
-use utils::{
-  http_service::http_service,
-  state::{AsyncState, State},
-};
+use services::http_service::http_service;
+use utils::state::{AsyncState, State};
 
 #[allow(non_snake_case)]
 fn main() {
