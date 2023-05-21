@@ -1,12 +1,12 @@
 import React from "react";
 import { Canvas } from "@react-three/fiber";
-import styles from "./Scene.module.scss";
+import styles from "./SceneWrapper.module.scss";
 
 type Props = {
   eventSource: React.MutableRefObject<HTMLElement>;
 } & Pick<JSX.IntrinsicElements["scene"], "children">;
 
-export default function Scene(props: Props) {
+export default function SceneWrapper(props: Props) {
   const { children, eventSource } = props;
 
   return (

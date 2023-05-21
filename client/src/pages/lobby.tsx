@@ -11,7 +11,7 @@ export default function Page() {
 
 // Canvas components go here
 // It will receive same props as the Page component (from getStaticProps, etc.)
-Page.canvas = () => <></>;
+Page.scene = () => <></>;
 
 export async function getStaticProps() {
   return { props: { title: "Lobby - Fun.Game" } };
