@@ -20,7 +20,7 @@ export function Lobby() {
   };
 
   const handleStartGame = () => {
-    router.push(`/game/${game_id}`);
+    router.push(`/game?game-id=${game_id}`);
   };
 
   const handleLeave = useCallback(
