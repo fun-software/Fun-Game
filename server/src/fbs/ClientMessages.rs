@@ -3,9 +3,9 @@
 
 // @generated
 
+use crate::fbs::Player::*;
 use crate::fbs::Chat::*;
 use crate::fbs::Math::*;
-use crate::fbs::Player::*;
 use crate::fbs::User::*;
 use core::mem;
 use core::cmp::Ordering;
@@ -16,9 +16,9 @@ use self::flatbuffers::{EndianScalar, Follow};
 #[allow(unused_imports, dead_code)]
 pub mod clientmessages {
 
+  use crate::fbs::Player::*;
   use crate::fbs::Chat::*;
   use crate::fbs::Math::*;
-  use crate::fbs::Player::*;
   use crate::fbs::User::*;
   use core::mem;
   use core::cmp::Ordering;

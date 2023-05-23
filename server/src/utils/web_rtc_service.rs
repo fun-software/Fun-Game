@@ -8,7 +8,7 @@ use webrtc_unreliable::Server;
 
 use super::state::AsyncState;
 
-pub async fn web_rtc_service(listener: TcpListener, state: AsyncState, game_id: String) {
+pub async fn web_rtc_service(listener: TcpListener, state: AsyncState, game_id: &String) {
   let tick_rate: u64 = var("TICK_RATE")
     .unwrap_or("16".to_string())
     .parse()
@@ -25,12 +25,16 @@ pub async fn web_rtc_service(listener: TcpListener, state: AsyncState, game_id: 
   let mut inner_state = state.write().await;
   inner_state
     .web_rtc_sessions
-    .insert(game_id, session_endpoint);
+    .insert(game_id.to_string(), session_endpoint);
+
+  let inner_game_id = game_id.clone();
+  let state_clone1 = inner_state.clone();
 
   drop(inner_state);
-
   tokio::spawn(async move {
     let mut interval = time::interval(Duration::from_millis(tick_rate));
+
+    let current_game = &state_clone1.game_states[&inner_game_id];
 
     loop {
       interval.tick().await;

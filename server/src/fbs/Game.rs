@@ -111,217 +111,6 @@ impl<'a> flatbuffers::Verifiable for GamePhase {
 }
 
 impl flatbuffers::SimpleToVerifyInSlice for GamePhase {}
-pub enum PlayerRolesOffset {}
-#[derive(Copy, Clone, PartialEq)]
-
-pub struct PlayerRoles<'a> {
-  pub _tab: flatbuffers::Table<'a>,
-}
-
-impl<'a> flatbuffers::Follow<'a> for PlayerRoles<'a> {
-  type Inner = PlayerRoles<'a>;
-  #[inline]
-  unsafe fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-    Self { _tab: flatbuffers::Table::new(buf, loc) }
-  }
-}
-
-impl<'a> PlayerRoles<'a> {
-  pub const VT_RED: flatbuffers::VOffsetT = 4;
-  pub const VT_BLUE: flatbuffers::VOffsetT = 6;
-  pub const VT_GREEN: flatbuffers::VOffsetT = 8;
-  pub const VT_YELLOW: flatbuffers::VOffsetT = 10;
-
-  #[inline]
-  pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
-    PlayerRoles { _tab: table }
-  }
-  #[allow(unused_mut)]
-  pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-    _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
-    args: &'args PlayerRolesArgs<'args>
-  ) -> flatbuffers::WIPOffset<PlayerRoles<'bldr>> {
-    let mut builder = PlayerRolesBuilder::new(_fbb);
-    if let Some(x) = args.yellow { builder.add_yellow(x); }
-    if let Some(x) = args.green { builder.add_green(x); }
-    if let Some(x) = args.blue { builder.add_blue(x); }
-    if let Some(x) = args.red { builder.add_red(x); }
-    builder.finish()
-  }
-
-  pub fn unpack(&self) -> PlayerRolesT {
-    let red = self.red().map(|x| {
-      x.to_string()
-    });
-    let blue = self.blue().map(|x| {
-      x.to_string()
-    });
-    let green = self.green().map(|x| {
-      x.to_string()
-    });
-    let yellow = self.yellow().map(|x| {
-      x.to_string()
-    });
-    PlayerRolesT {
-      red,
-      blue,
-      green,
-      yellow,
-    }
-  }
-
-  #[inline]
-  pub fn red(&self) -> Option<&'a str> {
-    // Safety:
-    // Created from valid Table for this object
-    // which contains a valid value in this slot
-    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(PlayerRoles::VT_RED, None)}
-  }
-  #[inline]
-  pub fn blue(&self) -> Option<&'a str> {
-    // Safety:
-    // Created from valid Table for this object
-    // which contains a valid value in this slot
-    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(PlayerRoles::VT_BLUE, None)}
-  }
-  #[inline]
-  pub fn green(&self) -> Option<&'a str> {
-    // Safety:
-    // Created from valid Table for this object
-    // which contains a valid value in this slot
-    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(PlayerRoles::VT_GREEN, None)}
-  }
-  #[inline]
-  pub fn yellow(&self) -> Option<&'a str> {
-    // Safety:
-    // Created from valid Table for this object
-    // which contains a valid value in this slot
-    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<&str>>(PlayerRoles::VT_YELLOW, None)}
-  }
-}
-
-impl flatbuffers::Verifiable for PlayerRoles<'_> {
-  #[inline]
-  fn run_verifier(
-    v: &mut flatbuffers::Verifier, pos: usize
-  ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
-    use self::flatbuffers::Verifiable;
-    v.visit_table(pos)?
-     .visit_field::<flatbuffers::ForwardsUOffset<&str>>("red", Self::VT_RED, false)?
-     .visit_field::<flatbuffers::ForwardsUOffset<&str>>("blue", Self::VT_BLUE, false)?
-     .visit_field::<flatbuffers::ForwardsUOffset<&str>>("green", Self::VT_GREEN, false)?
-     .visit_field::<flatbuffers::ForwardsUOffset<&str>>("yellow", Self::VT_YELLOW, false)?
-     .finish();
-    Ok(())
-  }
-}
-pub struct PlayerRolesArgs<'a> {
-    pub red: Option<flatbuffers::WIPOffset<&'a str>>,
-    pub blue: Option<flatbuffers::WIPOffset<&'a str>>,
-    pub green: Option<flatbuffers::WIPOffset<&'a str>>,
-    pub yellow: Option<flatbuffers::WIPOffset<&'a str>>,
-}
-impl<'a> Default for PlayerRolesArgs<'a> {
-  #[inline]
-  fn default() -> Self {
-    PlayerRolesArgs {
-      red: None,
-      blue: None,
-      green: None,
-      yellow: None,
-    }
-  }
-}
-
-pub struct PlayerRolesBuilder<'a: 'b, 'b> {
-  fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-  start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
-}
-impl<'a: 'b, 'b> PlayerRolesBuilder<'a, 'b> {
-  #[inline]
-  pub fn add_red(&mut self, red: flatbuffers::WIPOffset<&'b  str>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(PlayerRoles::VT_RED, red);
-  }
-  #[inline]
-  pub fn add_blue(&mut self, blue: flatbuffers::WIPOffset<&'b  str>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(PlayerRoles::VT_BLUE, blue);
-  }
-  #[inline]
-  pub fn add_green(&mut self, green: flatbuffers::WIPOffset<&'b  str>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(PlayerRoles::VT_GREEN, green);
-  }
-  #[inline]
-  pub fn add_yellow(&mut self, yellow: flatbuffers::WIPOffset<&'b  str>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(PlayerRoles::VT_YELLOW, yellow);
-  }
-  #[inline]
-  pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> PlayerRolesBuilder<'a, 'b> {
-    let start = _fbb.start_table();
-    PlayerRolesBuilder {
-      fbb_: _fbb,
-      start_: start,
-    }
-  }
-  #[inline]
-  pub fn finish(self) -> flatbuffers::WIPOffset<PlayerRoles<'a>> {
-    let o = self.fbb_.end_table(self.start_);
-    flatbuffers::WIPOffset::new(o.value())
-  }
-}
-
-impl core::fmt::Debug for PlayerRoles<'_> {
-  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-    let mut ds = f.debug_struct("PlayerRoles");
-      ds.field("red", &self.red());
-      ds.field("blue", &self.blue());
-      ds.field("green", &self.green());
-      ds.field("yellow", &self.yellow());
-      ds.finish()
-  }
-}
-#[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
-pub struct PlayerRolesT {
-  pub red: Option<String>,
-  pub blue: Option<String>,
-  pub green: Option<String>,
-  pub yellow: Option<String>,
-}
-impl Default for PlayerRolesT {
-  fn default() -> Self {
-    Self {
-      red: None,
-      blue: None,
-      green: None,
-      yellow: None,
-    }
-  }
-}
-impl PlayerRolesT {
-  pub fn pack<'b>(
-    &self,
-    _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
-  ) -> flatbuffers::WIPOffset<PlayerRoles<'b>> {
-    let red = self.red.as_ref().map(|x|{
-      _fbb.create_string(x)
-    });
-    let blue = self.blue.as_ref().map(|x|{
-      _fbb.create_string(x)
-    });
-    let green = self.green.as_ref().map(|x|{
-      _fbb.create_string(x)
-    });
-    let yellow = self.yellow.as_ref().map(|x|{
-      _fbb.create_string(x)
-    });
-    PlayerRoles::create(_fbb, &PlayerRolesArgs{
-      red,
-      blue,
-      green,
-      yellow,
-    })
-  }
-}
 pub enum GameOffset {}
 #[derive(Copy, Clone, PartialEq)]
 
@@ -341,9 +130,8 @@ impl<'a> Game<'a> {
   pub const VT_ID: flatbuffers::VOffsetT = 4;
   pub const VT_PHASE: flatbuffers::VOffsetT = 6;
   pub const VT_PLAYERS: flatbuffers::VOffsetT = 8;
-  pub const VT_PLAYER_ROLES: flatbuffers::VOffsetT = 10;
-  pub const VT_START_TIME: flatbuffers::VOffsetT = 12;
-  pub const VT_END_TIME: flatbuffers::VOffsetT = 14;
+  pub const VT_START_TIME: flatbuffers::VOffsetT = 10;
+  pub const VT_END_TIME: flatbuffers::VOffsetT = 12;
 
   #[inline]
   pub unsafe fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
@@ -357,7 +145,6 @@ impl<'a> Game<'a> {
     let mut builder = GameBuilder::new(_fbb);
     builder.add_end_time(args.end_time);
     builder.add_start_time(args.start_time);
-    if let Some(x) = args.player_roles { builder.add_player_roles(x); }
     if let Some(x) = args.players { builder.add_players(x); }
     if let Some(x) = args.id { builder.add_id(x); }
     builder.add_phase(args.phase);
@@ -372,16 +159,12 @@ impl<'a> Game<'a> {
     let players = self.players().map(|x| {
       x.iter().map(|s| s.to_string()).collect()
     });
-    let player_roles = self.player_roles().map(|x| {
-      Box::new(x.unpack())
-    });
     let start_time = self.start_time();
     let end_time = self.end_time();
     GameT {
       id,
       phase,
       players,
-      player_roles,
       start_time,
       end_time,
     }
@@ -409,13 +192,6 @@ impl<'a> Game<'a> {
     unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>>>(Game::VT_PLAYERS, None)}
   }
   #[inline]
-  pub fn player_roles(&self) -> Option<PlayerRoles<'a>> {
-    // Safety:
-    // Created from valid Table for this object
-    // which contains a valid value in this slot
-    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<PlayerRoles>>(Game::VT_PLAYER_ROLES, None)}
-  }
-  #[inline]
   pub fn start_time(&self) -> u64 {
     // Safety:
     // Created from valid Table for this object
@@ -441,7 +217,6 @@ impl flatbuffers::Verifiable for Game<'_> {
      .visit_field::<flatbuffers::ForwardsUOffset<&str>>("id", Self::VT_ID, false)?
      .visit_field::<GamePhase>("phase", Self::VT_PHASE, false)?
      .visit_field::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<&'_ str>>>>("players", Self::VT_PLAYERS, false)?
-     .visit_field::<flatbuffers::ForwardsUOffset<PlayerRoles>>("player_roles", Self::VT_PLAYER_ROLES, false)?
      .visit_field::<u64>("start_time", Self::VT_START_TIME, false)?
      .visit_field::<u64>("end_time", Self::VT_END_TIME, false)?
      .finish();
@@ -452,7 +227,6 @@ pub struct GameArgs<'a> {
     pub id: Option<flatbuffers::WIPOffset<&'a str>>,
     pub phase: GamePhase,
     pub players: Option<flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>>>,
-    pub player_roles: Option<flatbuffers::WIPOffset<PlayerRoles<'a>>>,
     pub start_time: u64,
     pub end_time: u64,
 }
@@ -463,7 +237,6 @@ impl<'a> Default for GameArgs<'a> {
       id: None,
       phase: GamePhase::Lobby,
       players: None,
-      player_roles: None,
       start_time: 0,
       end_time: 0,
     }
@@ -486,10 +259,6 @@ impl<'a: 'b, 'b> GameBuilder<'a, 'b> {
   #[inline]
   pub fn add_players(&mut self, players: flatbuffers::WIPOffset<flatbuffers::Vector<'b , flatbuffers::ForwardsUOffset<&'b  str>>>) {
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(Game::VT_PLAYERS, players);
-  }
-  #[inline]
-  pub fn add_player_roles(&mut self, player_roles: flatbuffers::WIPOffset<PlayerRoles<'b >>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<PlayerRoles>>(Game::VT_PLAYER_ROLES, player_roles);
   }
   #[inline]
   pub fn add_start_time(&mut self, start_time: u64) {
@@ -520,7 +289,6 @@ impl core::fmt::Debug for Game<'_> {
       ds.field("id", &self.id());
       ds.field("phase", &self.phase());
       ds.field("players", &self.players());
-      ds.field("player_roles", &self.player_roles());
       ds.field("start_time", &self.start_time());
       ds.field("end_time", &self.end_time());
       ds.finish()
@@ -532,7 +300,6 @@ pub struct GameT {
   pub id: Option<String>,
   pub phase: GamePhase,
   pub players: Option<Vec<String>>,
-  pub player_roles: Option<Box<PlayerRolesT>>,
   pub start_time: u64,
   pub end_time: u64,
 }
@@ -542,7 +309,6 @@ impl Default for GameT {
       id: None,
       phase: GamePhase::Lobby,
       players: None,
-      player_roles: None,
       start_time: 0,
       end_time: 0,
     }
@@ -560,16 +326,12 @@ impl GameT {
     let players = self.players.as_ref().map(|x|{
       let w: Vec<_> = x.iter().map(|s| _fbb.create_string(s)).collect();_fbb.create_vector(&w)
     });
-    let player_roles = self.player_roles.as_ref().map(|x|{
-      x.pack(_fbb)
-    });
     let start_time = self.start_time;
     let end_time = self.end_time;
     Game::create(_fbb, &GameArgs{
       id,
       phase,
       players,
-      player_roles,
       start_time,
       end_time,
     })

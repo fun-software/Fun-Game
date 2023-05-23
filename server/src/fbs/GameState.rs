@@ -3,7 +3,9 @@
 
 // @generated
 
+use crate::fbs::Player::*;
 use crate::fbs::Game::*;
+use crate::fbs::Math::*;
 use core::mem;
 use core::cmp::Ordering;
 
@@ -13,7 +15,9 @@ use self::flatbuffers::{EndianScalar, Follow};
 #[allow(unused_imports, dead_code)]
 pub mod gamestate {
 
+  use crate::fbs::Player::*;
   use crate::fbs::Game::*;
+  use crate::fbs::Math::*;
   use core::mem;
   use core::cmp::Ordering;
 
@@ -59,7 +63,7 @@ impl<'a> GameState<'a> {
       Box::new(x.unpack())
     });
     let players = self.players().map(|x| {
-      Box::new(x.unpack())
+      x.iter().map(|t| t.unpack()).collect()
     });
     GameStateT {
       game,
@@ -75,11 +79,11 @@ impl<'a> GameState<'a> {
     unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<super::game::Game>>(GameState::VT_GAME, None)}
   }
   #[inline]
-  pub fn players(&self) -> Option<super::game::PlayerRoles<'a>> {
+  pub fn players(&self) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<super::player::Player<'a>>>> {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<super::game::PlayerRoles>>(GameState::VT_PLAYERS, None)}
+    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<super::player::Player>>>>(GameState::VT_PLAYERS, None)}
   }
 }
 
@@ -91,14 +95,14 @@ impl flatbuffers::Verifiable for GameState<'_> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
      .visit_field::<flatbuffers::ForwardsUOffset<super::game::Game>>("game", Self::VT_GAME, false)?
-     .visit_field::<flatbuffers::ForwardsUOffset<super::game::PlayerRoles>>("players", Self::VT_PLAYERS, false)?
+     .visit_field::<flatbuffers::ForwardsUOffset<flatbuffers::Vector<'_, flatbuffers::ForwardsUOffset<super::player::Player>>>>("players", Self::VT_PLAYERS, false)?
      .finish();
     Ok(())
   }
 }
 pub struct GameStateArgs<'a> {
     pub game: Option<flatbuffers::WIPOffset<super::game::Game<'a>>>,
-    pub players: Option<flatbuffers::WIPOffset<super::game::PlayerRoles<'a>>>,
+    pub players: Option<flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<super::player::Player<'a>>>>>,
 }
 impl<'a> Default for GameStateArgs<'a> {
   #[inline]
@@ -120,8 +124,8 @@ impl<'a: 'b, 'b> GameStateBuilder<'a, 'b> {
     self.fbb_.push_slot_always::<flatbuffers::WIPOffset<super::game::Game>>(GameState::VT_GAME, game);
   }
   #[inline]
-  pub fn add_players(&mut self, players: flatbuffers::WIPOffset<super::game::PlayerRoles<'b >>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<super::game::PlayerRoles>>(GameState::VT_PLAYERS, players);
+  pub fn add_players(&mut self, players: flatbuffers::WIPOffset<flatbuffers::Vector<'b , flatbuffers::ForwardsUOffset<super::player::Player<'b >>>>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(GameState::VT_PLAYERS, players);
   }
   #[inline]
   pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> GameStateBuilder<'a, 'b> {
@@ -150,7 +154,7 @@ impl core::fmt::Debug for GameState<'_> {
 #[derive(Debug, Clone, PartialEq)]
 pub struct GameStateT {
   pub game: Option<Box<super::game::GameT>>,
-  pub players: Option<Box<super::game::PlayerRolesT>>,
+  pub players: Option<Vec<super::player::PlayerT>>,
 }
 impl Default for GameStateT {
   fn default() -> Self {
@@ -169,7 +173,7 @@ impl GameStateT {
       x.pack(_fbb)
     });
     let players = self.players.as_ref().map(|x|{
-      x.pack(_fbb)
+      let w: Vec<_> = x.iter().map(|t| t.pack(_fbb)).collect();_fbb.create_vector(&w)
     });
     GameState::create(_fbb, &GameStateArgs{
       game,

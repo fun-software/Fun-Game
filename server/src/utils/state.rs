@@ -2,7 +2,9 @@
 use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 
 use super::ws_service::PeerMap;
-use crate::fbs::Game::game::GameT;
+use crate::fbs::{
+    GameState::gamestate::GameStateT
+};
 use tokio::sync::RwLock;
 use webrtc_unreliable::SessionEndpoint;
 
@@ -10,7 +12,7 @@ use webrtc_unreliable::SessionEndpoint;
 pub type PlayerCurrentGames = HashMap<String, String>;
 
 // map game IDs to their respective game objects
-pub type Games = HashMap<String, GameT>;
+pub type GameStates = HashMap<String, GameStateT>;
 
 // map game IDs to PeerMaps that contain the addresses of
 // all players in the lobby
@@ -29,7 +31,7 @@ pub type AsyncState = Arc<RwLock<InnerState>>;
 
 #[derive(Clone)]
 pub struct InnerState {
-  pub games: Games,
+  pub game_states: GameStates,
   pub lobbies: Lobbies,
   pub player_games: PlayerCurrentGames,
   pub web_rtc_sessions: WebRTCSessions,
@@ -38,7 +40,7 @@ pub struct InnerState {
 impl InnerState {
   pub fn new() -> Self {
     Self {
-      games: Games::new(),
+      game_states: GameStates::new(),
       lobbies: Lobbies::new(),
       player_games: PlayerCurrentGames::new(),
       web_rtc_sessions: WebRTCSessions::new(),
@@ -51,7 +53,7 @@ impl InnerState {
 
   pub fn player_count(&self, game_id: String) -> usize {
     return self
-      .games
+      .game_states
       .get(&game_id)
       .unwrap()
       .players
