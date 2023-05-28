@@ -2,8 +2,11 @@ import { Environment } from "@react-three/drei";
 import { Camera } from "./Camera";
 import { Floor } from "./Floor";
 import { Controls } from "./Controls";
+import { useGameState } from "@/hooks/useGameState";
 
 export function InGameScene() {
+  const { state } = useGameState("what the fuck is even a game_id");
+
   return (
     <group>
       <fog attach="fog" args={[0xffffff, 0, 100]} />
