@@ -10,7 +10,8 @@ fi
 
 cd "${0%/*}"
 
-rm -rf ./src/flatbuffers
+# Remove all files in ./src/fbs except mod.rs, then generate new fbs definitions
+find ./src/fbs ! -name 'mod.rs' -type f -exec rm -f {} +
 flatc --rust --filename-suffix '' --gen-object-api --gen-compare --include-prefix 'fbs' \
     -o ./src/fbs/ $(find ../flatbuffers -name "*.fbs")
 

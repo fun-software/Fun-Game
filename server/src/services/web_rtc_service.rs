@@ -6,7 +6,7 @@ use tokio::{
 };
 use webrtc_unreliable::Server;
 
-use super::state::AsyncState;
+use crate::utils::state::AsyncState;
 
 pub async fn web_rtc_service(listener: TcpListener, state: AsyncState, game_id: String) {
   let tick_rate: u64 = var("TICK_RATE")

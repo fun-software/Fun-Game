@@ -2,15 +2,15 @@ name: Build Server
 
 on:
   push:
-    branches: [ "main", "stage" ]
+    branches: [ "main", "stage", "staging" ]
   pull_request:
-    branches: [ "main", "stage" ]
+    branches: [ "main", "stage", "staging" ]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build_and_test:
+  build_server:
 
     runs-on: ubuntu-latest
     defaults:

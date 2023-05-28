@@ -1,8 +1,7 @@
 #![allow(dead_code)]
 use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 
-use super::ws_service::PeerMap;
-use crate::fbs::Game::game::GameT;
+use crate::{fbs::Game::game::GameT, services::chat_service::PeerMap};
 use tokio::sync::RwLock;
 use webrtc_unreliable::SessionEndpoint;
 

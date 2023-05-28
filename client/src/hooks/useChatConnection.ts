@@ -1,34 +1,33 @@
+import { API_HOST } from "@/utils/env";
 import { deserializeChatMessage, serializeChatMessage } from "@/utils/messaging";
 import { requestJoinGame } from "@/utils/requests";
 import { ChatMessageT, ChatSource } from "@fb/Chat";
 import { useSession } from "@supabase/auth-helpers-react";
-import * as React from "react";
-
-const API_HOST = process.env.NEXT_PUBLIC_API_HOST || "127.0.0.1";
+import { useCallback, useEffect, useState } from "react";
 
 export function useChatConnection(game_id: string) {
   const session = useSession();
-  let [port, setPort] = React.useState<number>(undefined);
-  let [socket, setSocket] = React.useState<WebSocket>(undefined);
-  const [chatMessages, setChatMessages] = React.useState<ChatMessageT[]>([]);
+  let [port, setPort] = useState<number>(undefined);
+  let [socket, setSocket] = useState<WebSocket>(undefined);
+  const [chatMessages, setChatMessages] = useState<ChatMessageT[]>([]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!game_id || !session) return;
-    requestJoinGame(session, game_id).then(address => {
+    requestJoinGame(session, game_id).then((address) => {
       setPort(address);
     });
   }, [game_id, session]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!port) return;
 
     let protocol = window.location.protocol === "https:" ? "wss" : "ws";
-    let ws = new WebSocket(`${protocol}://${API_HOST}/?socket=${port}`);
-    ws.onmessage = e => {
+    let ws = new WebSocket(`${protocol}://${API_HOST}:${port}`);
+    ws.onmessage = (e) => {
       let blob: Blob = e.data;
-      blob.arrayBuffer().then(buf => {
+      blob.arrayBuffer().then((buf) => {
         let msg = deserializeChatMessage(new Uint8Array(buf));
-        setChatMessages(prev => prev.concat(msg));
+        setChatMessages((prev) => prev.concat(msg));
       });
     };
 
@@ -39,8 +38,8 @@ export function useChatConnection(game_id: string) {
     };
   }, [port]);
 
-  React.useEffect(() => {
-    if (!socket) return;
+  useEffect(() => {
+    if (!socket || !socket.OPEN) return;
     let heartbeat = setInterval(() => {
       socket.send("ping");
     }, 1000);
@@ -50,7 +49,7 @@ export function useChatConnection(game_id: string) {
     };
   }, [socket]);
 
-  let sendChatMessage = React.useCallback(
+  let sendChatMessage = useCallback(
     (message: string) => {
       if (!socket || !message) return;
 
