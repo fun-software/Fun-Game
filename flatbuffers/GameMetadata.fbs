@@ -1,4 +1,4 @@
-namespace Game;
+namespace Gamemetadata;
 
 enum GamePhase: byte {
   Lobby,
@@ -7,20 +7,12 @@ enum GamePhase: byte {
   Ended,
 }
 
-table PlayerRoles {
-  red: string; // UUID string
-  blue: string;
-  green: string;
-  yellow: string;
-}
-
-table Game {
+table GameMetadata {
   id: string; // UUID string
   phase: GamePhase;
   players: [string];
-  player_roles: PlayerRoles;
   start_time: uint64;
   end_time: uint64;
 }
 
-root_type Game;
+root_type GameMetadata;

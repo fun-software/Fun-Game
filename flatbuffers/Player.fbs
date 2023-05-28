@@ -2,14 +2,24 @@ include "Math.fbs";
 
 namespace Player;
 
+enum Role: byte {
+  Blue,
+  Default,
+  Green,
+  Red,
+  Yellow
+}
+
 table Player {
-  position: Math.Vec3;
-  velocity: Math.Vec3;
-  look_direction: Math.Vec3;
   hp: byte = 100;
+  id: string;
+  look_direction: Math.Vec3;
+  position: Math.Vec3;
   speed: byte = 100;
   sprinting: bool = false;
   sneaking: bool = false;
+  role: Role;
+  velocity: Math.Vec3;
 }
 
 root_type Player;

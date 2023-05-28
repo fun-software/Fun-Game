@@ -1,4 +1,4 @@
-include "Game.fbs";
+include "GameMetadata.fbs";
 include "GameState.fbs";
 include "Chat.fbs";
 
@@ -14,7 +14,7 @@ table NewGameResponsePayload {
 }
 
 table JoinGameResponsePayload {
-  game: Game.Game;
+  game_metadata: Gamemetadata.GameMetadata;
   ws_port: uint16;
 }
 

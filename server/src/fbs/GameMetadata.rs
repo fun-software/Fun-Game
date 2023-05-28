@@ -10,7 +10,7 @@ extern crate flatbuffers;
 use self::flatbuffers::{EndianScalar, Follow};
 
 #[allow(unused_imports, dead_code)]
-pub mod game_metadata {
+pub mod gamemetadata {
 
   use core::mem;
   use core::cmp::Ordering;
@@ -408,5 +408,5 @@ pub fn finish_game_metadata_buffer<'a, 'b>(
 pub fn finish_size_prefixed_game_metadata_buffer<'a, 'b>(fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>, root: flatbuffers::WIPOffset<GameMetadata<'a>>) {
   fbb.finish_size_prefixed(root, None);
 }
-}  // pub mod GameMetadata
+}  // pub mod Gamemetadata
 
