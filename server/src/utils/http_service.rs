@@ -16,7 +16,7 @@ use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 use crate::{
   fbs::{
     ClientMessages::clientmessages::root_as_client_message,
-    Game::game::{GamePhase, GameT},
+    GameMetadata::gamemetadata::{GamePhase, GameMetadataT},
     GameState::gamestate::GameStateT,
     Player::player::{PlayerT, Role},
     ServerMessages::servermessages::{
@@ -102,7 +102,7 @@ pub async fn http_service(
             return make_response(return_player_to_game(cur_game_id, state.clone()).await);
           }
 
-          if !state.read().await.game_states.contains_key(&game_id) {
+          if !state.read().await.game_state_map.contains_key(&game_id) {
             return make_error_response(format!("game {} does not exist", game_id));
           }
 
@@ -221,7 +221,7 @@ async fn create_game(state: AsyncState) -> Vec<u8> {
   builder.finish(message, None);
   let bytes = builder.finished_data();
 
-  let game = GameT {
+  let game_metadata = GameMetadataT {
     id: Some(game_id.clone()),
     phase: GamePhase::Lobby,
     start_time: Utc::now().timestamp_millis() as u64,
@@ -230,7 +230,6 @@ async fn create_game(state: AsyncState) -> Vec<u8> {
   };
 
   let game_state = GameStateT {
-      game: Some(Box::new(game)),
       players: Some(vec![]),
   };
 
@@ -249,12 +248,13 @@ async fn create_game(state: AsyncState) -> Vec<u8> {
     return "Lobby already exists".as_bytes().to_vec();
   }
 
-  // add the game to the state, do here rather than
+  // add the game_metadata to the state, do here rather than
   // in the ws_service thread so that there
   // is no race condition between ws_service and the
   // imminent /join_game request
   let mut inner_state = state.write().await;
-  inner_state.game_states.insert(game_id.clone(), game_state);
+  inner_state.game_state_map.insert(game_id.clone(), game_state);
+  inner_state.game_metadata_map.insert(game_id.clone(), game_metadata);
   inner_state.lobbies.insert(
     game_id.clone(),
     Lobby {
@@ -268,7 +268,7 @@ async fn create_game(state: AsyncState) -> Vec<u8> {
     ws_service(ws_listener, ws_game_id).await;
   });
 
-  // create webRTC session endpoint for the game
+  // create webRTC session endpoint for the game_metadata
   let web_rtc_state = state.clone();
   let web_rtc_game_id = game_id.clone();
   tokio::spawn(async move {
@@ -290,11 +290,13 @@ async fn join_game(user_id: String, game_id: String, state: AsyncState) -> Vec<u
 
   let mut inner_state = state.write().await;
   inner_state
-    .player_games
+    .player_game_map
     .insert(user_id.clone(), game_id.clone());
 
-  let mut game = None;
+  let game_metadata: std::option::Option<GameMetadataT> = None;
   let mut builder = FlatBufferBuilder::new();
+
+  let game_metadata_offset = game_metadata.expect("something").pack(&mut builder);
 
   let player = PlayerT  {
     hp: 100,
@@ -308,10 +310,7 @@ async fn join_game(user_id: String, game_id: String, state: AsyncState) -> Vec<u
     velocity: Some(Vec3T::default())
   };
 
-  if let Some(game_state) = inner_state.game_states.get_mut(&game_id) {
-      let game_inner = game_state.game.as_ref();
-      game = Some(game_inner.expect("Game metadata not found").pack(&mut builder));
-
+  if let Some(game_state) = inner_state.game_state_map.get_mut(&game_id) {
       if let Some(players) = game_state.players.as_mut() {
           players.push(player);
       }
@@ -326,7 +325,7 @@ async fn join_game(user_id: String, game_id: String, state: AsyncState) -> Vec<u
   let payload = JoinGameResponsePayload::create(
     &mut builder,
     &JoinGameResponsePayloadArgs {
-      game: game,
+      game_metadata: Some(game_metadata_offset),
       ws_port,
     },
   );
@@ -349,7 +348,7 @@ async fn leave_game(user_id: String, game_id: String, state: AsyncState) -> Vec<
   let mut inner_state = state.write().await;
 
   inner_state
-    .game_states
+    .game_state_map
     .get_mut(&game_id)
     .unwrap()
     .players
@@ -357,7 +356,7 @@ async fn leave_game(user_id: String, game_id: String, state: AsyncState) -> Vec<
     .unwrap()
     .retain(|player| player.id.as_ref() != Some(&user_id));
 
-  inner_state.player_games.remove(&user_id);
+  inner_state.player_game_map.remove(&user_id);
 
   drop(inner_state);
 
@@ -366,20 +365,19 @@ async fn leave_game(user_id: String, game_id: String, state: AsyncState) -> Vec<
 
 async fn return_player_to_game(game_id: String, state: AsyncState) -> Vec<u8> {
   let lobbies = &state.read().await.lobbies;
-  let game_states = &state.read().await.game_states;
+  let game_metadata_map = &state.read().await.game_metadata_map;
   let cur_lobby = lobbies.get(&game_id).unwrap();
-  let cur_game_state = game_states.get(&game_id).unwrap().clone();
-  let cur_game = cur_game_state.game;
+  let cur_game_metadata = game_metadata_map.get(&game_id).unwrap();
 
   let ws_port = cur_lobby.addr.port();
 
   let mut builder = FlatBufferBuilder::new();
 
-  let game_offset = cur_game.expect("No game found for the current game state").pack(&mut builder);
+  let game_offset = cur_game_metadata.pack(&mut builder);
   let payload_offset = JoinGameResponsePayload::create(
     &mut builder,
     &JoinGameResponsePayloadArgs {
-      game: Some(game_offset),
+      game_metadata: Some(game_offset),
       ws_port,
     },
   );

@@ -4,9 +4,9 @@
 // @generated
 
 use crate::fbs::Player::*;
-use crate::fbs::Game::*;
-use crate::fbs::Chat::*;
 use crate::fbs::GameState::*;
+use crate::fbs::Chat::*;
+use crate::fbs::GameMetadata::*;
 use crate::fbs::Math::*;
 use core::mem;
 use core::cmp::Ordering;
@@ -18,9 +18,9 @@ use self::flatbuffers::{EndianScalar, Follow};
 pub mod servermessages {
 
   use crate::fbs::Player::*;
-  use crate::fbs::Game::*;
-  use crate::fbs::Chat::*;
   use crate::fbs::GameState::*;
+  use crate::fbs::Chat::*;
+  use crate::fbs::GameMetadata::*;
   use crate::fbs::Math::*;
   use core::mem;
   use core::cmp::Ordering;
@@ -449,7 +449,7 @@ impl<'a> flatbuffers::Follow<'a> for JoinGameResponsePayload<'a> {
 }
 
 impl<'a> JoinGameResponsePayload<'a> {
-  pub const VT_GAME: flatbuffers::VOffsetT = 4;
+  pub const VT_GAME_METADATA: flatbuffers::VOffsetT = 4;
   pub const VT_WS_PORT: flatbuffers::VOffsetT = 6;
 
   #[inline]
@@ -462,28 +462,28 @@ impl<'a> JoinGameResponsePayload<'a> {
     args: &'args JoinGameResponsePayloadArgs<'args>
   ) -> flatbuffers::WIPOffset<JoinGameResponsePayload<'bldr>> {
     let mut builder = JoinGameResponsePayloadBuilder::new(_fbb);
-    if let Some(x) = args.game { builder.add_game(x); }
+    if let Some(x) = args.game_metadata { builder.add_game_metadata(x); }
     builder.add_ws_port(args.ws_port);
     builder.finish()
   }
 
   pub fn unpack(&self) -> JoinGameResponsePayloadT {
-    let game = self.game().map(|x| {
+    let game_metadata = self.game_metadata().map(|x| {
       Box::new(x.unpack())
     });
     let ws_port = self.ws_port();
     JoinGameResponsePayloadT {
-      game,
+      game_metadata,
       ws_port,
     }
   }
 
   #[inline]
-  pub fn game(&self) -> Option<super::game::Game<'a>> {
+  pub fn game_metadata(&self) -> Option<super::gamemetadata::GameMetadata<'a>> {
     // Safety:
     // Created from valid Table for this object
     // which contains a valid value in this slot
-    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<super::game::Game>>(JoinGameResponsePayload::VT_GAME, None)}
+    unsafe { self._tab.get::<flatbuffers::ForwardsUOffset<super::gamemetadata::GameMetadata>>(JoinGameResponsePayload::VT_GAME_METADATA, None)}
   }
   #[inline]
   pub fn ws_port(&self) -> u16 {
@@ -501,21 +501,21 @@ impl flatbuffers::Verifiable for JoinGameResponsePayload<'_> {
   ) -> Result<(), flatbuffers::InvalidFlatbuffer> {
     use self::flatbuffers::Verifiable;
     v.visit_table(pos)?
-     .visit_field::<flatbuffers::ForwardsUOffset<super::game::Game>>("game", Self::VT_GAME, false)?
+     .visit_field::<flatbuffers::ForwardsUOffset<super::gamemetadata::GameMetadata>>("game_metadata", Self::VT_GAME_METADATA, false)?
      .visit_field::<u16>("ws_port", Self::VT_WS_PORT, false)?
      .finish();
     Ok(())
   }
 }
 pub struct JoinGameResponsePayloadArgs<'a> {
-    pub game: Option<flatbuffers::WIPOffset<super::game::Game<'a>>>,
+    pub game_metadata: Option<flatbuffers::WIPOffset<super::gamemetadata::GameMetadata<'a>>>,
     pub ws_port: u16,
 }
 impl<'a> Default for JoinGameResponsePayloadArgs<'a> {
   #[inline]
   fn default() -> Self {
     JoinGameResponsePayloadArgs {
-      game: None,
+      game_metadata: None,
       ws_port: 0,
     }
   }
@@ -527,8 +527,8 @@ pub struct JoinGameResponsePayloadBuilder<'a: 'b, 'b> {
 }
 impl<'a: 'b, 'b> JoinGameResponsePayloadBuilder<'a, 'b> {
   #[inline]
-  pub fn add_game(&mut self, game: flatbuffers::WIPOffset<super::game::Game<'b >>) {
-    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<super::game::Game>>(JoinGameResponsePayload::VT_GAME, game);
+  pub fn add_game_metadata(&mut self, game_metadata: flatbuffers::WIPOffset<super::gamemetadata::GameMetadata<'b >>) {
+    self.fbb_.push_slot_always::<flatbuffers::WIPOffset<super::gamemetadata::GameMetadata>>(JoinGameResponsePayload::VT_GAME_METADATA, game_metadata);
   }
   #[inline]
   pub fn add_ws_port(&mut self, ws_port: u16) {
@@ -552,7 +552,7 @@ impl<'a: 'b, 'b> JoinGameResponsePayloadBuilder<'a, 'b> {
 impl core::fmt::Debug for JoinGameResponsePayload<'_> {
   fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
     let mut ds = f.debug_struct("JoinGameResponsePayload");
-      ds.field("game", &self.game());
+      ds.field("game_metadata", &self.game_metadata());
       ds.field("ws_port", &self.ws_port());
       ds.finish()
   }
@@ -560,13 +560,13 @@ impl core::fmt::Debug for JoinGameResponsePayload<'_> {
 #[non_exhaustive]
 #[derive(Debug, Clone, PartialEq)]
 pub struct JoinGameResponsePayloadT {
-  pub game: Option<Box<super::game::GameT>>,
+  pub game_metadata: Option<Box<super::gamemetadata::GameMetadataT>>,
   pub ws_port: u16,
 }
 impl Default for JoinGameResponsePayloadT {
   fn default() -> Self {
     Self {
-      game: None,
+      game_metadata: None,
       ws_port: 0,
     }
   }
@@ -576,12 +576,12 @@ impl JoinGameResponsePayloadT {
     &self,
     _fbb: &mut flatbuffers::FlatBufferBuilder<'b>
   ) -> flatbuffers::WIPOffset<JoinGameResponsePayload<'b>> {
-    let game = self.game.as_ref().map(|x|{
+    let game_metadata = self.game_metadata.as_ref().map(|x|{
       x.pack(_fbb)
     });
     let ws_port = self.ws_port;
     JoinGameResponsePayload::create(_fbb, &JoinGameResponsePayloadArgs{
-      game,
+      game_metadata,
       ws_port,
     })
   }

@@ -5,7 +5,7 @@ pub mod Chat;
 pub mod ClientMessages;
 
 #[allow(non_snake_case, unused_imports)]
-pub mod Game;
+pub mod GameMetadata;
 
 #[allow(non_snake_case, unused_imports)]
 pub mod GameState;

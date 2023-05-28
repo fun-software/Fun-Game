@@ -34,7 +34,7 @@ pub async fn web_rtc_service(listener: TcpListener, state: AsyncState, game_id: 
   tokio::spawn(async move {
     let mut interval = time::interval(Duration::from_millis(tick_rate));
 
-    let current_game = &state_clone1.game_states[&inner_game_id];
+    let current_game = &state_clone1.game_state_map[&inner_game_id];
 
     loop {
       interval.tick().await;

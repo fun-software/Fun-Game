@@ -3,16 +3,20 @@ use std::{collections::HashMap, net::SocketAddr, sync::Arc};
 
 use super::ws_service::PeerMap;
 use crate::fbs::{
-    GameState::gamestate::GameStateT
+    GameState::gamestate::GameStateT,
+    GameMetadata::gamemetadata::GameMetadataT
 };
 use tokio::sync::RwLock;
 use webrtc_unreliable::SessionEndpoint;
 
 // map Player IDs to their current game's ID
-pub type PlayerCurrentGames = HashMap<String, String>;
+pub type PlayerCurrentGameMap = HashMap<String, String>;
 
-// map game IDs to their respective game objects
-pub type GameStates = HashMap<String, GameStateT>;
+// map game IDs to their respective game state objects
+pub type GameStateMap = HashMap<String, GameStateT>;
+
+// map game IDs to their respective game metadata objects
+pub type GameMetadataMap = HashMap<String, GameMetadataT>;
 
 // map game IDs to PeerMaps that contain the addresses of
 // all players in the lobby
@@ -31,29 +35,31 @@ pub type AsyncState = Arc<RwLock<InnerState>>;
 
 #[derive(Clone)]
 pub struct InnerState {
-  pub game_states: GameStates,
+  pub game_state_map: GameStateMap,
+  pub game_metadata_map: GameMetadataMap,
   pub lobbies: Lobbies,
-  pub player_games: PlayerCurrentGames,
+  pub player_game_map: PlayerCurrentGameMap,
   pub web_rtc_sessions: WebRTCSessions,
 }
 
 impl InnerState {
   pub fn new() -> Self {
     Self {
-      game_states: GameStates::new(),
+      game_metadata_map: GameMetadataMap::new(),
+      game_state_map: GameStateMap::new(),
       lobbies: Lobbies::new(),
-      player_games: PlayerCurrentGames::new(),
+      player_game_map: PlayerCurrentGameMap::new(),
       web_rtc_sessions: WebRTCSessions::new(),
     }
   }
 
   pub fn player_in_game(&self, player_id: &str) -> Option<String> {
-    return self.player_games.get(player_id).cloned();
+    return self.player_game_map.get(player_id).cloned();
   }
 
   pub fn player_count(&self, game_id: String) -> usize {
     return self
-      .game_states
+      .game_state_map
       .get(&game_id)
       .unwrap()
       .players

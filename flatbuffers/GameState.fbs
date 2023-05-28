@@ -1,10 +1,8 @@
-include "Game.fbs";
 include "Player.fbs";
 
 namespace Gamestate;
 
 table GameState {
-  game: Game.Game;
   players: [Player.Player];
   // TODO: attacks, etc.
 }

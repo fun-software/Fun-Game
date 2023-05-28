@@ -1,0 +1,110 @@
+   Compiling server v0.1.0 (   Compiling server v0.1.0 (/home/dawnofvan/code/Fun-Game/server)
+/home/dawnofvan/code/Fun-Game/server)
+error[E0609]: no field `game_states` on type `InnerState`
+  --> src/utils/web_rtc_service.rs:37:38
+   |
+37 |     let current_game = &state_clone1.game_states[&inner_game_id];
+   |                                      ^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `game_state_map`, `game_metadata_map`, `lobbies`, `player_game_map`, `web_rtc_sessions`
+
+error[E0609]: no field `game_states` on type `InnerState`
+  --> src/utils/web_rtc_service.rs:37:38
+   |
+37 |     let current_game = &state_clone1.game_states[&inner_game_id];
+   |                                      ^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `game_state_map`, `game_metadata_map`, `lobbies`, `player_game_map`, `web_rtc_sessions`
+
+error[E0609]: no field `game_states` on type `tokio::sync::RwLockReadGuard<'_, InnerState>`
+   --> src/utils/http_service.rs:368:41
+    |
+368 |   let game_states = &state.read().await.game_states;
+    |                                         ^^^^^^^^^^^ unknown field
+
+error[E0609]: no field `game_states` on type `tokio::sync::RwLockReadGuard<'_, InnerState>`
+   --> src/utils/http_service.rs:368:41
+    |
+368 |   let game_states = &state.read().await.game_states;
+    |                                         ^^^^^^^^^^^ unknown field
+
+error[E0609]: no field `player_games` on type `tokio::sync::RwLockWriteGuard<'_, InnerState>`
+   --> src/utils/http_service.rs:292:6
+    |
+292 |     .player_games
+    |      ^^^^^^^^^^^^ unknown field
+
+error[E0609]: no field `player_games` on type `tokio::sync::RwLockWriteGuard<'_, InnerState>`
+   --> src/utils/http_service.rs:292:6
+    |
+292 |     .player_games
+    |      ^^^^^^^^^^^^ unknown field
+
+error[E0609]: no field `game_states` on type `tokio::sync::RwLockWriteGuard<'_, InnerState>`
+   --> src/utils/http_service.rs:310:41
+    |
+310 |   if let Some(game_state) = inner_state.game_states.get_mut(&game_id) {
+    |                                         ^^^^^^^^^^^ unknown field
+
+error[E0609]: no field `game_states` on type `tokio::sync::RwLockWriteGuard<'_, InnerState>`
+   --> src/utils/http_service.rs:310:41
+    |
+310 |   if let Some(game_state) = inner_state.game_states.get_mut(&game_id) {
+    |                                         ^^^^^^^^^^^ unknown field
+
+error[E0609]: no field `game_states` on type `tokio::sync::RwLockWriteGuard<'_, InnerState>`
+   --> src/utils/http_service.rs:351:6
+    |
+351 |     .game_states
+    |      ^^^^^^^^^^^ unknown field
+
+error[E0609]: no field `game_states` on type `tokio::sync::RwLockWriteGuard<'_, InnerState>`
+   --> src/utils/http_service.rs:351:6
+    |
+351 |     .game_states
+    |      ^^^^^^^^^^^ unknown field
+
+error[E0609]: no field `player_games` on type `tokio::sync::RwLockWriteGuard<'_, InnerState>`
+   --> src/utils/http_service.rs:359:15
+    |
+359 |   inner_state.player_games.remove(&user_id);
+    |               ^^^^^^^^^^^^ unknown field
+
+error[E0609]: no field `player_games` on type `tokio::sync::RwLockWriteGuard<'_, InnerState>`
+   --> src/utils/http_service.rs:359:15
+    |
+359 |   inner_state.player_games.remove(&user_id);
+    |               ^^^^^^^^^^^^ unknown field
+
+error[E0609]: no field `player_games` on type `&InnerState`
+  --> src/utils/state.rs:57:17
+   |
+57 |     return self.player_games.get(player_id).cloned();
+   |                 ^^^^^^^^^^^^ help: a field with a similar name exists: `player_game_map`
+
+error[E0609]: no field `player_games` on type `&InnerState`
+  --> src/utils/state.rs:57:17
+   |
+57 |     return self.player_games.get(player_id).cloned();
+   |                 ^^^^^^^^^^^^ help: a field with a similar name exists: `player_game_map`
+
+error[E0609]: no field `game_states` on type `&InnerState`
+  --> src/utils/state.rs:62:8
+   |
+62 |       .game_states
+   |        ^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `game_state_map`, `game_metadata_map`, `lobbies`, `player_game_map`, `web_rtc_sessions`
+
+error[E0609]: no field `game_states` on type `&InnerState`
+  --> src/utils/state.rs:62:8
+   |
+62 |       .game_states
+   |        ^^^^^^^^^^^ unknown field
+   |
+   = note: available fields are: `game_state_map`, `game_metadata_map`, `lobbies`, `player_game_map`, `web_rtc_sessions`
+
+For more information about this error, try `rustc --explain E0609`.
+For more information about this error, try `rustc --explain E0609`.
+error: could not compile `server` due to 8 previous errors
+error: could not compile `server` due to 8 previous errors
